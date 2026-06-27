@@ -1,0 +1,10 @@
+# Example Project Forge configuration.
+# Copy this file for local experimentation once runtime settings are defined.
+
+[project]
+# Human-readable project label used in logs, reports, or generated artifacts.
+name = "Project Forge"
+
+[paths]
+# Default output location for generated files.
+outputs = "outputs"
