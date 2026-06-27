@@ -36,3 +36,4 @@ flowchart LR
     E --> F[Quality Control]
     F --> G[EXCON Review Queue]
     G --> H[Human-Approved Release]
+<h2>Trust Model</h2>
