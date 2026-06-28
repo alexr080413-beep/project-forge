@@ -71,6 +71,12 @@ The foundation supports default Forge roles, policy validation, role-based acces
 
 The foundation is intentionally demonstrative and local. It uses repository sample data, dry-run handlers, and stub providers only; it does not perform external collection, web scraping, OpenAI calls, email delivery, or real distribution output.
 
+## Forge Studio MVP Foundation
+
+`project_forge.forge_studio` provides the first Forge Studio MVP domain model and framework-neutral API scaffold. It defines local models for exercises, users, injects, timeline events, human review items, and audit logs, plus an in-memory `ForgeStudioRegistry` for registration, lookup, relationship validation, review decisions, and inject approval state.
+
+The foundation intentionally avoids frontend implementation, web server dependencies, persistence, authentication, automatic publishing, and external calls. Injects are not considered releasable until explicit human approval is recorded.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:

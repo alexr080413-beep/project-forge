@@ -357,6 +357,7 @@ The platform is ready for iterative capability growth while preserving controlle
 ├── SERVICES.md            # Service responsibilities and boundaries
 ├── WORKFLOWS.md           # Workflow philosophy and demo pipeline
 ├── FORGE_STUDIO_UX.md     # UX blueprint for the future Forge Studio application
+├── FORGE_STUDIO_MVP.md    # Forge Studio MVP domain model and API foundation
 ├── FORGE_STUDIO_DESIGN_SYSTEM.md # Forge Studio design system
 ├── FORGE_STUDIO_MISSION_CONTROL.md # Mission Control dashboard specification
 ├── FORGE_STUDIO_INTELLIGENCE_WORKSPACE.md # Intelligence Controller workspace specification
@@ -382,6 +383,7 @@ The platform is ready for iterative capability growth while preserving controlle
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Architecture notes and foundation design boundaries. |
 | [WORKFLOWS.md](WORKFLOWS.md) | Workflow philosophy, demo pipeline, and future workflow direction. |
 | [FORGE_STUDIO_UX.md](FORGE_STUDIO_UX.md) | User personas, workspaces, navigation, workflows, wireframes, and accessibility guidance for Forge Studio. |
+| [FORGE_STUDIO_MVP.md](FORGE_STUDIO_MVP.md) | Forge Studio MVP domain objects, object relationships, API module purpose, and human-in-the-loop review principle. |
 | [FORGE_STUDIO_DESIGN_SYSTEM.md](FORGE_STUDIO_DESIGN_SYSTEM.md) | Brand identity, visual tokens, layout rules, component specifications, themes, and UI states for Forge Studio. |
 | [FORGE_STUDIO_MISSION_CONTROL.md](FORGE_STUDIO_MISSION_CONTROL.md) | Mission Control dashboard purpose, layout, widgets, interactions, refresh behavior, and operational rules. |
 | [FORGE_STUDIO_INTELLIGENCE_WORKSPACE.md](FORGE_STUDIO_INTELLIGENCE_WORKSPACE.md) | Intelligence Controller workspace workflow, panels, shortcuts, collaboration, search, and performance specification. |
