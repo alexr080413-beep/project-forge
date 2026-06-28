@@ -56,6 +56,13 @@ def create_handler(store: ExerciseStore) -> type[SimpleHTTPRequestHandler]:
             try:
                 body = self._read_json_body()
                 review_id = str(body.get("review_id", "")).strip()
+                if path == "/api/action":
+                    action = str(body.get("action", "")).strip()
+                    payload = body.get("payload", {})
+                    if not isinstance(payload, dict):
+                        raise ValueError("payload must be a JSON object")
+                    self._send_json(store.apply_action(action, payload))
+                    return
                 if path == "/api/review/approve":
                     self._send_json(store.approve_review(review_id))
                     return

@@ -386,6 +386,44 @@ h1 {
   outline: none;
 }
 
+.action-button.danger {
+  border-color: rgba(220, 88, 88, 0.55);
+  background: rgba(220, 88, 88, 0.1);
+}
+
+.crud-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.inline-form {
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.crud-form input,
+.crud-form select {
+  min-height: 36px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0 10px;
+}
+
+.crud-form input:focus,
+.crud-form select:focus {
+  border-color: rgba(246, 168, 110, 0.55);
+  outline: none;
+}
+
+.compact-actions {
+  margin-top: 10px;
+}
+
 .detail-list {
   display: grid;
   grid-template-columns: minmax(130px, 0.4fr) 1fr;
@@ -590,6 +628,11 @@ h1 {
 .audit-table .table-row {
   grid-template-columns: 110px 150px minmax(180px, 1fr) minmax(180px, 1fr) 120px;
   min-width: 820px;
+}
+
+.product-table .table-row {
+  grid-template-columns: 120px minmax(220px, 1.4fr) 100px 80px 110px 140px 120px 320px;
+  min-width: 1200px;
 }
 
 .table-row span {

@@ -3,6 +3,7 @@ const dashboardPage = document.querySelector("#dashboard-page");
 const contentPage = document.querySelector("#content-page");
 const contentRoot = document.querySelector("#content-root");
 let workspaceData = null;
+let currentPage = "dashboard";
 
 const pageLabels = {
   dashboard: "Dashboard",
@@ -39,6 +40,18 @@ function statusClass(value) {
   return `status-${String(value || "neutral").replaceAll("_", "-").toLowerCase()}`;
 }
 
+function payloadAttr(payload) {
+  return encodeURIComponent(JSON.stringify(payload));
+}
+
+function commandButton(label, action, payload = {}, variant = "") {
+  return `<button class="action-button command-action ${variant}" type="button" data-action="${action}" data-payload="${payloadAttr(payload)}">${label}</button>`;
+}
+
+function formButton(label, action, formId) {
+  return `<button class="action-button form-action" type="button" data-action="${action}" data-form="${formId}">${label}</button>`;
+}
+
 function card(title, body, meta = "") {
   return `
     <article class="record">
@@ -51,12 +64,54 @@ function card(title, body, meta = "") {
   `;
 }
 
-function actionButton(label) {
-  return `<button class="action-button" type="button">${label}</button>`;
+function controllerOptions(selected = "") {
+  return (workspaceData?.controllers || [])
+    .filter((controller) => controller.user_id)
+    .map((controller) => `<option value="${controller.user_id}" ${controller.user_id === selected ? "selected" : ""}>${controller.role} - ${controller.name}</option>`)
+    .join("");
 }
 
-function reviewActionButton(reviewId, action, label) {
-  return `<button class="action-button review-action" type="button" data-review-id="${reviewId}" data-action="${action}">${label}</button>`;
+function collectForm(formId) {
+  const form = document.querySelector(`#${formId}`);
+  const data = {};
+  for (const [key, value] of new FormData(form).entries()) {
+    if (String(value).trim()) {
+      data[key] = String(value).trim();
+    }
+  }
+  return data;
+}
+
+async function postAction(action, payload = {}, page = currentPage) {
+  const response = await fetch("/api/action", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({action, payload})
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || "Action failed");
+  }
+  workspaceData = await response.json();
+  showPage(page);
+}
+
+function bindCommandActions() {
+  for (const button of document.querySelectorAll(".command-action")) {
+    button.addEventListener("click", () => {
+      const payload = JSON.parse(decodeURIComponent(button.dataset.payload || "%7B%7D"));
+      postAction(button.dataset.action, payload).catch((error) => {
+        button.textContent = error.message;
+      });
+    });
+  }
+  for (const button of document.querySelectorAll(".form-action")) {
+    button.addEventListener("click", () => {
+      postAction(button.dataset.action, collectForm(button.dataset.form)).catch((error) => {
+        button.textContent = error.message;
+      });
+    });
+  }
 }
 
 function renderRecords(containerId, records, emptyText, statusKey = "event_type") {
@@ -71,7 +126,11 @@ function renderRecords(containerId, records, emptyText, statusKey = "event_type"
   for (const record of records) {
     container.insertAdjacentHTML(
       "beforeend",
-      card(record.title || record.id, record.description || record.comments || record.item_id || "No additional details.", formatLabel(record[statusKey]))
+      card(
+        record.title || record.id,
+        record.description || record.comments || record.item_id || "No additional details.",
+        formatLabel(record[statusKey])
+      )
     );
   }
 }
@@ -90,7 +149,10 @@ function renderActivity(records) {
 function renderDashboard(data) {
   const exercise = data.workspace.exercise;
   setText("#active-exercise", exercise.name);
-  setText("#active-exercise-description", `${exercise.exercise_control} | Director: ${exercise.exercise_director} | Start ${exercise.start}`);
+  setText(
+    "#active-exercise-description",
+    `${exercise.exercise_control} | Director: ${exercise.exercise_director} | Start ${exercise.start}`
+  );
   setText("#exercise-status", data.metrics.exercise_status);
   setText("#exercise-phase", data.metrics.exercise_phase);
   setText("#exercise-health", data.metrics.exercise_health);
@@ -111,11 +173,18 @@ function renderExercises(data) {
         <p class="eyebrow">Exercise Workspace</p>
         <h2>${exercise.name}</h2>
         <p>${exercise.exercise_control} is running the active Exercise Control workspace for ${exercise.training_audience}.</p>
+        <form id="exercise-form" class="crud-form">
+          <input name="name" value="${exercise.name}" aria-label="Exercise name">
+          <input name="description" value="${data.active_exercise.description || ""}" aria-label="Exercise description">
+          <input name="exercise_control" value="${exercise.exercise_control}" aria-label="Exercise control">
+          <input name="training_audience" value="${exercise.training_audience}" aria-label="Training audience">
+        </form>
         <div class="action-row">
-          ${actionButton("Open")}
-          ${actionButton("Duplicate")}
-          ${actionButton("Archive")}
-          ${actionButton("Create Exercise")}
+          ${formButton("Create Exercise", "exercise.create", "exercise-form")}
+          ${formButton("Edit Exercise", "exercise.edit", "exercise-form")}
+          ${commandButton("Duplicate", "exercise.duplicate")}
+          ${commandButton("Archive", "exercise.archive")}
+          ${commandButton("Delete", "exercise.delete", {}, "danger")}
         </div>
       </article>
       <article class="panel compact">
@@ -142,6 +211,7 @@ function renderExercises(data) {
       </article>
     </section>
   `;
+  bindCommandActions();
 }
 
 function renderTimeline(data) {
@@ -151,6 +221,12 @@ function renderTimeline(data) {
         <h2>Operational Timeline</h2>
         <span>${data.workspace.exercise.name}</span>
       </div>
+      <form id="timeline-form" class="crud-form inline-form">
+        <input name="title" placeholder="Timeline title" aria-label="Timeline title">
+        <input name="description" placeholder="Timeline description" aria-label="Timeline description">
+        <input name="timestamp" placeholder="0945 or ISO time" aria-label="Timeline timestamp">
+        ${formButton("Add Timeline Event", "timeline.create", "timeline-form")}
+      </form>
       <div class="timeline-column">
         ${data.timeline_events.map((event) => `
           <article class="timeline-card">
@@ -159,12 +235,17 @@ function renderTimeline(data) {
               <strong>${event.title}</strong>
               <p>${event.description}</p>
               <span class="badge">${formatLabel(event.event_type)}</span>
+              <div class="action-row compact-actions">
+                ${commandButton("Edit", "timeline.edit", {event_id: event.id, title: `${event.title} Updated`})}
+                ${commandButton("Delete", "timeline.delete", {event_id: event.id}, "danger")}
+              </div>
             </div>
           </article>
         `).join("")}
       </div>
     </section>
   `;
+  bindCommandActions();
 }
 
 function renderInjectLibrary(data) {
@@ -174,6 +255,12 @@ function renderInjectLibrary(data) {
         <h2>Inject Library</h2>
         <span>Human review controls release</span>
       </div>
+      <form id="inject-form" class="crud-form inline-form">
+        <input name="title" placeholder="Inject title" aria-label="Inject title">
+        <input name="description" placeholder="Inject description" aria-label="Inject description">
+        <select name="assigned_controller" aria-label="Assigned controller">${controllerOptions("user-controller")}</select>
+        ${formButton("Create Inject", "inject.create", "inject-form")}
+      </form>
       <div class="inject-grid">
         ${data.injects.map((inject) => `
           <article class="inject-card ${statusClass(inject.status)}">
@@ -184,14 +271,23 @@ function renderInjectLibrary(data) {
             <dl class="detail-list compact-list">
               <dt>Category</dt><dd>${formatLabel(inject.inject_type)}</dd>
               <dt>Scheduled Time</dt><dd>${timeFromIso(inject.scheduled_time)}</dd>
-              <dt>Controller</dt><dd>${inject.assigned_controller_name || inject.assigned_controller || "Unassigned"}</dd>
+              <dt>Controller</dt><dd>${inject.assigned_controller_name || "Unassigned"}</dd>
               <dt>Priority</dt><dd>${formatLabel(inject.priority)}</dd>
             </dl>
+            <div class="action-row compact-actions">
+              ${commandButton("Edit", "inject.edit", {inject_id: inject.id, title: `${inject.title} Updated`})}
+              ${commandButton("Approve", "inject.approve", {inject_id: inject.id})}
+              ${commandButton("Reject", "inject.reject", {inject_id: inject.id})}
+              ${commandButton("Assign", "inject.assign", {inject_id: inject.id, assigned_controller: "user-intel-chief"})}
+              ${commandButton("Schedule", "inject.schedule", {inject_id: inject.id, scheduled_time: "2027-03-27T09:50:00+00:00"})}
+              ${commandButton("Delete", "inject.delete", {inject_id: inject.id}, "danger")}
+            </div>
           </article>
         `).join("")}
       </div>
     </section>
   `;
+  bindCommandActions();
 }
 
 function renderControllers(data) {
@@ -235,7 +331,7 @@ function renderReviewQueue(data) {
               <span>${item.reviewed_by || "Unassigned"}</span>
               <span>${timeFromIso(item.timestamp)}</span>
               <span class="review-actions">
-                ${canReview ? `${reviewActionButton(item.id, "approve", "Approve")}${reviewActionButton(item.id, "reject", "Reject")}` : "Complete"}
+                ${canReview ? `${commandButton("Approve", "review.approve", {review_id: item.id})}${commandButton("Reject", "review.reject", {review_id: item.id})}${commandButton("Return for Revision", "review.revision", {review_id: item.id})}` : "Complete"}
               </span>
             </div>
           `;
@@ -243,7 +339,7 @@ function renderReviewQueue(data) {
       </div>
     </section>
   `;
-  bindReviewActions();
+  bindCommandActions();
 }
 
 function renderExerciseLibrary(data) {
@@ -260,8 +356,8 @@ function renderExerciseLibrary(data) {
       </article>
       <article class="panel wide-panel">
         <h2>Generated Products</h2>
-        <div class="data-table">
-          <div class="table-row table-head"><span>Product Type</span><span>Title</span><span>Status</span><span>Version</span><span>Last Updated</span><span>Author</span><span>Review Status</span></div>
+        <div class="data-table product-table">
+          <div class="table-row table-head"><span>Product Type</span><span>Title</span><span>Status</span><span>Version</span><span>Last Updated</span><span>Author</span><span>Review Status</span><span>Action</span></div>
           ${data.products.map((product) => `
             <div class="table-row">
               <span>${product.product_type}</span>
@@ -271,12 +367,20 @@ function renderExerciseLibrary(data) {
               <span>${product.last_updated}</span>
               <span>${product.author}</span>
               <span>${product.review_status}</span>
+              <span class="review-actions">
+                ${commandButton("Open", "product.open", {product_id: product.id})}
+                ${commandButton("Metadata", "product.metadata", {product_id: product.id})}
+                ${commandButton("Versions", "product.version_history", {product_id: product.id})}
+                ${commandButton("Archive", "product.archive", {product_id: product.id})}
+                ${commandButton("Delete", "product.delete", {product_id: product.id}, "danger")}
+              </span>
             </div>
           `).join("")}
         </div>
       </article>
     </section>
   `;
+  bindCommandActions();
 }
 
 function renderAudit(data) {
@@ -346,30 +450,8 @@ async function loadDashboard() {
   renderDashboard(workspaceData);
 }
 
-async function submitReviewDecision(reviewId, action) {
-  const response = await fetch(`/api/review/${action}`, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({review_id: reviewId})
-  });
-  if (!response.ok) {
-    throw new Error("Review request failed");
-  }
-  workspaceData = await response.json();
-  showPage("review-queue");
-}
-
-function bindReviewActions() {
-  for (const button of document.querySelectorAll(".review-action")) {
-    button.addEventListener("click", () => {
-      submitReviewDecision(button.dataset.reviewId, button.dataset.action).catch((error) => {
-        button.textContent = error.message;
-      });
-    });
-  }
-}
-
 function showPage(page) {
+  currentPage = page;
   for (const item of document.querySelectorAll(".nav-item")) {
     item.classList.toggle("active", item.dataset.page === page);
   }

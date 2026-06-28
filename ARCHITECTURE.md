@@ -91,6 +91,14 @@ The data engine is the single source of truth for the local web app. Dashboard, 
 
 The data engine remains intentionally in-memory, local, deterministic, and human-review centered. It does not implement persistence, authentication, automatic release, distribution, database connections, or external network calls.
 
+## Forge Studio Interactive CRUD Workflows
+
+Forge Studio now exposes interactive local commands through `ExerciseStore.apply_action()` and the `/api/action` endpoint. Exercise, inject, timeline, review, controller assignment, and product-library operations all flow through the same command handler before the UI receives a refreshed exercise snapshot.
+
+The MVP uses a synchronous command-and-snapshot pattern to model event-driven behavior. Each command mutates the in-memory authoritative state, recalculates statistics, appends an audit record, updates the activity feed, and re-renders the active page from the returned snapshot. This keeps Dashboard, Timeline, Inject Library, Controllers, Review Queue, Exercise Library, and Audit synchronized without introducing a frontend framework, database, websocket channel, or background worker.
+
+The current CRUD workflows remain demo-safe. They are local mock actions only and do not publish products, distribute injects, send notifications, scrape content, call external services, or bypass the human review principle.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:

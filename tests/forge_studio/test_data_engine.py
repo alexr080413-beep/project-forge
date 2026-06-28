@@ -48,3 +48,118 @@ def test_timeline_operation_updates_statistics_activity_and_audit() -> None:
     assert payload["timeline_events"][-1]["title"] == "Controller Sync Complete"
     assert payload["activity"][0]["title"] == "Controller Sync Complete"
     assert payload["audit_log"][0]["action"] == "timeline.event.created"
+
+
+def test_inject_crud_synchronizes_dashboard_review_library_controller_and_audit() -> None:
+    store = create_mock_exercise_store()
+
+    created = store.apply_action(
+        "inject.create",
+        {
+            "title": "Route Closure",
+            "description": "Controller creates a mountain route closure inject.",
+            "assigned_controller": "user-intel-chief",
+        },
+    )
+    created_inject = next(item for item in created["injects"] if item["title"] == "Route Closure")
+
+    assert created["metrics"]["pending_reviews"] == 4
+    assert created["metrics"]["products_generated"] == 13
+    assert created["metrics"]["timeline_events"] == 9
+    assert created["review_queue"][-1]["item_id"] == created_inject["id"]
+    assert created["products"][0]["title"] == "Route Closure Packet"
+    assert next(
+        item for item in created["controllers"] if item["user_id"] == "user-intel-chief"
+    )["pending_reviews"] == 1
+    assert created["audit_log"][0]["action"] == "inject.created"
+
+    edited = store.apply_action(
+        "inject.edit",
+        {"inject_id": created_inject["id"], "title": "Route Closure Updated"},
+    )
+
+    assert any(item["title"] == "Route Closure Updated" for item in edited["injects"])
+    assert edited["products"][0]["title"] == "Route Closure Updated Packet"
+    assert edited["audit_log"][0]["action"] == "inject.updated"
+
+    deleted = store.apply_action("inject.delete", {"inject_id": created_inject["id"]})
+
+    assert all(item["id"] != created_inject["id"] for item in deleted["injects"])
+    assert deleted["metrics"]["products_generated"] == 12
+    assert deleted["audit_log"][0]["action"] == "inject.deleted"
+
+
+def test_timeline_crud_sorts_events_chronologically_and_audits() -> None:
+    store = create_mock_exercise_store()
+
+    created = store.apply_action(
+        "timeline.create",
+        {"title": "Early Update", "description": "Inserted early event.", "timestamp": "0815"},
+    )
+    event = next(item for item in created["timeline_events"] if item["title"] == "Early Update")
+
+    edited = store.apply_action(
+        "timeline.edit",
+        {"event_id": event["id"], "title": "Early Update Revised", "timestamp": "0805"},
+    )
+
+    assert [item["title"] for item in edited["timeline_events"][:2]] == [
+        "Exercise Begins",
+        "Early Update Revised",
+    ]
+    assert edited["audit_log"][0]["action"] == "timeline.event.updated"
+
+    deleted = store.apply_action("timeline.delete", {"event_id": event["id"]})
+
+    assert all(item["id"] != event["id"] for item in deleted["timeline_events"])
+    assert deleted["audit_log"][0]["action"] == "timeline.event.deleted"
+
+
+def test_exercise_and_product_crud_actions_generate_audit_records() -> None:
+    store = create_mock_exercise_store()
+
+    created = store.apply_action("exercise.create", {"name": "Mountain Exercise 3-28"})
+    assert created["active_exercise"]["name"] == "Mountain Exercise 3-28"
+    assert created["audit_log"][0]["action"] == "exercise.created"
+
+    edited = store.apply_action("exercise.edit", {"name": "Mountain Exercise 3-28A"})
+    assert edited["active_exercise"]["name"] == "Mountain Exercise 3-28A"
+    assert edited["audit_log"][0]["action"] == "exercise.updated"
+
+    duplicated = store.apply_action("exercise.duplicate", {})
+    assert duplicated["active_exercise"]["name"] == "Mountain Exercise 3-28A Copy"
+
+    deleted = store.apply_action("exercise.delete", {})
+    assert deleted["active_exercise"]["name"] == "Mountain Exercise 3-27"
+    assert deleted["audit_log"][0]["action"] == "exercise.deleted"
+
+    archived_product = store.apply_action(
+        "product.archive",
+        {"product_id": "product-intel-update-001"},
+    )
+    product = next(
+        item for item in archived_product["products"] if item["id"] == "product-intel-update-001"
+    )
+    assert product["status"] == "Archived"
+    assert archived_product["audit_log"][0]["action"] == "product.archived"
+
+    deleted_product = store.apply_action(
+        "product.delete",
+        {"product_id": "product-intel-update-001"},
+    )
+    assert deleted_product["metrics"]["products_generated"] == 11
+    assert deleted_product["audit_log"][0]["action"] == "product.deleted"
+
+
+def test_review_revision_updates_queue_library_and_audit() -> None:
+    store = create_mock_exercise_store()
+
+    payload = store.apply_action("review.revision", {"review_id": "review-002"})
+
+    review = next(item for item in payload["review_queue"] if item["id"] == "review-002")
+    product = next(item for item in payload["products"] if item["id"] == review["item_id"])
+
+    assert review["status"] == "revision_requested"
+    assert product["review_status"] == "Revision Requested"
+    assert payload["metrics"]["pending_reviews"] == 2
+    assert payload["audit_log"][0]["action"] == "review.revision_requested"

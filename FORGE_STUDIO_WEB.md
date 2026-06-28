@@ -4,7 +4,7 @@ Forge Studio Web MVP is the first runnable local application for Forge Studio. I
 
 This is intentionally minimal. It does not implement authentication, persistence, frontend build tooling, automatic publishing, external APIs, or every Forge Studio feature.
 
-The current sprint introduces the Forge Studio Exercise Data Engine. The active exercise is now the single source of truth for dashboard metrics, timeline events, injects, products, controllers, review queue items, audit records, and exercise statistics.
+The current sprint introduces interactive CRUD workflows on top of the Forge Studio Exercise Data Engine. The active exercise is the single source of truth for dashboard metrics, timeline events, injects, products, controllers, review queue items, audit records, and exercise statistics.
 
 ## Start Locally
 
@@ -57,6 +57,7 @@ The app displays:
 - Exercise Library product repository
 - Audit history page
 - Settings cards
+- Interactive creation, editing, archival, deletion, approval, assignment, and scheduling actions
 
 Navigation sections:
 
@@ -97,6 +98,9 @@ flowchart LR
     store --> library["Exercise Library"]
     store --> audit["Audit"]
     review -->|"approve / reject"| store
+    injects -->|"create / edit / assign / schedule"| store
+    timeline -->|"create / edit / delete"| store
+    library -->|"open / archive / delete"| store
     store -->|"updated snapshot"| dashboard
     store -->|"audit entry"| audit
 ```
@@ -116,19 +120,47 @@ The server exposes the shared state through:
 ```text
 GET /api/exercise
 GET /api/dashboard
+POST /api/action
 POST /api/review/approve
 POST /api/review/reject
 ```
 
 `GET /api/dashboard` is retained as a compatibility alias for the same exercise snapshot.
 
+`POST /api/action` is the interactive command endpoint. It accepts:
+
+```json
+{
+  "action": "inject.create",
+  "payload": {
+    "title": "Route Closure",
+    "assigned_controller": "user-controller"
+  }
+}
+```
+
+The endpoint returns a refreshed exercise snapshot after the command is applied.
+
+### Event-Driven Updates
+
+Forge Studio uses a command-and-snapshot pattern for the MVP. UI controls submit a named action to `ExerciseStore.apply_action()`. The store mutates the authoritative in-memory exercise state, creates an audit record, updates the activity feed, recalculates statistics, and returns a new snapshot.
+
+This is event-driven in application behavior even though it is intentionally local and synchronous. Future implementations can replace the in-memory command handler with durable events, persistence, and websocket updates without changing the central rule: exercise data changes flow through the Exercise Data Engine first.
+
+### State Synchronization
+
+Pages do not own independent copies of exercise data. After each CRUD command, the browser replaces its local snapshot with the server response and re-renders the active page. This keeps Dashboard, Timeline, Inject Library, Controllers, Review Queue, Exercise Library, and Audit synchronized.
+
 ### Propagation
 
-Review actions mutate the shared store. After an approval or rejection, the returned snapshot updates:
+Review and CRUD actions mutate the shared store. After a command, the returned snapshot updates:
 
 - Dashboard pending review count
 - Inject Library status and approver
 - Review Queue decision and timestamp
+- Timeline event ordering
+- Controller assignment counts
+- Exercise Library product status and counts
 - Latest Activity Feed
 - Audit History
 
@@ -137,6 +169,19 @@ This gives the MVP one platform behavior model instead of independent page-level
 ### Human Review Principle
 
 Forge continues to preserve human release authority. The Review Queue is a mock workflow, but it still requires an explicit approve or reject action. Approval updates the linked inject; rejection prevents it from being treated as releasable. No automatic publishing or distribution is implemented.
+
+## Interactive Workflows
+
+The runnable MVP now supports local CRUD operations through existing applications:
+
+- Exercises: create, edit, duplicate, archive, and delete exercise records.
+- Inject Library: create, edit, delete, approve, reject, assign controller, and schedule injects.
+- Timeline: add, edit, and delete timeline events. Events sort chronologically.
+- Review Queue: approve, reject, and return items for revision.
+- Exercise Library: open products, view metadata, view version history, archive, and delete products.
+- Audit: displays every command recorded by the Exercise Data Engine.
+
+All operations are local mock actions. They do not publish injects, send email, call external APIs, scrape web content, or persist to a database.
 
 ## Exercise Workspace Concept
 
@@ -167,7 +212,7 @@ Dashboard metrics:
 
 The Review Queue page displays every review item in the active exercise. It shows pending, in-review, approved, and rejected states, along with decision, reviewer, timestamp, and mock approval buttons.
 
-Approving or rejecting an item records an audit entry and returns a refreshed exercise snapshot. For inject review items, the linked inject status is updated through the existing Forge Studio registry review methods.
+Approving, rejecting, or returning an item for revision records an audit entry and returns a refreshed exercise snapshot. For inject review items, the linked inject status is updated through the existing Forge Studio registry review methods.
 
 ## Audit History
 
@@ -192,10 +237,16 @@ The library organizes generated material into folders:
 
 Each product record shows product type, title, status, version, last updated time, author, and review status. The library should eventually become the authoritative exercise archive for retrieval, assessment, export, and after-action review.
 
-The API endpoint is:
+The primary read endpoint is:
 
 ```text
 GET /api/dashboard
+```
+
+The primary command endpoint is:
+
+```text
+POST /api/action
 ```
 
 The endpoint is served by the local stdlib web server in:
