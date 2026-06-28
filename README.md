@@ -306,6 +306,7 @@ The platform is ready for iterative capability growth while preserving controlle
 ├── tests/                 # Unit and integration tests mirroring package structure
 ├── ARCHITECTURE.md        # Design boundaries and architecture notes
 ├── PLATFORM.md            # Platform layers, data flow, and core concepts
+├── EXERCISE.md            # Exercise lifecycle model and Forge Studio organizing concept
 ├── SERVICES.md            # Service responsibilities and boundaries
 ├── WORKFLOWS.md           # Workflow philosophy and demo pipeline
 ├── FORGE_STUDIO_UX.md     # UX blueprint for the future Forge Studio application
@@ -328,6 +329,7 @@ The platform is ready for iterative capability growth while preserving controlle
 | --- | --- |
 | [VISION.md](VISION.md) | Executive vision, problem statement, goals, non-goals, and EXCON benefits. |
 | [PLATFORM.md](PLATFORM.md) | Platform layers, architecture, data flow, and core concepts. |
+| [EXERCISE.md](EXERCISE.md) | Exercise lifecycle model, object model, hierarchy, workspace mapping, controller mapping, workflow mapping, product mapping, profile mapping, plugin mapping, and navigation implications. |
 | [SERVICES.md](SERVICES.md) | Service responsibilities, inputs, outputs, dependencies, status, and boundaries. |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Architecture notes and foundation design boundaries. |
 | [WORKFLOWS.md](WORKFLOWS.md) | Workflow philosophy, demo pipeline, and future workflow direction. |
