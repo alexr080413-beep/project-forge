@@ -74,6 +74,7 @@ class InjectStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     SCHEDULED = "scheduled"
+    COMPLETED = "completed"
     CANCELLED = "cancelled"
 
 

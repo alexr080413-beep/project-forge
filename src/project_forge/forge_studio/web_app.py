@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from .mock_data import create_mock_registry
+from .mock_data import create_mock_registry, create_mock_workspace
 from .models import InjectStatus, StudioReviewStatus, UserRole
 from .registry import ForgeStudioRegistry
 
@@ -22,8 +22,9 @@ DEFAULT_PORT = 8765
 
 
 def build_dashboard_payload(registry: ForgeStudioRegistry) -> dict[str, Any]:
-    """Build the local dashboard payload from Forge Studio MVP models."""
+    """Build the local workspace payload from Forge Studio MVP models."""
 
+    workspace = create_mock_workspace()
     exercises = registry.list_exercises()
     active_exercise = exercises[0] if exercises else None
     exercise_id = active_exercise.id if active_exercise else None
@@ -45,27 +46,32 @@ def build_dashboard_payload(registry: ForgeStudioRegistry) -> dict[str, Any]:
         UserRole.ADMINISTRATOR,
     }
     pending_statuses = {StudioReviewStatus.PENDING, StudioReviewStatus.IN_REVIEW}
+    timeline_summary = sorted(timeline_events, key=lambda item: item.timestamp)
+    open_injects = [item for item in injects if item.status is not InjectStatus.COMPLETED]
+    products_generated = _stat_value(workspace["exercise"]["statistics"], "Products")
 
     return {
         "active_exercise": _to_jsonable(active_exercise) if active_exercise else None,
+        "workspace": workspace,
         "metrics": {
-            "exercise_status": active_exercise.status.value if active_exercise else "none",
-            "exercise_phase": active_exercise.phase.value if active_exercise else "none",
+            "exercise_status": workspace["exercise"]["status"],
+            "exercise_phase": workspace["exercise"]["phase"],
+            "exercise_health": workspace["exercise"]["health"],
+            "current_operational_time": workspace["exercise"]["operational_time"],
             "pending_reviews": sum(item.status in pending_statuses for item in review_items),
+            "open_injects": len(open_injects),
             "active_injects": sum(item.status in active_inject_statuses for item in injects),
+            "products_generated": products_generated,
             "timeline_events": len(timeline_events),
             "controller_count": sum(user.role in controller_roles and user.active for user in users),
         },
-        "timeline_summary": [
-            _to_jsonable(event)
-            for event in sorted(timeline_events, key=lambda item: item.timestamp)[-3:]
-        ],
+        "activity": workspace["activity"],
+        "timeline_summary": [_to_jsonable(event) for event in timeline_summary],
         "pending_reviews": [
             _to_jsonable(item) for item in review_items if item.status in pending_statuses
         ],
-        "active_injects": [
-            _to_jsonable(item) for item in injects if item.status in active_inject_statuses
-        ],
+        "injects": [_to_jsonable(item) for item in injects],
+        "active_injects": [_to_jsonable(item) for item in open_injects],
         "controllers": [_to_jsonable(user) for user in users if user.role in controller_roles],
     }
 
@@ -160,6 +166,20 @@ def _to_jsonable(value: Any) -> Any:
     if isinstance(value, dict):
         return {key: _to_jsonable(item) for key, item in value.items()}
     return value
+
+
+def _stat_value(statistics: object, label: str) -> int:
+    if not isinstance(statistics, list):
+        return 0
+    for item in statistics:
+        if not isinstance(item, dict):
+            continue
+        if item.get("label") == label:
+            try:
+                return int(str(item.get("value", "0")))
+            except ValueError:
+                return 0
+    return 0
 
 
 if __name__ == "__main__":

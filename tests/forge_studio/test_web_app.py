@@ -9,24 +9,29 @@ def test_mock_dashboard_payload_uses_forge_studio_models() -> None:
 
     payload = build_dashboard_payload(registry)
 
-    assert payload["active_exercise"]["name"] == "Forge Demo Exercise"
-    assert payload["metrics"] == {
-        "exercise_status": "active",
-        "exercise_phase": "execution",
-        "pending_reviews": 2,
-        "active_injects": 2,
-        "timeline_events": 3,
-        "controller_count": 4,
-    }
-    assert [item["title"] for item in payload["timeline_summary"]] == [
-        "Execution Phase Started",
-        "Approved Media Query Staged",
-        "Logistics Inject Entered Review",
+    assert payload["active_exercise"]["name"] == "Mountain Exercise 3-27"
+    assert payload["workspace"]["exercise"]["exercise_director"] == "Col Smith"
+    assert payload["workspace"]["exercise"]["exercise_control"] == "Bridgeport EXCON"
+    assert payload["metrics"]["exercise_status"] == "ACTIVE"
+    assert payload["metrics"]["exercise_phase"] == "EXECUTE"
+    assert payload["metrics"]["exercise_health"] == "Nominal"
+    assert payload["metrics"]["pending_reviews"] == 3
+    assert payload["metrics"]["open_injects"] == 7
+    assert payload["metrics"]["products_generated"] == 12
+    assert payload["metrics"]["timeline_events"] == 8
+    assert payload["metrics"]["controller_count"] == 7
+    assert [item["title"] for item in payload["timeline_summary"][:3]] == [
+        "Exercise Begins",
+        "Intel Product Published",
+        "Civilian Protest Inject",
     ]
     assert [item["id"] for item in payload["pending_reviews"]] == [
         "review-001",
         "review-002",
+        "review-003",
     ]
+    assert "Photos" in payload["workspace"]["library_folders"]
+    assert payload["workspace"]["products"][0]["title"] == "Intelligence Update 001"
 
 
 def test_static_web_app_assets_exist() -> None:
