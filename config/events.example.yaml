@@ -1,0 +1,103 @@
+{
+  "events": [
+    {
+      "identifier": "evt-001",
+      "title": "Host Nation Requests Coordination Support",
+      "summary": "Host nation leaders ask the notional joint force for additional coordination support.",
+      "event_type": "political",
+      "originating_source": "excon",
+      "scenario_actors_involved": [
+        "Host Nation Government",
+        "Joint Task Force Headquarters"
+      ],
+      "locations_involved": [
+        "Capital Operations Center"
+      ],
+      "timestamp": "2026-06-27T15:30:00Z",
+      "exercise_day": 2,
+      "exercise_phase": "execution",
+      "confidence": 0.92,
+      "impacts": [
+        {
+          "area": "decision_rhythm",
+          "severity": "medium",
+          "summary": "Controllers should expect additional coordination injects.",
+          "affected_entities": [
+            "unit-jtf-hq",
+            "org-excon"
+          ],
+          "metadata": {}
+        }
+      ],
+      "related_entities": [
+        "unit-jtf-hq",
+        "org-excon"
+      ],
+      "supporting_source_references": [
+        "knowledge_base/README.md"
+      ],
+      "tags": [
+        "coordination",
+        "political"
+      ],
+      "metadata": {
+        "notional": true
+      },
+      "status": "active"
+    },
+    {
+      "identifier": "evt-002",
+      "title": "Simulated Border Activity Increases",
+      "summary": "Exercise controllers report increased notional activity near the northern border region.",
+      "event_type": "military",
+      "originating_source": "white_cell",
+      "scenario_actors_involved": [
+        "Joint Task Force Headquarters"
+      ],
+      "locations_involved": [
+        "Northern Border Region"
+      ],
+      "timestamp": "2026-06-27T18:00:00Z",
+      "exercise_day": 2,
+      "exercise_phase": "execution",
+      "confidence": 0.84,
+      "impacts": [
+        {
+          "area": "force_posture",
+          "severity": "high",
+          "summary": "Friendly forces may need to update monitoring posture.",
+          "affected_entities": [
+            "unit-jtf-hq",
+            "platform-watchtower"
+          ],
+          "metadata": {}
+        },
+        {
+          "area": "information_environment",
+          "severity": "medium",
+          "summary": "Simulated media may amplify rumors about border incidents.",
+          "affected_entities": [
+            "cap-strategic-comms"
+          ],
+          "metadata": {}
+        }
+      ],
+      "related_entities": [
+        "unit-jtf-hq",
+        "platform-watchtower",
+        "cap-strategic-comms"
+      ],
+      "supporting_source_references": [
+        "config/entities.example.yaml"
+      ],
+      "tags": [
+        "military",
+        "border"
+      ],
+      "metadata": {
+        "notional": true
+      },
+      "status": "active"
+    }
+  ]
+}
