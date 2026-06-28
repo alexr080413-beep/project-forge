@@ -1,0 +1,132 @@
+{
+  "dictionaries": [
+    {
+      "identifier": "forge-example-translation",
+      "name": "Forge Example Translation Dictionary",
+      "profiles": [
+        {
+          "identifier": "exercise-products",
+          "name": "Exercise Products",
+          "categories": [
+            "countries",
+            "military_organizations",
+            "units",
+            "geographic_locations",
+            "political_leaders",
+            "military_equipment",
+            "government_agencies",
+            "alliances",
+            "exercises"
+          ],
+          "metadata": {}
+        }
+      ],
+      "rules": [
+        {
+          "identifier": "country-host-nation",
+          "category": "countries",
+          "source": "Host Nation",
+          "target": "Asteria",
+          "rule_type": "one_to_one",
+          "priority": 10,
+          "aliases": ["HN"],
+          "metadata": {}
+        },
+        {
+          "identifier": "mil-org-jtf",
+          "category": "military_organizations",
+          "source": "Joint Task Force",
+          "target": "Combined Response Group",
+          "rule_type": "one_to_one",
+          "priority": 20,
+          "aliases": ["JTF"],
+          "metadata": {}
+        },
+        {
+          "identifier": "unit-jtf-hq",
+          "category": "units",
+          "source": "Joint Task Force Headquarters",
+          "target": "CRG Headquarters",
+          "rule_type": "one_to_one",
+          "priority": 15,
+          "aliases": ["JTF HQ"],
+          "metadata": {}
+        },
+        {
+          "identifier": "location-capital",
+          "category": "geographic_locations",
+          "source": "Capital Operations Center",
+          "target": "Asteria Coordination Center",
+          "rule_type": "one_to_one",
+          "priority": 20,
+          "aliases": ["COC"],
+          "metadata": {}
+        },
+        {
+          "identifier": "leader-senior-controller",
+          "category": "political_leaders",
+          "source": "Senior Controller",
+          "target": "Exercise Director",
+          "rule_type": "alias",
+          "priority": 30,
+          "aliases": ["SC"],
+          "metadata": {}
+        },
+        {
+          "identifier": "equipment-watchtower",
+          "category": "military_equipment",
+          "source": "Watchtower ISR Platform",
+          "target": "Horizon Sensor Platform",
+          "rule_type": "one_to_one",
+          "priority": 20,
+          "aliases": ["Watchtower"],
+          "metadata": {}
+        },
+        {
+          "identifier": "agency-excon",
+          "category": "government_agencies",
+          "source": "Exercise Control",
+          "target": "Scenario Control Cell",
+          "rule_type": "one_to_one",
+          "priority": 25,
+          "aliases": ["EXCON"],
+          "metadata": {}
+        },
+        {
+          "identifier": "alliance-coalition",
+          "category": "alliances",
+          "source": "coalition",
+          "target": "combined partnership",
+          "rule_type": "one_to_one",
+          "priority": 40,
+          "aliases": ["Coalition"],
+          "metadata": {}
+        },
+        {
+          "identifier": "exercise-forge",
+          "category": "exercises",
+          "source": "Forge Example Exercise",
+          "target": "Exercise Iron Compass",
+          "rule_type": "one_to_one",
+          "priority": 10,
+          "aliases": ["Forge Exercise"],
+          "metadata": {}
+        },
+        {
+          "identifier": "regex-border",
+          "category": "geographic_locations",
+          "source": "\\bnorthern border region\\b",
+          "target": "northern training corridor",
+          "rule_type": "regex",
+          "priority": 50,
+          "aliases": [],
+          "flags": ["ignorecase"],
+          "metadata": {}
+        }
+      ],
+      "metadata": {
+        "notional": true
+      }
+    }
+  ]
+}
