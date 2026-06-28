@@ -29,7 +29,7 @@ flowchart LR
     N --> H
 ```
 
-The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, a storage service foundation, a search service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
+The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, a storage service foundation, a search service foundation, an audit service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
 
 ## Platform Layers
 
@@ -113,6 +113,7 @@ Primary services:
 - Workflow Engine
 - Pipeline Orchestrator
 - Search Service
+- Audit Service
 
 ## Data Flow
 
@@ -127,6 +128,7 @@ The platform data flow follows a controlled path:
 7. The Review Queue receives the prepared product for human controller action.
 8. Approved products can later be handled by the Distribution Service through local, dry-run, or placeholder channels, while the Storage Service provides controlled local artifact access, listing, metadata, and archive behavior.
 9. The Search Service can provide ranked local discovery across configured service indexes without external APIs or semantic/vector search.
+10. The Audit Service can record significant actions, correlation IDs, parent/child events, severity, tags, and metadata for traceability and after-action review.
 
 ## Core Concepts
 
@@ -177,3 +179,7 @@ Storage provides a common abstraction over project artifact folders. The foundat
 ### Search
 
 Search provides a unified discovery interface across Forge services. The current foundation supports deterministic exact, partial, tag, metadata, date, service, relevance, and pagination behavior over local indexes, with semantic, vector, and hybrid search reserved for future implementation.
+
+### Audit
+
+Audit records significant actions across the platform. The current foundation supports in-memory events, actors, actions, categories, sessions, correlation IDs, parent/child relationships, severity, tags, metadata, and filtering without persistent storage or database connections.

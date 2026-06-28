@@ -104,6 +104,12 @@ The Search Service provides ranked discovery across local Forge service indexes.
 
 The current foundation is lexical and deterministic. Semantic search, vector search, and hybrid search are represented as future capabilities only and are not executed.
 
+## Audit Execution
+
+The Audit Service records significant platform actions for traceability, accountability, and after-action review. It supports timestamps, actors, action categories, correlation IDs, parent/child events, severity, tags, metadata, sessions, and filtering.
+
+The current foundation is in-memory only. It does not persist audit entries, connect to databases, or store AI prompt or response content.
+
 ## Automation Execution
 
 The Automation Service records when a workflow would be triggered by a cron schedule, manual action, event payload, workflow event, or condition. It preserves execution history and retry policy metadata, but it does not invoke workflow handlers or depend on an external scheduler.
@@ -218,6 +224,7 @@ Future workflow work should add:
 - Export workflow stages
 - Storage-backed artifact retention
 - Cross-service search surfaces
+- Audit-backed after-action review
 - Automation runtime integration
 - Runtime observability
 - Controller-facing workflow status

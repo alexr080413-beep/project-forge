@@ -24,6 +24,7 @@ This document describes the current and planned service boundaries for Project F
 | Distribution Service | Handle approved product outputs after review through local and placeholder channels | Implemented foundation |
 | Storage Service | Read metadata, list, dry-run write, and archive project artifacts through local and placeholder providers | Implemented foundation |
 | Search Service | Query and rank local indexes across Forge service domains | Implemented foundation |
+| Audit Service | Record and filter significant platform actions for traceability and after-action review | Implemented foundation |
 | Automation Service | Record schedule, manual, event, workflow, and conditional triggers for workflows | Implemented foundation |
 | Workflow Engine | Execute ordered local workflow steps | Implemented foundation |
 | Pipeline Orchestrator | Coordinate platform services into end-to-end pipelines | Implemented foundation |
@@ -537,6 +538,38 @@ The service does not call S3, Azure Blob Storage, SharePoint, cloud APIs, or net
 **Current Boundary**
 
 The service does not perform semantic search, vector search, hybrid search, embedding generation, external API calls, or network calls.
+
+## Audit Service
+
+**Responsibilities**
+
+- Record significant platform actions in memory.
+- Validate audit actors, actions, categories, events, entries, sessions, and filters.
+- Capture timestamps, correlation IDs, parent/child event relationships, severity, tags, and metadata.
+- Support filtering by category, action, severity, service, actor, tag, correlation ID, parent event, date range, and metadata.
+- Support service execution, workflow execution, review actions, approvals, rejections, configuration changes, profile selection, AI request metadata, product generation, distribution, and automation execution events.
+
+**Inputs**
+
+- `AuditActor`
+- `AuditEvent`
+- `AuditSession`
+- `AuditFilter`
+
+**Outputs**
+
+- `AuditEntry`
+- Filtered audit entry lists
+- Session records
+
+**Dependencies**
+
+- Python standard library only
+- Platform services that emit audit events
+
+**Current Boundary**
+
+The service stores entries in memory only. It does not implement persistent storage, connect to databases, or store AI prompt/response content.
 
 ## Automation Service
 

@@ -41,6 +41,12 @@ The foundation implements local filesystem behavior only. S3, Azure Blob, and Sh
 
 The foundation supports exact, partial, tag, metadata, date, service, relevance, and pagination behavior only. Semantic, vector, and hybrid search are explicit future capabilities and are not implemented.
 
+## Audit Service Foundation
+
+`project_forge.audit_service` provides in-memory traceability for significant platform actions. `AuditActor` identifies who or what acted, `AuditEvent` describes the action, category, severity, timestamps, correlation ID, parent event, tags, and metadata, `AuditEntry` stores the event with session context, `AuditSession` groups related activity, and `AuditRegistry` records and filters entries.
+
+The foundation supports audit capture for service execution, workflows, review actions, approvals, rejections, configuration changes, profile selection, AI request metadata, product generation, distribution, and automation execution. It intentionally does not implement persistent storage or database connections.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:
