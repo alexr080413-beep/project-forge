@@ -1,0 +1,76 @@
+{
+  "sources": [
+    {
+      "source_id": "rss-public-example",
+      "name": "Public RSS Example",
+      "source_type": "rss",
+      "location": "https://example.com/rss.xml",
+      "enabled": true,
+      "description": "Safe RSS source definition for dry-run validation.",
+      "metadata": {"notional": true}
+    },
+    {
+      "source_id": "website-public-example",
+      "name": "Public Website Example",
+      "source_type": "website",
+      "location": "https://example.com/news",
+      "enabled": true,
+      "description": "Safe website source definition for dry-run validation.",
+      "metadata": {"notional": true}
+    },
+    {
+      "source_id": "manual-upload-example",
+      "name": "Manual Upload Example",
+      "source_type": "manual_upload",
+      "location": "manual://controller-upload",
+      "enabled": true,
+      "description": "Manual upload placeholder path.",
+      "metadata": {"notional": true}
+    },
+    {
+      "source_id": "local-file-example",
+      "name": "Local File Example",
+      "source_type": "local_file",
+      "location": "knowledge_base/README.md",
+      "enabled": true,
+      "description": "Local file source used for validation only.",
+      "metadata": {"notional": true}
+    },
+    {
+      "source_id": "email-placeholder-example",
+      "name": "Email Placeholder Example",
+      "source_type": "email_placeholder",
+      "location": "mailbox://exercise-control",
+      "enabled": true,
+      "description": "Placeholder only; no mailbox access.",
+      "metadata": {"notional": true}
+    },
+    {
+      "source_id": "social-media-placeholder-example",
+      "name": "Social Media Placeholder Example",
+      "source_type": "social_media_placeholder",
+      "location": "social://exercise-feed",
+      "enabled": true,
+      "description": "Placeholder only; no social media calls.",
+      "metadata": {"notional": true}
+    },
+    {
+      "source_id": "sharepoint-placeholder-example",
+      "name": "SharePoint Placeholder Example",
+      "source_type": "sharepoint_placeholder",
+      "location": "https://example.com/sharepoint/site",
+      "enabled": true,
+      "description": "Placeholder only; no SharePoint calls.",
+      "metadata": {"notional": true}
+    },
+    {
+      "source_id": "api-placeholder-example",
+      "name": "API Placeholder Example",
+      "source_type": "api_placeholder",
+      "location": "https://example.com/api",
+      "enabled": true,
+      "description": "Placeholder only; no API calls.",
+      "metadata": {"notional": true}
+    }
+  ]
+}

@@ -74,6 +74,12 @@ Real World Event -> Context -> Translation -> AI Reasoning -> Product SDK -> QA 
 
 This represents the platform-level flow from signal to review. The current foundation uses local deterministic handlers and does not call external APIs, invoke OpenAI, or generate final reports.
 
+## Integration Source Intake
+
+The Integration Service defines where source material may originate before an event or workflow uses it. It supports YAML-loaded source definitions, connector registration, source validation, dry-run collection, and audit metadata.
+
+Integration intake is deliberately conservative in the current foundation. RSS, website, manual upload, and local file sources can be represented and validated; email, social media, SharePoint, and API sources are placeholders. No connector performs live collection, scraping, mailbox access, platform access, or API calls.
+
 ## Review Queue Execution
 
 The Review Queue Service holds prepared products after QA and before any release or export step. It supports priority ordering, reviewer assignment, approval, rejection, revision requests, notes, timestamps, and audit history.

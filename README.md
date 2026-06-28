@@ -52,6 +52,7 @@ flowchart LR
 ### Planned Components
 
 - **Source intake layer**: Collects or accepts real-world source material for transformation.
+- **Integration service**: Defines, validates, and dry-runs external and internal source connectors without performing external collection.
 - **Normalization and metadata**: Preserves source context, timestamps, provenance, and confidence notes.
 - **Scenario knowledge base**: Stores exercise facts, fictional entities, constraints, terminology, timelines, and editorial rules.
 - **AI-assisted transformation engine**: Converts source material into scenario-consistent notional drafts.
@@ -165,7 +166,11 @@ See [SETUP.md](SETUP.md) for the longer setup notes.
 
 ## Current Status
 
-Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, a Profile Manager for exercise environments, a Review Queue for human release control, a Distribution Service for approved outputs, an Automation Service for local trigger recording, and a Pipeline Orchestrator that can run ordered in-process workflows.
+Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, an Integration Service for source definitions and dry-run connectors, a Profile Manager for exercise environments, a Review Queue for human release control, a Distribution Service for approved outputs, an Automation Service for local trigger recording, and a Pipeline Orchestrator that can run ordered in-process workflows.
+
+### Integration Service
+
+The `project_forge.integration_service` package provides local source definitions, source type validation, YAML loading, connector registration, dry-run collection, result status, metadata capture, error handling, and audit logs. It supports RSS, website, manual upload, local file, and placeholder source types for email, social media, SharePoint, and APIs without performing scraping, email access, social media access, SharePoint calls, or API calls.
 
 ### Profile Manager
 

@@ -19,6 +19,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Review Queue Service foundation with ordered queues, reviewer assignment, approval, rejection, revision requests, audit history, notes, timestamps, registry support, manager operations, and sample review items.
 - Distribution Service foundation with channel registration, target validation, dry-run handling, status tracking, audit metadata, local file/archive handlers, and placeholder channels for email-ready, markdown, HTML, DOCX, PDF, PowerPoint, SharePoint, and Teams outputs.
 - Automation Service foundation with automation rules, cron schedules, manual triggers, event triggers, workflow triggers, conditional triggers, enable/disable controls, execution history, retry policy validation, and registry support.
+- Integration Service foundation with YAML-loaded source definitions, connector registration, source validation, dry-run collection, status tracking, metadata capture, error handling, and audit metadata for RSS, website, manual upload, local file, and placeholder external source types.
 
 ### Changed
 

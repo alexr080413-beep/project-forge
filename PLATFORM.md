@@ -29,7 +29,7 @@ flowchart LR
     N --> H
 ```
 
-The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, and a pipeline orchestrator. Production services, external integrations, user interfaces, and real publishing integrations remain future work.
+The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
 
 ## Platform Layers
 
@@ -39,6 +39,7 @@ This layer represents real-world signals and exercise events. It preserves what 
 
 Primary services:
 
+- Integration Service
 - Event Engine
 - Core source models
 - Future source intake adapters
@@ -115,7 +116,7 @@ Primary services:
 
 The platform data flow follows a controlled path:
 
-1. A real-world signal or exercise event is represented as structured input.
+1. A real-world signal or exercise event is represented as structured input. The Integration Service can define and dry-run source collection while preserving validation and audit metadata.
 2. The Context Engine assembles scenario state, entities, events, knowledge, and decision context.
 3. The Translation Engine applies profile-specific dictionaries and mappings.
 4. The AI Reasoning Engine prepares bounded reasoning context or prompt material.
@@ -137,6 +138,10 @@ Forge may assist with preparation, validation, translation, and drafting, but EX
 ### Source Traceability
 
 Products should retain enough source context to explain why they exist and how real-world material influenced notional exercise content.
+
+### Integrations
+
+Integrations describe where source material can come from and which local connector type would handle it. The current foundation validates configuration, supports dry-run collection, and records audit metadata without scraping websites, reading email, calling APIs, or connecting to collaboration platforms.
 
 ### Profiles
 

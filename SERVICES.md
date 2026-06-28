@@ -7,6 +7,7 @@ This document describes the current and planned service boundaries for Project F
 | Service | Responsibility | Current Status |
 | --- | --- | --- |
 | Core Models | Shared source, scenario, request, report, and review entities | Implemented foundation |
+| Integration Service | Load, validate, register, and dry-run external and internal source connectors | Implemented foundation |
 | Knowledge Engine | Index exercise knowledge documents | Implemented foundation |
 | Scenario Engine | Load and validate scenario facts, assumptions, constraints, objectives, and control measures | Implemented foundation |
 | Entity Engine | Load and validate exercise entities and relationships | Implemented foundation |
@@ -45,6 +46,38 @@ This document describes the current and planned service boundaries for Project F
 **Dependencies**
 
 - Python standard library only
+
+## Integration Service
+
+**Responsibilities**
+
+- Load integration source definitions from local YAML.
+- Validate RSS, website, manual upload, local file, email placeholder, social media placeholder, SharePoint placeholder, and API placeholder sources.
+- Register source connectors by source type.
+- Execute dry-run collection without contacting external systems.
+- Preserve result status, metadata, errors, and audit history.
+
+**Inputs**
+
+- Integration source configuration such as `config/integration_sources.example.yaml`
+- `IntegrationSource`
+- `IntegrationRequest`
+- Registered local connectors
+
+**Outputs**
+
+- `IntegrationResult`
+- `IntegrationStatus`
+- Connector audit metadata
+
+**Dependencies**
+
+- Local filesystem for local file validation
+- Python standard library validation utilities
+
+**Current Boundary**
+
+The service does not scrape websites, access email, call APIs, access social media, call SharePoint, or publish source material. Placeholder connectors record intent and audit metadata only.
 
 ## Knowledge Engine
 
