@@ -19,6 +19,7 @@ let currentPage = "mission-control";
 
 const pageLabels = {
   "mission-control": "Mission Control",
+  "exercise-designer": "Exercise Designer",
   timeline: "Timeline",
   intelligence: "Intelligence",
   "inject-library": "Inject Library",
@@ -71,6 +72,10 @@ function card(title, body, meta = "") {
 
 function escapeHtml(value) {
   return UI.escapeHtml(value);
+}
+
+function payloadAttr(payload) {
+  return UI.payloadAttr(payload);
 }
 
 function controllerOptions(selected = "") {
@@ -207,6 +212,114 @@ function renderDashboard(data) {
 
 function renderMissionControl(data) {
   renderDashboard(data);
+}
+
+function renderPropertyList(properties) {
+  return `
+    <dl class="detail-list atlas-properties">
+      ${Object.entries(properties).map(([key, value]) => `
+        <dt>${escapeHtml(key)}</dt>
+        <dd>${escapeHtml(value)}</dd>
+      `).join("")}
+    </dl>
+  `;
+}
+
+function renderExerciseDesigner(data) {
+  const designer = data.designer;
+  const defaultProperties = designer.exercise_properties;
+  contentRoot.innerHTML = `
+    <section class="atlas-shell">
+      <div class="atlas-toolbar" aria-label="Exercise Designer toolbar">
+        ${designer.toolbar.map((label, index) => `
+          <button class="fs-button fs-button--${index === 3 ? "warning" : "secondary"}" type="button">${escapeHtml(label)}</button>
+        `).join("")}
+      </div>
+      <aside class="atlas-panel atlas-library">
+        <div class="panel-header">
+          <h2>Object Library</h2>
+          <span>Project Atlas</span>
+        </div>
+        <div class="atlas-category-list">
+          ${designer.object_categories.map((category) => `
+            <button class="atlas-category" type="button">
+              <span class="nav-icon">${escapeHtml(category.slice(0, 2).toUpperCase())}</span>
+              <span>${escapeHtml(category)}</span>
+            </button>
+          `).join("")}
+        </div>
+      </aside>
+      <section class="atlas-canvas">
+        <div class="panel-header">
+          <h2>Exercise Canvas / Timeline</h2>
+          <span>${escapeHtml(data.workspace.exercise.name)}</span>
+        </div>
+        <div class="atlas-timeline">
+          ${designer.planning_objects.map((item) => `
+            <button class="atlas-event" type="button" data-planning-object="${payloadAttr(item)}">
+              <time>${escapeHtml(item.time)}</time>
+              <span>
+                <strong>${escapeHtml(item.title)}</strong>
+                <small>${escapeHtml(item.type)} | ${escapeHtml(item.status)}</small>
+              </span>
+            </button>
+          `).join("")}
+        </div>
+      </section>
+      <aside class="atlas-panel atlas-inspector">
+        <div class="panel-header">
+          <h2>Properties Inspector</h2>
+          <span id="atlas-inspector-mode">Exercise</span>
+        </div>
+        <div id="atlas-properties-root">${renderPropertyList(defaultProperties)}</div>
+      </aside>
+      <section class="atlas-validation">
+        <div class="panel-header">
+          <h2>Validation Status</h2>
+          <span>Draft plan checks</span>
+        </div>
+        <div class="mini-metric-grid">
+          ${designer.validation.map((item) => `
+            <div class="mini-metric validation-${escapeHtml(item.state)}">
+              <span>${escapeHtml(item.label)}</span>
+              <strong>${escapeHtml(item.status)}</strong>
+            </div>
+          `).join("")}
+        </div>
+      </section>
+    </section>
+  `;
+  bindDesignerSelection(defaultProperties);
+}
+
+function bindDesignerSelection(defaultProperties) {
+  const propertiesRoot = document.querySelector("#atlas-properties-root");
+  const inspectorMode = document.querySelector("#atlas-inspector-mode");
+  for (const item of document.querySelectorAll(".atlas-event")) {
+    item.addEventListener("click", () => {
+      const payload = JSON.parse(decodeURIComponent(item.dataset.planningObject));
+      for (const event of document.querySelectorAll(".atlas-event")) {
+        event.classList.toggle("selected", event === item);
+      }
+      inspectorMode.textContent = "Planning Object";
+      propertiesRoot.innerHTML = renderPropertyList({
+        Title: payload.title,
+        Type: payload.type,
+        Time: payload.time,
+        "Linked Objective": payload.linked_objective,
+        "Assigned Controller": payload.assigned_controller,
+        Status: payload.status,
+        Notes: payload.notes
+      });
+    });
+  }
+  propertiesRoot.addEventListener("dblclick", () => {
+    inspectorMode.textContent = "Exercise";
+    propertiesRoot.innerHTML = renderPropertyList(defaultProperties);
+    for (const event of document.querySelectorAll(".atlas-event")) {
+      event.classList.remove("selected");
+    }
+  });
 }
 
 function renderExercises(data) {
@@ -544,6 +657,7 @@ function renderPage(page) {
     return;
   }
   const renderers = {
+    "exercise-designer": renderExerciseDesigner,
     timeline: renderTimeline,
     intelligence: renderIntelligence,
     "inject-library": renderInjectLibrary,

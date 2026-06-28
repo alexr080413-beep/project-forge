@@ -72,6 +72,7 @@ The app displays:
 Navigation sections:
 
 - Mission Control
+- Exercise Designer
 - Timeline
 - Intelligence
 - Inject Library
@@ -98,12 +99,14 @@ Navigation sections:
 - Statistics
 - Latest activity feed
 - Exercise workspace metadata
+- Exercise Designer mock planning data
 
 The local web server creates one `ExerciseStore` when it starts. Every page asks for the same exercise snapshot instead of constructing local mock objects. Organization and exercise switching are local in-memory commands that load a different exercise context from the same store.
 
 ```mermaid
 flowchart LR
     store["ExerciseStore<br/>single source of truth"] --> dashboard["Dashboard"]
+    store --> designer["Exercise Designer"]
     store --> intelligence["Intelligence"]
     store --> timeline["Timeline"]
     store --> injects["Inject Library"]
@@ -227,6 +230,21 @@ The shell provides:
 - Collapsible workspace sidebar
 - Breadcrumbs in the form `Forge / Organization / Exercise / Workspace`
 - `Ctrl+K` / `Cmd+K` command palette framework
+
+## Exercise Designer
+
+Exercise Designer is the first Project Atlas framework. It gives Forge Studio a planning workspace where users can design an exercise before future publishing into Mission Control.
+
+The current framework includes:
+
+- Object Library.
+- Exercise Canvas / Timeline.
+- Properties Inspector.
+- Top toolbar.
+- Mock validation status.
+- Mock planning objects for Mountain Exercise 3-27.
+
+The framework does not implement persistence, drag and drop, or real publishing. See [FORGE_STUDIO_EXERCISE_DESIGNER.md](FORGE_STUDIO_EXERCISE_DESIGNER.md).
 
 Mock organizations:
 

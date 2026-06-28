@@ -245,6 +245,7 @@ class ExerciseStore:
             "audit_log": [self._audit_payload(log) for log in reversed(audit_logs)],
             "statistics": statistics,
             "search_results": self._mock_search_results(),
+            "designer": _designer_payload(exercise, exercise_workspace),
         }
 
     def statistics(self) -> dict[str, Any]:
@@ -1067,15 +1068,21 @@ class ExerciseStore:
             }
         ]
         for inject in self.registry.list_injects(exercise.id)[:2]:
-            results.append({"type": "Inject", "title": inject.title, "context": inject.status.value})
+            results.append(
+                {"type": "Inject", "title": inject.title, "context": inject.status.value}
+            )
         for product in self.products[:2]:
             results.append(
                 {"type": "Product", "title": product.title, "context": product.review_status}
             )
         for controller in self.controllers[:2]:
-            results.append({"type": "Controller", "title": controller.name, "context": controller.role})
+            results.append(
+                {"type": "Controller", "title": controller.name, "context": controller.role}
+            )
         for event in self.registry.list_timeline_events(exercise.id)[:2]:
-            results.append({"type": "Timeline", "title": event.title, "context": _time_label(event.timestamp)})
+            results.append(
+                {"type": "Timeline", "title": event.title, "context": _time_label(event.timestamp)}
+            )
         return results
 
 
@@ -1180,6 +1187,7 @@ def _default_organizations() -> list[Organization]:
 def _workspace_definitions() -> list[dict[str, str]]:
     return [
         {"id": "mission-control", "label": "Mission Control", "icon": "MC"},
+        {"id": "exercise-designer", "label": "Exercise Designer", "icon": "ED"},
         {"id": "timeline", "label": "Timeline", "icon": "TL"},
         {"id": "intelligence", "label": "Intelligence", "icon": "IN"},
         {"id": "inject-library", "label": "Inject Library", "icon": "IJ"},
@@ -1190,6 +1198,120 @@ def _workspace_definitions() -> list[dict[str, str]]:
         {"id": "analytics", "label": "Analytics", "icon": "AN"},
         {"id": "administration", "label": "Administration", "icon": "AD"},
     ]
+
+
+def _designer_payload(exercise: Exercise, exercise_workspace: dict[str, Any]) -> dict[str, Any]:
+    planning_objects = [
+        {
+            "id": "atlas-001",
+            "title": "STARTEX",
+            "type": "Exercise Phase",
+            "time": "0800",
+            "linked_objective": "Exercise command and control in complex mountain terrain.",
+            "assigned_controller": "Exercise Director",
+            "status": "Ready",
+            "notes": "Begin execution lane and establish controller battle rhythm.",
+        },
+        {
+            "id": "atlas-002",
+            "title": "Intelligence Baseline",
+            "type": "Intelligence Update",
+            "time": "0810",
+            "linked_objective": "Evaluate intelligence-to-operations handoff under time pressure.",
+            "assigned_controller": "Intelligence Controller",
+            "status": "Draft",
+            "notes": "Initial intelligence picture for training audience orientation.",
+        },
+        {
+            "id": "atlas-003",
+            "title": "Weather Impact Inject",
+            "type": "Weather Event",
+            "time": "0905",
+            "linked_objective": "Assess media, cyber, and weather inject response.",
+            "assigned_controller": "Weather Controller",
+            "status": "Needs Review",
+            "notes": "Avalanche risk and visibility constraints affect route movement.",
+        },
+        {
+            "id": "atlas-004",
+            "title": "Civilian Protest",
+            "type": "Inject",
+            "time": "0825",
+            "linked_objective": "Validate casualty evacuation and route disruption procedures.",
+            "assigned_controller": "White Cell Controller",
+            "status": "Planned",
+            "notes": "Role player lane requires review before execution handoff.",
+        },
+        {
+            "id": "atlas-005",
+            "title": "GPS Interference",
+            "type": "Decision Point",
+            "time": "0935",
+            "linked_objective": "Assess media, cyber, and weather inject response.",
+            "assigned_controller": "Cyber Controller",
+            "status": "Planned",
+            "notes": "Cyber cell inject supports commander's navigation decision.",
+        },
+        {
+            "id": "atlas-006",
+            "title": "Commander Decision Point",
+            "type": "Decision Point",
+            "time": "0940",
+            "linked_objective": "Exercise command and control in complex mountain terrain.",
+            "assigned_controller": "Exercise Director",
+            "status": "Requires Approval",
+            "notes": "Decision point should not publish until EXDIR validates scenario timing.",
+        },
+        {
+            "id": "atlas-007",
+            "title": "ENDEX",
+            "type": "Exercise Phase",
+            "time": "1800",
+            "linked_objective": "Exercise command and control in complex mountain terrain.",
+            "assigned_controller": "Exercise Director",
+            "status": "Draft",
+            "notes": "Close execution lane and prepare assessment archive.",
+        },
+    ]
+    return {
+        "name": "Project Atlas",
+        "purpose": "Exercise Designer planning environment",
+        "object_categories": [
+            "Objectives",
+            "Units",
+            "Controllers",
+            "Injects",
+            "Decision Points",
+            "Weather Events",
+            "Intelligence Updates",
+            "Media Events",
+            "Observer Checkpoints",
+            "Templates",
+        ],
+        "planning_objects": planning_objects,
+        "exercise_properties": {
+            "Exercise Name": exercise.name,
+            "Phase": exercise_workspace["phase"],
+            "Status": exercise_workspace["status"],
+            "Training Audience": str(exercise_workspace["training_audience"]),
+            "Exercise Director": str(exercise_workspace["exercise_director"]),
+            "Planning Status": "Draft plan ready for validation",
+        },
+        "validation": [
+            {"label": "Objectives linked", "status": "Complete", "state": "success"},
+            {"label": "Controllers assigned", "status": "Complete", "state": "success"},
+            {"label": "Timeline conflicts", "status": "1 warning", "state": "warning"},
+            {"label": "Review requirements", "status": "Required", "state": "warning"},
+            {"label": "Publish readiness", "status": "Not ready", "state": "danger"},
+        ],
+        "toolbar": [
+            "New Exercise",
+            "Save Draft",
+            "Validate",
+            "Publish to Mission Control",
+            "Export Plan",
+        ],
+    }
 
 
 def _mock_exercise_organization_map() -> dict[str, str]:
@@ -1278,7 +1400,11 @@ def _seed_minimal_exercise_records(registry: ForgeStudioRegistry, exercise: Exer
         description="Mock control inject for the selected exercise workspace.",
         inject_type=InjectType.EXERCISE_CONTROL,
         priority=InjectPriority.MEDIUM,
-        status=InjectStatus.PENDING_REVIEW if exercise.status is not ExerciseStatus.ARCHIVED else InjectStatus.COMPLETED,
+        status=(
+            InjectStatus.PENDING_REVIEW
+            if exercise.status is not ExerciseStatus.ARCHIVED
+            else InjectStatus.COMPLETED
+        ),
         assigned_controller=controller_id,
         created_by=controller_id,
         approved_by=reviewer_id if exercise.status is ExerciseStatus.ARCHIVED else "",
@@ -1404,7 +1530,9 @@ def _settings() -> list[dict[str, str]]:
         },
         {
             "title": "Exercise Defaults",
-            "description": "Default phase labels, timeline start, review gates, and archive policy.",
+            "description": (
+                "Default phase labels, timeline start, review gates, and archive policy."
+            ),
         },
         {
             "title": "Appearance",
@@ -1412,15 +1540,21 @@ def _settings() -> list[dict[str, str]]:
         },
         {
             "title": "Notifications",
-            "description": "Review alerts, timeline changes, controller handoff, and system health.",
+            "description": (
+                "Review alerts, timeline changes, controller handoff, and system health."
+            ),
         },
         {
             "title": "Users",
-            "description": "Controller roster, reviewer assignments, observers, and administrators.",
+            "description": (
+                "Controller roster, reviewer assignments, observers, and administrators."
+            ),
         },
         {
             "title": "Integrations",
-            "description": "Local-only dry-run integrations reserved for future approved connectors.",
+            "description": (
+                "Local-only dry-run integrations reserved for future approved connectors."
+            ),
         },
         {
             "title": "AI Providers",

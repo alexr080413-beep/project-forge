@@ -1039,6 +1039,139 @@ h1 {
   margin-top: 12px;
 }
 
+.atlas-shell {
+  display: grid;
+  grid-template-columns: 260px minmax(360px, 1fr) 300px;
+  grid-template-areas:
+    "toolbar toolbar toolbar"
+    "library canvas inspector"
+    "validation validation validation";
+  gap: 12px;
+}
+
+.atlas-toolbar,
+.atlas-panel,
+.atlas-canvas,
+.atlas-validation {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(17, 24, 33, 0.92);
+}
+
+.atlas-toolbar {
+  grid-area: toolbar;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+}
+
+.atlas-panel,
+.atlas-canvas,
+.atlas-validation {
+  min-height: 420px;
+  padding: 16px;
+}
+
+.atlas-library {
+  grid-area: library;
+}
+
+.atlas-canvas {
+  grid-area: canvas;
+}
+
+.atlas-inspector {
+  grid-area: inspector;
+}
+
+.atlas-validation {
+  grid-area: validation;
+  min-height: 0;
+}
+
+.atlas-category-list,
+.atlas-timeline {
+  display: grid;
+  gap: 8px;
+}
+
+.atlas-category,
+.atlas-event {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.atlas-category {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 10px;
+  text-align: left;
+}
+
+.atlas-event {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 12px;
+  align-items: center;
+  min-height: 64px;
+  padding: 12px;
+  text-align: left;
+}
+
+.atlas-category:hover,
+.atlas-category:focus-visible,
+.atlas-event:hover,
+.atlas-event:focus-visible,
+.atlas-event.selected {
+  border-color: rgba(246, 168, 110, 0.55);
+  outline: none;
+}
+
+.atlas-event.selected {
+  background: rgba(246, 168, 110, 0.1);
+}
+
+.atlas-event time {
+  color: var(--orange);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-weight: 800;
+}
+
+.atlas-event strong,
+.atlas-event small {
+  display: block;
+}
+
+.atlas-event small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.atlas-properties {
+  grid-template-columns: 120px 1fr;
+}
+
+.validation-success {
+  border-left: 3px solid var(--success);
+}
+
+.validation-warning {
+  border-left: 3px solid var(--ember);
+}
+
+.validation-danger {
+  border-left: 3px solid #d65a5a;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -1075,8 +1208,18 @@ h1 {
   }
 
   .dashboard-grid,
-  .work-grid {
+  .work-grid,
+  .atlas-shell {
     grid-template-columns: 1fr;
+  }
+
+  .atlas-shell {
+    grid-template-areas:
+      "toolbar"
+      "library"
+      "canvas"
+      "inspector"
+      "validation";
   }
 
   .summary-card.wide {

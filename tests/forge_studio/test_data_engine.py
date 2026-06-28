@@ -182,6 +182,7 @@ def test_platform_context_includes_organizations_exercises_and_workspaces() -> N
     assert payload["platform"]["exercise"]["name"] == "Mountain Exercise 3-27"
     assert [item["label"] for item in payload["platform"]["workspaces"]] == [
         "Mission Control",
+        "Exercise Designer",
         "Timeline",
         "Intelligence",
         "Inject Library",
@@ -234,3 +235,48 @@ def test_switching_organization_selects_that_organization_active_exercise() -> N
     assert switched["active_exercise"]["name"] == "ITX 2-27"
     assert [item["name"] for item in switched["organization_exercises"]] == ["ITX 2-27"]
     assert switched["workspace"]["exercise"]["name"] == "ITX 2-27"
+
+
+def test_exercise_designer_framework_payload_contains_mock_planning_data() -> None:
+    store = create_mock_exercise_store()
+
+    payload = store.snapshot()
+    designer = payload["designer"]
+
+    assert designer["name"] == "Project Atlas"
+    assert designer["object_categories"] == [
+        "Objectives",
+        "Units",
+        "Controllers",
+        "Injects",
+        "Decision Points",
+        "Weather Events",
+        "Intelligence Updates",
+        "Media Events",
+        "Observer Checkpoints",
+        "Templates",
+    ]
+    assert [item["title"] for item in designer["planning_objects"]] == [
+        "STARTEX",
+        "Intelligence Baseline",
+        "Weather Impact Inject",
+        "Civilian Protest",
+        "GPS Interference",
+        "Commander Decision Point",
+        "ENDEX",
+    ]
+    assert designer["exercise_properties"]["Exercise Name"] == "Mountain Exercise 3-27"
+    assert designer["toolbar"] == [
+        "New Exercise",
+        "Save Draft",
+        "Validate",
+        "Publish to Mission Control",
+        "Export Plan",
+    ]
+    assert [item["label"] for item in designer["validation"]] == [
+        "Objectives linked",
+        "Controllers assigned",
+        "Timeline conflicts",
+        "Review requirements",
+        "Publish readiness",
+    ]

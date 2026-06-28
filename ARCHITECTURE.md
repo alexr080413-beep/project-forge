@@ -111,6 +111,12 @@ Forge Studio now uses the permanent hierarchy `Forge -> Organization -> Exercise
 
 The web shell contains a persistent global header, organization selector, exercise selector, exercise status indicator, global search entry point, notification/user placeholders, collapsible workspace sidebar, and breadcrumbs. Switching organization or exercise flows through `/api/action` commands so Mission Control, Timeline, Intelligence, Inject Library, Exercise Library, Controllers, Review Queue, Reports, Analytics, and Administration all reload from the selected Exercise Data Engine context.
 
+## Forge Studio Exercise Designer
+
+Project Atlas is the Forge Studio Exercise Designer framework. It adds an `Exercise Designer` workspace for planning exercises before future publishing into Mission Control. The framework is intentionally mock and local: it exposes object categories, planned timeline objects, exercise-level properties, selected item properties, toolbar controls, and validation status through the existing Exercise Data Engine snapshot.
+
+Atlas does not implement persistence, drag and drop, or real publishing. Planned objects remain separate from live exercise objects until future explicit human approval, validation, and audit behavior is implemented.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:

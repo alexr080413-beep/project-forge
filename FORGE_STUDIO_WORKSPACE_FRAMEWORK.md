@@ -19,6 +19,7 @@ flowchart TB
     org --> exercise["Exercise"]
     exercise --> workspace["Workspace"]
     workspace --> mission["Mission Control"]
+    workspace --> designer["Exercise Designer"]
     workspace --> timeline["Timeline"]
     workspace --> intelligence["Intelligence"]
     workspace --> injects["Inject Library"]
@@ -75,6 +76,7 @@ Workspaces are views into the selected Exercise, not separate applications with 
 | Workspace | Purpose |
 | --- | --- |
 | Mission Control | Real-time operational picture and exercise health. |
+| Exercise Designer | Project Atlas planning environment for designing and validating exercises before Mission Control execution. |
 | Timeline | Chronological exercise events and controller updates. |
 | Intelligence | Intelligence picture, source traceability, and product recommendations. |
 | Inject Library | Human-reviewed inject creation, assignment, scheduling, and status. |
