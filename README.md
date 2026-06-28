@@ -357,6 +357,7 @@ The platform is ready for iterative capability growth while preserving controlle
 ├── config/                # Safe sample configuration, profiles, workflows, dictionaries, plugins
 ├── design_system/         # Forge Studio reusable UI components, tokens, and usage guidance
 ├── docs/                  # Forge Academy, vision docs, documentation policy, and prompts
+├── examples/              # Safe notional exercise examples
 ├── knowledge_base/        # Durable exercise knowledge references
 ├── outputs/               # Local generated artifacts, ignored except placeholders
 ├── src/project_forge/     # Forge Python package and service foundations
@@ -394,6 +395,13 @@ The platform is ready for iterative capability growth while preserving controlle
 | [docs/academy/README.md](docs/academy/README.md) | Forge Academy training system with role-based learning paths, walkthroughs, lessons, task guides, troubleshooting, and reference material. |
 | [docs/DOCUMENTATION_POLICY.md](docs/DOCUMENTATION_POLICY.md) | Documentation policy requiring workflow, setup, API, plugin, data model, and architecture changes to update relevant docs. |
 | [docs/prompts/codex-ticket-template.md](docs/prompts/codex-ticket-template.md) | Standard Codex ticket template with documentation, testing, human-in-the-loop, security, and no-go constraint sections. |
+| [docs/governance/CONTRIBUTING.md](docs/governance/CONTRIBUTING.md) | Governance contribution workflow, branch naming, issue process, pull request process, and review expectations. |
+| [docs/governance/ENGINEERING_STANDARDS.md](docs/governance/ENGINEERING_STANDARDS.md) | Engineering standards, documentation expectations, UI consistency, accessibility, security, human review, and permanent Codex prompt policy. |
+| [docs/governance/DEFINITION_OF_DONE.md](docs/governance/DEFINITION_OF_DONE.md) | Definition of Done checklist for implementation, tests, documentation, Academy, ADRs, RFCs, changelog, and screenshots. |
+| [docs/decisions/README.md](docs/decisions/README.md) | Architecture Decision Record process, lifecycle, template, and initial decision register. |
+| [docs/rfcs/README.md](docs/rfcs/README.md) | RFC proposal lifecycle, statuses, review expectations, and template. |
+| [docs/releases/CHANGELOG.md](docs/releases/CHANGELOG.md) | Keep-a-Changelog style release history beginning with v0.1.0 Foundation Release. |
+| [examples/README.md](examples/README.md) | Safe sample exercise documentation for Mountain Exercise 3-27, humanitarian assistance, information warfare, island chain defense, and arctic operations. |
 | [VISION.md](VISION.md) | Executive vision, problem statement, goals, non-goals, and EXCON benefits. |
 | [PLATFORM.md](PLATFORM.md) | Platform layers, architecture, data flow, and core concepts. |
 | [EXERCISE.md](EXERCISE.md) | Exercise lifecycle model, object model, hierarchy, workspace mapping, controller mapping, workflow mapping, product mapping, profile mapping, plugin mapping, and navigation implications. |
