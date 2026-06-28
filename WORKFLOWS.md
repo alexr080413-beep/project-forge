@@ -74,6 +74,38 @@ Real World Event -> Context -> Translation -> AI Reasoning -> Product SDK -> QA 
 
 This represents the platform-level flow from signal to review. The current foundation uses local deterministic handlers and does not call external APIs, invoke OpenAI, or generate final reports.
 
+## End-to-End Demo Pipeline
+
+The `project_forge.demo_pipeline` package provides the first full local Project Forge demonstration pipeline. It can be executed with:
+
+```bash
+python -m project_forge.demo_pipeline
+```
+
+The demo runs this deterministic flow:
+
+```text
+Sample real-world event
+-> Integration Service dry-run
+-> Storage Service dry-run
+-> Knowledge lookup
+-> Scenario lookup
+-> Entity lookup
+-> Event creation
+-> Decision Engine
+-> Context Engine
+-> Translation Engine
+-> AI Reasoning offline stub
+-> Product SDK draft output
+-> QA Service
+-> Review Queue
+-> Distribution dry-run
+-> Audit log
+-> Metrics snapshot
+```
+
+The command prints the pipeline status and each stage result. It uses only repository sample data, local registries/loaders, dry-run handlers, and the offline AI stub provider. It does not call external APIs, invoke OpenAI, send email, scrape the web, or write distribution output.
+
 ## Integration Source Intake
 
 The Integration Service defines where source material may originate before an event or workflow uses it. It supports YAML-loaded source definitions, connector registration, source validation, dry-run collection, and audit metadata.

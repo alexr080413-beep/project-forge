@@ -65,6 +65,12 @@ The foundation supports platform, service, profile, workflow, plugin, environmen
 
 The foundation supports default Forge roles, policy validation, role-based access control, metadata, and allow/deny decision records. It intentionally avoids real authentication, CAC integration, external identity providers, credential storage, sessions, databases, and network calls.
 
+## Demo Pipeline Foundation
+
+`project_forge.demo_pipeline` composes the implemented local foundations into the first end-to-end Forge demonstration. It uses `Pipeline`, `PipelineStage`, and `PipelineExecution` to run a sample signal through intake, storage, lookup, event creation, deterministic decisioning, context assembly, translation, offline AI reasoning, product formatting, QA, review, dry-run distribution, audit capture, and metrics snapshotting.
+
+The foundation is intentionally demonstrative and local. It uses repository sample data, dry-run handlers, and stub providers only; it does not perform external collection, web scraping, OpenAI calls, email delivery, or real distribution output.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:

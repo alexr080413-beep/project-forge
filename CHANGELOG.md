@@ -26,6 +26,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Metrics Service foundation with counters, gauges, timers, histogram placeholders, tags, metadata, snapshots, collectors, reports, validation, and standard Forge operational metrics.
 - Configuration Service foundation with YAML/JSON loading, scoped configuration items, profiles, defaults, deterministic overrides, required field validation, environment variable placeholders, metadata, registry lookup, and audit-ready change records.
 - Security Service foundation with users, service accounts, system actors, roles, permissions, policies, RBAC evaluation, default Forge roles, metadata, validation, and audit-ready allow/deny decision records.
+- End-to-end demo pipeline command that runs a local sample event through implemented Forge service foundations, dry-run handlers, offline AI stub reasoning, audit logging, and metrics snapshotting.
 
 ### Changed
 

@@ -26,9 +26,20 @@ python -m pip install -e ".[dev]"
 
 ## Validate The Environment
 
-When tests and quality checks are implemented, this section should include the canonical commands for:
+Run tests with:
 
-- Running tests
+```bash
+python -m pytest
+```
+
+Run the local end-to-end demo pipeline with:
+
+```bash
+python -m project_forge.demo_pipeline
+```
+
+Future quality checks should add canonical commands for:
+
 - Formatting code
 - Linting code
 - Type checking code

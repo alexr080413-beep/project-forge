@@ -29,6 +29,7 @@ This document describes the current and planned service boundaries for Project F
 | Configuration Service | Load, resolve, validate, and look up local platform configuration | Implemented foundation |
 | Automation Service | Record schedule, manual, event, workflow, and conditional triggers for workflows | Implemented foundation |
 | Security Service | Define local principals, roles, permissions, policies, RBAC decisions, validation, and audit-ready decision records | Implemented foundation |
+| Demo Pipeline | Execute a sample end-to-end local Forge pipeline across the implemented service foundations | Implemented foundation |
 | Workflow Engine | Execute ordered local workflow steps | Implemented foundation |
 | Pipeline Orchestrator | Coordinate platform services into end-to-end pipelines | Implemented foundation |
 
@@ -714,6 +715,40 @@ The service does not use external schedulers and does not execute workflows. It 
 **Current Boundary**
 
 The service does not perform real authentication, integrate with CAC, call external identity providers, manage sessions, connect to a network service, or store credentials. It is a deterministic local authorization foundation only.
+
+## Demo Pipeline
+
+**Responsibilities**
+
+- Provide a single local command for exercising the implemented service foundations end to end.
+- Run a sample event through intake, storage, lookup, event creation, decisioning, context assembly, translation, AI stub reasoning, product formatting, QA, review, dry-run distribution, audit, and metrics.
+- Expose pipeline success or failure by stage through the Pipeline Orchestrator result model.
+
+**Inputs**
+
+- Repository sample configuration and knowledge base files
+- Built-in sample event data
+- Offline stub AI provider response
+
+**Outputs**
+
+- `PipelineExecution`
+- Stage-level `PipelineResult` records
+- Draft `ProductOutput`
+- `QAReport`
+- Review queue item
+- Dry-run `DistributionResult`
+- Audit entries
+- Metrics snapshot and report
+
+**Dependencies**
+
+- Existing Project Forge local service foundations
+- Python standard library only
+
+**Current Boundary**
+
+The demo does not call external APIs, perform real OpenAI calls, send email, scrape websites, write distribution output, or collect live source material. Storage and distribution stages use dry-run behavior.
 
 ## Workflow Engine
 

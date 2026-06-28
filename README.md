@@ -67,6 +67,7 @@ flowchart LR
 - **Security service**: Provides local principals, roles, permissions, policies, RBAC decisions, validation, and audit-ready decision records.
 - **Review queue**: Holds prepared products for human approval, rejection, or revision before release.
 - **Pipeline orchestrator**: Coordinates local Project Forge services into ordered, auditable workflows.
+- **Demo pipeline**: Runs a full local end-to-end sample from intake through metrics without external calls.
 
 ## Forge Principles
 
@@ -217,6 +218,16 @@ The `project_forge.automation_service` package provides automation rules, cron s
 ### Security Service
 
 The `project_forge.security_service` package provides local security principals, roles, permissions, policies, contexts, decisions, registry lookup, validation, default Forge roles, role-based access control, allow/deny evaluation, metadata, and audit-ready decision records. It supports users, service accounts, and system actors without real authentication, CAC integration, identity provider integration, or network calls.
+
+### End-to-End Demo Pipeline
+
+Run the first full local demo pipeline with:
+
+```bash
+python -m project_forge.demo_pipeline
+```
+
+The demo uses only sample data and stub providers. It runs a sample real-world event through Integration Service dry-run, Storage Service dry-run, knowledge/scenario/entity lookup, Event Engine creation, Decision Engine, Context Engine, Translation Engine, AI Reasoning offline stub, Product SDK draft formatting, QA Service, Review Queue approval, Distribution Service dry-run, Audit Service logging, and Metrics Service snapshot capture.
 
 ### Pipeline Orchestrator
 
