@@ -356,7 +356,7 @@ The platform is ready for iterative capability growth while preserving controlle
 ├── brand/                 # Official Forge brand kit, messaging, visual system, and marketing guidance
 ├── config/                # Safe sample configuration, profiles, workflows, dictionaries, plugins
 ├── design_system/         # Forge Studio reusable UI components, tokens, and usage guidance
-├── docs/                  # Forge Academy, vision docs, documentation policy, and prompts
+├── docs/                  # Academy, product, governance, vision, policy, release, and prompt docs
 ├── examples/              # Safe notional exercise examples
 ├── knowledge_base/        # Durable exercise knowledge references
 ├── outputs/               # Local generated artifacts, ignored except placeholders
@@ -376,6 +376,7 @@ The platform is ready for iterative capability growth while preserving controlle
 ├── FORGE_STUDIO_DESIGN_SYSTEM.md # Forge Studio design system
 ├── FORGE_STUDIO_MISSION_CONTROL.md # Mission Control dashboard specification
 ├── FORGE_STUDIO_INTELLIGENCE_WORKSPACE.md # Intelligence Controller workspace specification
+├── PRODUCT.md             # Product foundation, product philosophy, principles, and success definition
 ├── PROFILES.md            # Profile model and governance
 ├── PLUGINS.md             # Product SDK and plugin model
 ├── DEVELOPMENT.md         # Coding, testing, milestone, and contribution standards
@@ -392,10 +393,18 @@ The platform is ready for iterative capability growth while preserving controlle
 | --- | --- |
 | [brand/README.md](brand/README.md) | Official Forge brand kit covering identity, messaging, voice, logo, colors, typography, icons, imagery, UI guidance, and presentations. |
 | [design_system/README.md](design_system/README.md) | Forge Studio reusable UI components, tokens, usage examples, accessibility rules, responsive guidance, and runtime implementation contract. |
+| [PRODUCT.md](PRODUCT.md) | Product foundation defining what Forge is, who it serves, product philosophy, product principles, long-term vision, and success measures. |
+| [docs/product/VISION.md](docs/product/VISION.md) | Product vision, north star, current focus, long-term platform direction, and Project Sentinel alignment. |
+| [docs/product/PRINCIPLES.md](docs/product/PRINCIPLES.md) | Product principles for human authority, auditability, exercise-centered data, operational realism, modularity, accessibility, and documentation. |
+| [docs/product/FEATURE_SPEC_TEMPLATE.md](docs/product/FEATURE_SPEC_TEMPLATE.md) | Reusable feature specification template for problem statements, operational value, requirements, architecture impact, documentation, testing, and release notes. |
+| [docs/product/ROADMAP_PROCESS.md](docs/product/ROADMAP_PROCESS.md) | Roadmap process for managing milestones, epics, features, tickets, releases, prioritization, and review. |
+| [docs/product/RELEASE_PROCESS.md](docs/product/RELEASE_PROCESS.md) | Release process covering planning, development, testing, documentation, review, tagging, GitHub releases, and Academy updates. |
+| [docs/product/REFERENCE_IMPLEMENTATIONS.md](docs/product/REFERENCE_IMPLEMENTATIONS.md) | Reference implementation policy making Project Sentinel the canonical exercise for validation, tutorials, screenshots, demos, and regression planning. |
 | [docs/academy/README.md](docs/academy/README.md) | Forge Academy training system with role-based learning paths, walkthroughs, lessons, task guides, troubleshooting, and reference material. |
 | [docs/DOCUMENTATION_POLICY.md](docs/DOCUMENTATION_POLICY.md) | Documentation policy requiring workflow, setup, API, plugin, data model, and architecture changes to update relevant docs. |
 | [docs/prompts/codex-ticket-template.md](docs/prompts/codex-ticket-template.md) | Standard Codex ticket template with documentation, testing, human-in-the-loop, security, and no-go constraint sections. |
 | [docs/governance/CONTRIBUTING.md](docs/governance/CONTRIBUTING.md) | Governance contribution workflow, branch naming, issue process, pull request process, and review expectations. |
+| [docs/governance/DEVELOPMENT_POLICY.md](docs/governance/DEVELOPMENT_POLICY.md) | Permanent development policy for future implementation prompts, documentation updates, Academy updates, Sentinel validation, Definition of Done, release notes, and architecture updates. |
 | [docs/governance/ENGINEERING_STANDARDS.md](docs/governance/ENGINEERING_STANDARDS.md) | Engineering standards, documentation expectations, UI consistency, accessibility, security, human review, and permanent Codex prompt policy. |
 | [docs/governance/DEFINITION_OF_DONE.md](docs/governance/DEFINITION_OF_DONE.md) | Definition of Done checklist for implementation, tests, documentation, Academy, ADRs, RFCs, changelog, and screenshots. |
 | [docs/decisions/README.md](docs/decisions/README.md) | Architecture Decision Record process, lifecycle, template, and initial decision register. |

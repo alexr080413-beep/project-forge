@@ -7,6 +7,7 @@ This changelog follows the spirit of [Keep a Changelog](https://keepachangelog.c
 ### Added
 
 - Governance foundation with ADR process, RFC process, engineering standards, definition of done, GitHub templates, support policy, and example exercise documentation.
+- Product foundation with product philosophy, feature specification process, roadmap process, release process, Project Sentinel reference implementation policy, and permanent development policy.
 
 ## [v0.1.0] - Foundation Release
 

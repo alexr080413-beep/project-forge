@@ -13,6 +13,21 @@ Forge is developed as a disciplined open-source platform for Exercise Control wo
 7. Run relevant checks.
 8. Open a pull request using the template.
 
+## Product Management Workflow
+
+Significant Forge work should begin with the product foundation:
+
+- [Product Foundation](../../PRODUCT.md)
+- [Product Principles](../product/PRINCIPLES.md)
+- [Feature Specification Template](../product/FEATURE_SPEC_TEMPLATE.md)
+- [Reference Implementation Policy](../product/REFERENCE_IMPLEMENTATIONS.md)
+- [Development Policy](DEVELOPMENT_POLICY.md)
+- [Definition of Done](DEFINITION_OF_DONE.md)
+
+Use [Project Sentinel](../../examples/sentinel/README.md) as the canonical reference implementation for screenshots, tutorials, demonstrations, workflow validation, and regression planning. Update [Forge Academy](../academy/README.md) whenever a user workflow changes.
+
+Architecture-changing work should update or reference the [ADR process](../decisions/README.md). Major proposals should follow the [RFC process](../rfcs/README.md).
+
 ## Branch Naming
 
 Use:

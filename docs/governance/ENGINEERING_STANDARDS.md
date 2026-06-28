@@ -12,6 +12,7 @@ Forge engineering standards preserve long-term maintainability, operational trus
 | `docs/decisions/` | Architecture Decision Records. |
 | `docs/rfcs/` | Request For Comments proposals. |
 | `docs/governance/` | Project governance, standards, support, and security. |
+| `docs/product/` | Product vision, principles, feature specification process, roadmap process, release process, and reference implementation policy. |
 | `examples/` | Safe sample exercise documentation. |
 | `config/` | Safe example configuration. |
 | `assets/` | Static project assets. |
@@ -49,6 +50,15 @@ Every feature that changes setup, deployment, or configuration must update admin
 Every feature that changes APIs, plugins, data models, or architecture must update developer or reference documentation.
 
 Pull requests are not complete unless relevant documentation is updated.
+
+## Product Management Standards
+
+- Significant product changes should use `docs/product/FEATURE_SPEC_TEMPLATE.md`.
+- Product decisions should align with `PRODUCT.md` and `docs/product/PRINCIPLES.md`.
+- Roadmap planning should follow `docs/product/ROADMAP_PROCESS.md`.
+- Release planning should follow `docs/product/RELEASE_PROCESS.md`.
+- Reference implementation expectations are defined in `docs/product/REFERENCE_IMPLEMENTATIONS.md`.
+- Future implementation prompts should follow `docs/governance/DEVELOPMENT_POLICY.md`.
 
 ## UI Consistency
 
