@@ -86,6 +86,10 @@ The Distribution Service handles approved product outputs after human review. It
 
 The current foundation supports local file export and archive folder handlers, plus safe placeholder channels for email-ready output, markdown, HTML, DOCX, PDF, PowerPoint, SharePoint, and Teams. Placeholder channels do not send messages, call collaboration platforms, or use external APIs.
 
+## Automation Execution
+
+The Automation Service records when a workflow would be triggered by a cron schedule, manual action, event payload, workflow event, or condition. It preserves execution history and retry policy metadata, but it does not invoke workflow handlers or depend on an external scheduler.
+
 ## Example Workflow: Daily Intelligence Summary
 
 Purpose:
@@ -194,6 +198,7 @@ Future workflow work should add:
 - Review queue integration
 - Human approval events
 - Export workflow stages
+- Automation runtime integration
 - Runtime observability
 - Controller-facing workflow status
 - Policy-based AI provider selection

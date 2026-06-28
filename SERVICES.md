@@ -21,6 +21,7 @@ This document describes the current and planned service boundaries for Project F
 | QA Service | Run deterministic product checks and aggregate QA status | Implemented foundation |
 | Review Queue | Hold products for human controller review before release | Implemented foundation |
 | Distribution Service | Handle approved product outputs after review through local and placeholder channels | Implemented foundation |
+| Automation Service | Record schedule, manual, event, workflow, and conditional triggers for workflows | Implemented foundation |
 | Workflow Engine | Execute ordered local workflow steps | Implemented foundation |
 | Pipeline Orchestrator | Coordinate platform services into end-to-end pipelines | Implemented foundation |
 
@@ -432,6 +433,42 @@ The current foundation does not perform live API calls.
 **Current Boundary**
 
 The service does not send email, call SharePoint, call Teams, use external APIs, or automatically publish products. Placeholder channels record status and audit metadata only.
+
+## Automation Service
+
+**Responsibilities**
+
+- Define automation rules for workflow-oriented activity.
+- Validate cron schedules, event triggers, manual triggers, workflow triggers, and conditional triggers.
+- Enable or disable rules.
+- Record automation execution history.
+- Apply retry policy limits to recorded execution attempts.
+- Register and look up automation rules.
+
+**Inputs**
+
+- `AutomationRule`
+- `Schedule`
+- `Trigger`
+- `EventTrigger`
+- `WorkflowTrigger`
+- Local event or workflow status payloads
+
+**Outputs**
+
+- `AutomationExecution`
+- Recorded execution history
+- Trigger status metadata
+
+**Dependencies**
+
+- Workflow identifiers
+- Local event payloads
+- Local registry state
+
+**Current Boundary**
+
+The service does not use external schedulers and does not execute workflows. It records that a trigger matched or was skipped so future runtime services can act deliberately.
 
 ## Workflow Engine
 

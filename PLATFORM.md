@@ -107,6 +107,7 @@ This layer coordinates services into repeatable workflows and pipelines. It reco
 
 Primary services:
 
+- Automation Service
 - Workflow Engine
 - Pipeline Orchestrator
 
