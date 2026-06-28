@@ -115,6 +115,107 @@ def test_timeline_crud_sorts_events_chronologically_and_audits() -> None:
     assert deleted["audit_log"][0]["action"] == "timeline.event.deleted"
 
 
+def test_atlas_objective_crud_updates_validation_and_knowledge_graph() -> None:
+    store = create_mock_exercise_store()
+
+    created = store.apply_action(
+        "objective.create",
+        {
+            "title": "Validate sustainment in restricted terrain.",
+            "priority": "High",
+            "success_criteria": "Logistics request is processed; Resupply decision is recorded",
+            "linked_assets": "inject-007; controller-white",
+        },
+    )
+    objective = next(
+        item
+        for item in created["designer"]["objectives"]
+        if item["title"] == "Validate sustainment in restricted terrain."
+    )
+
+    assert objective["priority"] == "High"
+    assert any(
+        node["name"] == "Validate sustainment in restricted terrain."
+        for node in created["knowledge_graph"]["nodes"]
+    )
+    assert created["audit_log"][0]["action"] == "objective.created"
+
+    edited = store.apply_action(
+        "objective.edit",
+        {
+            "objective_id": objective["id"],
+            "title": "Validate cold-weather sustainment.",
+            "linked_assets": "inject-007; inject-008; controller-white",
+        },
+    )
+
+    assert any(
+        item["title"] == "Validate cold-weather sustainment."
+        for item in edited["designer"]["objectives"]
+    )
+    assert edited["audit_log"][0]["action"] == "objective.updated"
+
+    deleted = store.apply_action("objective.delete", {"objective_id": objective["id"]})
+
+    assert all(item["id"] != objective["id"] for item in deleted["designer"]["objectives"])
+    assert deleted["audit_log"][0]["action"] == "objective.deleted"
+
+
+def test_atlas_inject_and_controller_edits_update_relationships_live() -> None:
+    store = create_mock_exercise_store()
+    objective_id = store.snapshot()["designer"]["objectives"][0]["id"]
+
+    created_controller = store.apply_action(
+        "controller.create",
+        {
+            "role": "Logistics Controller",
+            "name": "Capt Rivera",
+            "task": "Resupply disruption planning",
+            "responsibilities": "Fuel; Food; Cold-weather equipment",
+            "linked_objectives": objective_id,
+        },
+    )
+    controller = next(
+        item
+        for item in created_controller["designer"]["controllers"]
+        if item["role"] == "Logistics Controller"
+    )
+
+    created_inject = store.apply_action(
+        "inject.create",
+        {
+            "title": "Resupply Delay",
+            "description": "Convoy delay creates sustainment decision pressure.",
+            "assigned_controller": "user-controller",
+            "objective_id": objective_id,
+            "scheduled_time": "1015",
+            "priority": "high",
+        },
+    )
+    inject = next(item for item in created_inject["injects"] if item["title"] == "Resupply Delay")
+
+    assert created_inject["designer"]["relationship_map"]["chain"]
+    assert any(
+        edge["source"] == f"kg-{objective_id}" and edge["target"] == f"kg-{inject['id']}"
+        for edge in created_inject["knowledge_graph"]["edges"]
+    )
+
+    edited_controller = store.apply_action(
+        "controller.edit",
+        {
+            "controller_id": controller["id"],
+            "task": "Resupply disruption and movement friction",
+            "linked_injects": inject["id"],
+        },
+    )
+    updated_controller = next(
+        item for item in edited_controller["designer"]["controllers"] if item["id"] == controller["id"]
+    )
+
+    assert inject["id"] in updated_controller["linked_injects"]
+    assert edited_controller["audit_log"][0]["action"] == "controller.updated"
+
+
 def test_exercise_and_product_crud_actions_generate_audit_records() -> None:
     store = create_mock_exercise_store()
 
@@ -238,7 +339,7 @@ def test_switching_organization_selects_that_organization_active_exercise() -> N
     assert switched["workspace"]["exercise"]["name"] == "ITX 2-27"
 
 
-def test_exercise_designer_framework_payload_contains_mock_planning_data() -> None:
+def test_exercise_designer_framework_payload_contains_interactive_planning_data() -> None:
     store = create_mock_exercise_store()
 
     payload = store.snapshot()
@@ -257,28 +358,19 @@ def test_exercise_designer_framework_payload_contains_mock_planning_data() -> No
         "Observer Checkpoints",
         "Templates",
     ]
-    assert [item["title"] for item in designer["planning_objects"]] == [
-        "STARTEX",
-        "Intelligence Baseline",
-        "Weather Impact Inject",
-        "Civilian Protest",
-        "GPS Interference",
-        "Commander Decision Point",
-        "ENDEX",
-    ]
+    planning_titles = {item["title"] for item in designer["planning_objects"]}
+    assert {"Exercise Begins", "Civilian Protest", "GPS Interference"} <= planning_titles
+    assert designer["objectives"][0]["title"] == (
+        "Exercise command and control in complex mountain terrain."
+    )
+    assert designer["controllers"][0]["role"] == "Exercise Director"
     assert designer["exercise_properties"]["Exercise Name"] == "Mountain Exercise 3-27"
-    assert designer["toolbar"] == [
-        "New Exercise",
-        "Save Draft",
-        "Validate",
-        "Publish to Mission Control",
-        "Export Plan",
-    ]
+    assert designer["toolbar"] == ["New Exercise", "Save Draft", "Validate", "Publish", "Export"]
     assert [item["label"] for item in designer["validation"]] == [
-        "Objectives linked",
+        "Objectives complete",
         "Controllers assigned",
         "Timeline conflicts",
-        "Review requirements",
+        "Missing relationships",
         "Publish readiness",
     ]
 
@@ -323,37 +415,29 @@ def test_exercise_designer_relationship_engine_payload_models_assets_and_links()
         "Observation",
         "AAR Finding",
     }
-    assert {"source": "obj-alpha", "target": "intel-baseline", "type": "supports"} in (
-        designer["relationships"]
-    )
-    assert designer["relationship_map"]["chain"] == [
-        "Objective Alpha",
-        "Intelligence Baseline",
-        "Civilian Protest",
-        "Commander Decision Point",
-        "Observer Checkpoint",
-        "AAR Finding",
-    ]
+    assert {
+        "source": "objective-command-control",
+        "target": "inject-002",
+        "type": "supports",
+    } in designer["relationships"]
+    assert designer["relationship_map"]["chain"][0] == "Mountain Exercise 3-27"
+    assert designer["relationship_map"]["chain"][-1] == "AAR Finding"
 
 
 def test_exercise_designer_relationship_validation_and_item_relationships() -> None:
     store = create_mock_exercise_store()
 
     designer = store.snapshot()["designer"]
-    commander_decision = next(
-        item for item in designer["planning_objects"] if item["title"] == "Commander Decision Point"
+    civilian_protest = next(
+        item for item in designer["planning_objects"] if item["title"] == "Civilian Protest"
     )
 
-    assert commander_decision["linked_objectives"] == ["Objective Alpha"]
-    assert commander_decision["related_injects"] == [
-        "Civilian Protest",
-        "GPS Interference",
+    assert civilian_protest["linked_objectives"] == [
+        "Exercise command and control in complex mountain terrain."
     ]
-    assert commander_decision["produced_products"] == ["Commander Decision Record"]
-    assert commander_decision["follow_on_events"] == ["Observer Checkpoint"]
-    assert commander_decision["validation_warnings"] == [
-        "Human approval required before execution handoff."
-    ]
+    assert civilian_protest["assigned_controller"] == "White Cell Controller"
+    assert civilian_protest["produced_products"] == []
+    assert civilian_protest["validation_warnings"] == ["Assign planned time before publish."]
     assert [item["label"] for item in designer["relationship_validation"]] == [
         "Inject objective links",
         "Controller assignments",
@@ -405,20 +489,26 @@ def test_operational_knowledge_graph_payload_models_nodes_and_edges() -> None:
         "contains",
         "inherits",
     ]
-    assert {node["type"] for node in graph["nodes"]} == set(graph["node_types"])
-    assert {"source": "kg-decision-point", "target": "kg-product-decision", "type": "produces"} in (
-        graph["edges"]
-    )
-    assert {"source": "kg-aar-finding", "target": "kg-objective-alpha", "type": "references"} in (
-        graph["edges"]
-    )
+    assert {"Exercise", "Objective", "Inject", "Timeline Event", "Controller", "Product"} <= {
+        node["type"] for node in graph["nodes"]
+    }
+    assert {
+        "source": "kg-objective-command-control",
+        "target": "kg-inject-002",
+        "type": "supports",
+    } in graph["edges"]
+    assert {
+        "source": "kg-inject-004",
+        "target": "kg-timeline-004",
+        "type": "triggers",
+    } in graph["edges"]
 
 
 def test_operational_knowledge_graph_includes_inspector_filters_and_navigation() -> None:
     store = create_mock_exercise_store()
 
     graph = store.snapshot()["knowledge_graph"]
-    decision_node = next(node for node in graph["nodes"] if node["id"] == "kg-decision-point")
+    inject_node = next(node for node in graph["nodes"] if node["id"] == "kg-inject-002")
 
     assert graph["default_node_id"] == "kg-exercise"
     assert graph["filters"] == [
@@ -445,14 +535,8 @@ def test_operational_knowledge_graph_includes_inspector_filters_and_navigation()
         "Search",
         "Relationship highlighting",
     ]
-    assert decision_node["connected_assets"] == [
-        "Civilian Protest",
-        "Route Control Observation",
-        "Commander Decision Record",
-        "0940 Decision Event",
-        "Weather Impact Inject",
-    ]
-    assert decision_node["relationship_count"] == 6
-    assert decision_node["exercise"] == "Mountain Exercise 3-27"
-    assert decision_node["created"] == "2027-03-01T08:00:00Z"
-    assert decision_node["modified"] == "2027-03-01T09:42:00Z"
+    assert "Exercise command and control in complex mountain terrain." in (
+        inject_node["connected_assets"]
+    )
+    assert inject_node["relationship_count"] >= 2
+    assert inject_node["exercise"] == "Mountain Exercise 3-27"

@@ -53,6 +53,21 @@ class ControllerAssignment:
     products_today: int
     pending_reviews: int
     user_id: str = ""
+    responsibilities: list[str] = field(default_factory=list)
+    linked_objectives: list[str] = field(default_factory=list)
+    linked_injects: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class PlanningObjective:
+    """Editable Atlas planning objective."""
+
+    id: str
+    title: str
+    priority: str
+    success_criteria: list[str] = field(default_factory=list)
+    linked_assets: list[str] = field(default_factory=list)
+    status: str = "Draft"
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,6 +96,8 @@ class ExerciseWorkspaceContext:
     timeline_status: str
     exercise_health: str
     operational_time: str
+    planning_objectives: list[PlanningObjective] = field(default_factory=list)
+    inject_objective_links: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -111,6 +128,8 @@ class ExerciseStore:
     active_organization_id: str = ""
     exercise_organization_map: dict[str, str] = field(default_factory=dict)
     exercise_workspaces: dict[str, ExerciseWorkspaceContext] = field(default_factory=dict)
+    planning_objectives: list[PlanningObjective] = field(default_factory=list)
+    inject_objective_links: dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not self.organizations:
@@ -245,8 +264,8 @@ class ExerciseStore:
             "audit_log": [self._audit_payload(log) for log in reversed(audit_logs)],
             "statistics": statistics,
             "search_results": self._mock_search_results(),
-            "designer": _designer_payload(exercise, exercise_workspace),
-            "knowledge_graph": _knowledge_graph_payload(
+            "designer": self._designer_payload(exercise, exercise_workspace),
+            "knowledge_graph": self._knowledge_graph_payload(
                 exercise,
                 organization,
                 exercise_workspace,
@@ -351,7 +370,17 @@ class ExerciseStore:
             "inject.schedule": self.schedule_inject,
             "timeline.create": self.create_timeline_event,
             "timeline.edit": self.edit_timeline_event,
+            "timeline.move": self.edit_timeline_event,
             "timeline.delete": self.delete_timeline_event,
+            "objective.create": self.create_objective,
+            "objective.edit": self.edit_objective,
+            "objective.delete": self.delete_objective,
+            "controller.create": self.create_controller,
+            "controller.edit": self.edit_controller,
+            "atlas.save_draft": self.save_atlas_draft,
+            "atlas.validate": self.validate_atlas_plan,
+            "atlas.publish": self.publish_atlas_plan,
+            "atlas.export": self.export_atlas_plan,
             "review.approve": lambda data: self.approve_review(_required(data, "review_id")),
             "review.reject": lambda data: self.reject_review(_required(data, "review_id")),
             "review.revision": lambda data: self.return_review_for_revision(
@@ -427,10 +456,16 @@ class ExerciseStore:
             exercise.phase = _enum_value(ExercisePhase, str(payload["phase"]))
         if payload.get("status"):
             exercise.status = _enum_value(ExerciseStatus, str(payload["status"]))
+        if payload.get("start_date"):
+            exercise.start_date = _parse_datetime(payload.get("start_date"))
+        if payload.get("end_date"):
+            exercise.end_date = _parse_datetime(payload.get("end_date"))
         if payload.get("exercise_control"):
             self.exercise_control = str(payload["exercise_control"]).strip()
         if payload.get("training_audience"):
             self.training_audience = str(payload["training_audience"]).strip()
+        if payload.get("exercise_director_id"):
+            self.exercise_director_id = str(payload["exercise_director_id"]).strip()
         exercise.updated_at = _operation_timestamp()
         self._record_operation(
             actor_id="user-exdir",
@@ -518,6 +553,9 @@ class ExerciseStore:
             created_by=controller_id,
         )
         self.registry.register_inject(inject)
+        objective_id = str(payload.get("objective_id") or "").strip()
+        if objective_id:
+            self.inject_objective_links[inject.id] = objective_id
         review = StudioReviewItem(
             id=_unique_id("review", [item.id for item in self.registry.review_items]),
             exercise_id=self.exercise_id,
@@ -553,6 +591,19 @@ class ExerciseStore:
             inject.inject_type = _enum_value(InjectType, str(payload["inject_type"]))
         if payload.get("priority"):
             inject.priority = _enum_value(InjectPriority, str(payload["priority"]))
+        if payload.get("assigned_controller"):
+            controller_id = str(payload["assigned_controller"]).strip()
+            self.registry._required_user(controller_id)
+            inject.assigned_controller = controller_id
+        if payload.get("objective_id"):
+            self.inject_objective_links[inject.id] = str(payload["objective_id"]).strip()
+        if payload.get("scheduled_time"):
+            scheduled_time = _parse_datetime(payload.get("scheduled_time"))
+            if scheduled_time:
+                if not inject.releasable:
+                    inject.approve("user-reviewer")
+                    self._complete_review_for_item(inject.id, ReviewDecision.APPROVED)
+                inject.schedule(scheduled_time)
         inject.updated_at = _operation_timestamp()
         self._upsert_product_for_inject(inject, _status_label(inject.status.value))
         self._record_operation(
@@ -572,6 +623,7 @@ class ExerciseStore:
         self.registry.review_items = [
             item for item in self.registry.review_items if item.item_id != inject_id
         ]
+        self.inject_objective_links.pop(inject_id, None)
         self.products = [item for item in self.products if item.id != f"product-{inject_id}"]
         self._record_operation(
             actor_id=inject.assigned_controller or "user-controller",
@@ -580,6 +632,200 @@ class ExerciseStore:
             target_id=inject.id,
             result="deleted",
             activity_title=f"{inject.title} Deleted",
+        )
+        return self.snapshot()
+
+    def create_objective(self, payload: dict[str, Any]) -> dict[str, Any]:
+        title = str(payload.get("title") or "New Objective").strip()
+        objective = PlanningObjective(
+            id=_unique_id("objective", [item.id for item in self.planning_objectives]),
+            title=title,
+            priority=str(payload.get("priority") or "Medium").strip(),
+            success_criteria=_split_list(payload.get("success_criteria")),
+            linked_assets=_split_list(payload.get("linked_assets")),
+            status=str(payload.get("status") or "Draft").strip(),
+        )
+        self.planning_objectives.append(objective)
+        self.objectives = [item.title for item in self.planning_objectives]
+        self._record_operation(
+            actor_id="user-exdir",
+            action="objective.created",
+            target_type="objective",
+            target_id=objective.id,
+            result="created",
+            activity_title=f"{objective.title} Created",
+        )
+        return self.snapshot()
+
+    def edit_objective(self, payload: dict[str, Any]) -> dict[str, Any]:
+        objective = self._required_objective(_required(payload, "objective_id"))
+        replacement = PlanningObjective(
+            id=objective.id,
+            title=str(payload.get("title") or objective.title).strip(),
+            priority=str(payload.get("priority") or objective.priority).strip(),
+            success_criteria=(
+                _split_list(payload.get("success_criteria"))
+                if payload.get("success_criteria") is not None
+                else list(objective.success_criteria)
+            ),
+            linked_assets=(
+                _split_list(payload.get("linked_assets"))
+                if payload.get("linked_assets") is not None
+                else list(objective.linked_assets)
+            ),
+            status=str(payload.get("status") or objective.status).strip(),
+        )
+        self.planning_objectives = [
+            replacement if item.id == objective.id else item
+            for item in self.planning_objectives
+        ]
+        self.objectives = [item.title for item in self.planning_objectives]
+        self._record_operation(
+            actor_id="user-exdir",
+            action="objective.updated",
+            target_type="objective",
+            target_id=objective.id,
+            result="updated",
+            activity_title=f"{replacement.title} Updated",
+        )
+        return self.snapshot()
+
+    def delete_objective(self, payload: dict[str, Any]) -> dict[str, Any]:
+        objective = self._required_objective(_required(payload, "objective_id"))
+        self.planning_objectives = [
+            item for item in self.planning_objectives if item.id != objective.id
+        ]
+        self.objectives = [item.title for item in self.planning_objectives]
+        self.inject_objective_links = {
+            inject_id: objective_id
+            for inject_id, objective_id in self.inject_objective_links.items()
+            if objective_id != objective.id
+        }
+        self._record_operation(
+            actor_id="user-exdir",
+            action="objective.deleted",
+            target_type="objective",
+            target_id=objective.id,
+            result="deleted",
+            activity_title=f"{objective.title} Deleted",
+        )
+        return self.snapshot()
+
+    def create_controller(self, payload: dict[str, Any]) -> dict[str, Any]:
+        controller = ControllerAssignment(
+            id=_unique_id("controller", [item.id for item in self.controllers]),
+            role=str(payload.get("role") or "Controller").strip(),
+            name=str(payload.get("name") or "New Controller").strip(),
+            task=str(payload.get("task") or "Planning support").strip(),
+            status=str(payload.get("status") or "Planning").strip(),
+            products_today=0,
+            pending_reviews=0,
+            user_id=str(payload.get("user_id") or "").strip(),
+            responsibilities=_split_list(payload.get("responsibilities")),
+            linked_objectives=_split_list(payload.get("linked_objectives")),
+            linked_injects=_split_list(payload.get("linked_injects")),
+        )
+        self.controllers.append(controller)
+        self._record_operation(
+            actor_id="user-exdir",
+            action="controller.created",
+            target_type="controller",
+            target_id=controller.id,
+            result="created",
+            activity_title=f"{controller.role} Created",
+        )
+        return self.snapshot()
+
+    def edit_controller(self, payload: dict[str, Any]) -> dict[str, Any]:
+        controller = self._required_controller(_required(payload, "controller_id"))
+        replacement = ControllerAssignment(
+            id=controller.id,
+            role=str(payload.get("role") or controller.role).strip(),
+            name=str(payload.get("name") or controller.name).strip(),
+            task=str(payload.get("task") or controller.task).strip(),
+            status=str(payload.get("status") or controller.status).strip(),
+            products_today=controller.products_today,
+            pending_reviews=controller.pending_reviews,
+            user_id=str(payload.get("user_id") or controller.user_id).strip(),
+            responsibilities=(
+                _split_list(payload.get("responsibilities"))
+                if payload.get("responsibilities") is not None
+                else list(controller.responsibilities)
+            ),
+            linked_objectives=(
+                _split_list(payload.get("linked_objectives"))
+                if payload.get("linked_objectives") is not None
+                else list(controller.linked_objectives)
+            ),
+            linked_injects=(
+                _split_list(payload.get("linked_injects"))
+                if payload.get("linked_injects") is not None
+                else list(controller.linked_injects)
+            ),
+        )
+        self.controllers = [
+            replacement if item.id == controller.id else item for item in self.controllers
+        ]
+        self._record_operation(
+            actor_id="user-exdir",
+            action="controller.updated",
+            target_type="controller",
+            target_id=controller.id,
+            result="updated",
+            activity_title=f"{replacement.role} Updated",
+        )
+        return self.snapshot()
+
+    def save_atlas_draft(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        exercise = self._required_active_exercise()
+        exercise.transition_status(ExerciseStatus.PLANNING)
+        self._record_operation(
+            actor_id="user-exdir",
+            action="atlas.draft.saved",
+            target_type="exercise",
+            target_id=exercise.id,
+            result="saved",
+            activity_title=f"{exercise.name} Draft Saved",
+        )
+        return self.snapshot()
+
+    def validate_atlas_plan(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        exercise = self._required_active_exercise()
+        validation = self._atlas_validation()
+        readiness = next(
+            item for item in validation["summary"] if item["label"] == "Publish readiness"
+        )
+        self._record_operation(
+            actor_id="user-exdir",
+            action="atlas.plan.validated",
+            target_type="exercise",
+            target_id=exercise.id,
+            result=readiness["status"].lower().replace(" ", "_"),
+            activity_title=f"{exercise.name} Validated",
+        )
+        return self.snapshot()
+
+    def publish_atlas_plan(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        exercise = self._required_active_exercise()
+        self._record_operation(
+            actor_id="user-exdir",
+            action="atlas.publish.requested",
+            target_type="exercise",
+            target_id=exercise.id,
+            result="human_approval_required",
+            activity_title=f"{exercise.name} Publish Requested",
+        )
+        return self.snapshot()
+
+    def export_atlas_plan(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        exercise = self._required_active_exercise()
+        self._record_operation(
+            actor_id="user-exdir",
+            action="atlas.plan.exported",
+            target_type="exercise",
+            target_id=exercise.id,
+            result="dry_run",
+            activity_title=f"{exercise.name} Plan Exported",
         )
         return self.snapshot()
 
@@ -654,11 +900,12 @@ class ExerciseStore:
         source: str = "exercise_control",
         actor_id: str = "user-exdir",
         timestamp: datetime | None = None,
+        event_type: TimelineEventType = TimelineEventType.NOTE,
     ) -> dict[str, Any]:
         event = TimelineEvent(
             id=f"timeline-{len(self.registry.timeline_events) + 1:03d}",
             exercise_id=self.exercise_id,
-            event_type=TimelineEventType.NOTE,
+            event_type=event_type,
             title=title,
             description=description,
             timestamp=timestamp or _operation_timestamp(),
@@ -681,6 +928,7 @@ class ExerciseStore:
             description=str(payload.get("description") or "Created in Forge Studio."),
             source=str(payload.get("source") or "exercise_control"),
             timestamp=_parse_datetime(payload.get("timestamp")),
+            event_type=_enum_value(TimelineEventType, str(payload.get("event_type") or "note")),
         )
 
     def edit_timeline_event(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -920,6 +1168,18 @@ class ExerciseStore:
                 return product
         raise ValueError(f"product not found: {product_id}")
 
+    def _required_objective(self, objective_id: str) -> PlanningObjective:
+        for objective in self.planning_objectives:
+            if objective.id == objective_id:
+                return objective
+        raise ValueError(f"objective not found: {objective_id}")
+
+    def _required_controller(self, controller_id: str) -> ControllerAssignment:
+        for controller in self.controllers:
+            if controller.id == controller_id:
+                return controller
+        raise ValueError(f"controller not found: {controller_id}")
+
     def _replace_timeline_event(self, replacement: TimelineEvent) -> None:
         self.registry.timeline_events = [
             replacement if item.id == replacement.id else item
@@ -1040,6 +1300,8 @@ class ExerciseStore:
             timeline_status=self.timeline_status,
             exercise_health=self.exercise_health,
             operational_time=self.operational_time,
+            planning_objectives=list(self.planning_objectives),
+            inject_objective_links=dict(self.inject_objective_links),
         )
 
     def _load_workspace_context(self, exercise_id: str) -> None:
@@ -1062,6 +1324,11 @@ class ExerciseStore:
         self.timeline_status = context.timeline_status
         self.exercise_health = context.exercise_health
         self.operational_time = context.operational_time
+        self.planning_objectives = list(context.planning_objectives)
+        self.inject_objective_links = dict(context.inject_objective_links)
+        if not self.planning_objectives:
+            self.planning_objectives = _objectives_from_titles(self.objectives)
+        self.objectives = [item.title for item in self.planning_objectives]
 
     def _mock_search_results(self) -> list[dict[str, str]]:
         exercise = self._required_active_exercise()
@@ -1090,6 +1357,536 @@ class ExerciseStore:
             )
         return results
 
+    def _designer_payload(
+        self,
+        exercise: Exercise,
+        exercise_workspace: dict[str, Any],
+    ) -> dict[str, Any]:
+        timeline_events = self.registry.list_timeline_events(exercise.id)
+        injects = self.registry.list_injects(exercise.id)
+        objective_titles = {item.id: item.title for item in self.planning_objectives}
+        inject_titles = {item.id: item.title for item in injects}
+        controller_by_user = {
+            controller.user_id: controller for controller in self.controllers if controller.user_id
+        }
+        planning_objects: list[dict[str, Any]] = []
+        for event in timeline_events:
+            linked_objective_id = self.inject_objective_links.get(event.related_inject_id, "")
+            linked_inject_title = inject_titles.get(event.related_inject_id, "")
+            planning_objects.append(
+                {
+                    "id": event.id,
+                    "title": event.title,
+                    "type": "Timeline Event",
+                    "time": _time_label(event.timestamp),
+                    "linked_objectives": (
+                        [objective_titles[linked_objective_id]]
+                        if linked_objective_id in objective_titles
+                        else []
+                    ),
+                    "related_injects": [linked_inject_title] if linked_inject_title else [],
+                    "assigned_controller": "Exercise Control",
+                    "produced_products": [
+                        product.title
+                        for product in self.products
+                        if product.metadata.get("inject_id") == event.related_inject_id
+                    ],
+                    "follow_on_events": _next_event_titles(event.id, timeline_events),
+                    "validation_warnings": [] if event.timestamp else ["Scheduled time required."],
+                    "status": _status_label(event.event_type.value),
+                    "notes": event.description,
+                }
+            )
+        for inject in injects:
+            controller = controller_by_user.get(inject.assigned_controller)
+            objective_id = self.inject_objective_links.get(inject.id, "")
+            warnings = []
+            if not objective_id:
+                warnings.append("Link this inject to an objective.")
+            if not inject.assigned_controller:
+                warnings.append("Assign a controller.")
+            if not inject.scheduled_time:
+                warnings.append("Assign planned time before publish.")
+            planning_objects.append(
+                {
+                    "id": inject.id,
+                    "title": inject.title,
+                    "type": "Inject",
+                    "time": _time_label(inject.scheduled_time),
+                    "linked_objectives": (
+                        [objective_titles[objective_id]] if objective_id in objective_titles else []
+                    ),
+                    "related_injects": [],
+                    "assigned_controller": controller.role if controller else self._user_name(
+                        inject.assigned_controller
+                    ),
+                    "produced_products": [
+                        product.title
+                        for product in self.products
+                        if product.metadata.get("inject_id") == inject.id
+                    ],
+                    "follow_on_events": [
+                        event.title
+                        for event in timeline_events
+                        if event.related_inject_id == inject.id
+                    ],
+                    "validation_warnings": warnings,
+                    "status": _status_label(inject.status.value),
+                    "notes": inject.description,
+                }
+            )
+        planning_objects.sort(key=lambda item: item["time"] if item["time"] != "--" else "9999")
+        validation = self._atlas_validation()
+        exercise_assets = (
+            [
+                {"id": item.id, "title": item.title, "type": "Objective"}
+                for item in self.planning_objectives
+            ]
+            + [
+                {"id": item.id, "title": item.title, "type": "Inject"}
+                for item in injects
+            ]
+            + [
+                {"id": item.id, "title": item.title, "type": "Timeline Event"}
+                for item in timeline_events
+            ]
+            + [
+                {"id": item.id, "title": item.role, "type": "Controller"}
+                for item in self.controllers
+            ]
+            + [
+                {"id": item.id, "title": item.title, "type": "Product"}
+                for item in self.products
+            ]
+            + [
+                {
+                    "id": "observation-route-control",
+                    "title": "Route Control Observation",
+                    "type": "Observation",
+                },
+                {
+                    "id": "aar-finding-route-control",
+                    "title": "Route Control AAR Finding",
+                    "type": "AAR Finding",
+                },
+            ]
+        )
+        relationships = []
+        for inject_id, objective_id in self.inject_objective_links.items():
+            relationships.append(
+                {"source": objective_id, "target": inject_id, "type": "supports"}
+            )
+        for inject in injects:
+            controller = controller_by_user.get(inject.assigned_controller)
+            if controller:
+                relationships.append(
+                    {"source": inject.id, "target": controller.id, "type": "assigned_to"}
+                )
+        return {
+            "name": "Project Atlas",
+            "purpose": "Interactive Exercise Designer planning environment",
+            "reference": "Project Sentinel",
+            "asset_types": [
+                "Objective",
+                "Inject",
+                "Timeline Event",
+                "Controller",
+                "Product",
+                "Intelligence Update",
+                "Weather Event",
+                "Media Event",
+                "Observer Checkpoint",
+                "Observation",
+                "AAR Finding",
+            ],
+            "relationship_types": [
+                "supports",
+                "triggers",
+                "depends_on",
+                "assigned_to",
+                "produces",
+                "reviews",
+                "observes",
+                "evaluates",
+                "follows",
+                "conflicts_with",
+                "related_to",
+            ],
+            "exercise_assets": exercise_assets,
+            "relationships": relationships,
+            "object_categories": [
+                "Objectives",
+                "Units",
+                "Controllers",
+                "Injects",
+                "Decision Points",
+                "Weather Events",
+                "Intelligence Updates",
+                "Media Events",
+                "Observer Checkpoints",
+                "Templates",
+            ],
+            "toolbar": ["New Exercise", "Save Draft", "Validate", "Publish", "Export"],
+            "exercise_properties": {
+                "Exercise Name": exercise.name,
+                "Organization": self._required_active_organization().name,
+                "Phase": exercise_workspace["phase"],
+                "Status": exercise_workspace["status"],
+                "Exercise Director": str(exercise_workspace["exercise_director"]),
+                "Start Date": _to_jsonable(exercise.start_date) or "",
+                "End Date": _to_jsonable(exercise.end_date) or "",
+                "Training Audience": str(exercise_workspace["training_audience"]),
+                "Description": exercise.description,
+            },
+            "objectives": [_to_jsonable(item) for item in self.planning_objectives],
+            "controllers": [self._controller_payload(item) for item in self.controllers],
+            "injects": [self._inject_payload(item) for item in injects],
+            "timeline_events": [_to_jsonable(item) for item in timeline_events],
+            "planning_objects": planning_objects,
+            "relationship_map": self._atlas_relationship_map(),
+            "validation": validation["summary"],
+            "relationship_validation": validation["relationships"],
+        }
+
+    def _atlas_validation(self) -> dict[str, list[dict[str, str]]]:
+        injects = self.registry.list_injects(self.exercise_id)
+        timeline_events = self.registry.list_timeline_events(self.exercise_id)
+        objective_issues = sum(
+            not item.success_criteria or not item.linked_assets
+            for item in self.planning_objectives
+        )
+        controller_issues = sum(not item.assigned_controller for item in injects)
+        missing_relationships = sum(
+            inject.id not in self.inject_objective_links for inject in injects
+        )
+        time_counts: dict[str, int] = {}
+        for event in timeline_events:
+            key = _time_label(event.timestamp)
+            time_counts[key] = time_counts.get(key, 0) + 1
+        timeline_conflicts = sum(count > 1 for count in time_counts.values())
+        pending_reviews = self.statistics()["pending_reviews"]
+        ready = not (
+            objective_issues
+            or controller_issues
+            or missing_relationships
+            or timeline_conflicts
+            or pending_reviews
+        )
+        return {
+            "summary": [
+                _validation_item("Objectives complete", objective_issues),
+                _validation_item("Controllers assigned", controller_issues),
+                _validation_item("Timeline conflicts", timeline_conflicts),
+                _validation_item("Missing relationships", missing_relationships),
+                {
+                    "label": "Publish readiness",
+                    "status": "Ready" if ready else "Not ready",
+                    "state": "success" if ready else "danger",
+                },
+            ],
+            "relationships": [
+                _validation_item(
+                    "Inject objective links",
+                    missing_relationships,
+                    "Injects should link to at least one objective.",
+                ),
+                _validation_item(
+                    "Controller assignments",
+                    controller_issues,
+                    "Injects should have an assigned controller.",
+                ),
+                _validation_item(
+                    "Scheduled timeline events",
+                    sum(not event.timestamp for event in timeline_events),
+                    "Timeline events should have a scheduled time.",
+                ),
+                _validation_item(
+                    "Product source references",
+                    sum(
+                        not (
+                            product.metadata.get("inject_id")
+                            or product.metadata.get("source_event_id")
+                            or product.metadata.get("exercise")
+                        )
+                        for product in self.products
+                    ),
+                    "Products should reference a source event or inject.",
+                ),
+                {
+                    "label": "AAR traceability",
+                    "status": "Complete",
+                    "state": "success",
+                    "rule": "AAR findings should trace back to an objective or observation.",
+                },
+            ],
+        }
+
+    def _atlas_relationship_map(self) -> dict[str, Any]:
+        objective_titles = {item.id: item.title for item in self.planning_objectives}
+        injects_by_id = {item.id: item for item in self.registry.list_injects(self.exercise_id)}
+        chain = [self._required_active_exercise().name]
+        first_objective = self.planning_objectives[0] if self.planning_objectives else None
+        if first_objective:
+            chain.append(first_objective.title)
+            linked_inject = next(
+                (
+                    injects_by_id[inject_id]
+                    for inject_id, objective_id in self.inject_objective_links.items()
+                    if objective_id == first_objective.id and inject_id in injects_by_id
+                ),
+                None,
+            )
+            if linked_inject:
+                chain.append(linked_inject.title)
+                controller = self._user_name(linked_inject.assigned_controller)
+                if controller:
+                    chain.append(controller)
+                event = next(
+                    (
+                        item
+                        for item in self.registry.list_timeline_events(self.exercise_id)
+                        if item.related_inject_id == linked_inject.id
+                    ),
+                    None,
+                )
+                if event:
+                    chain.append(event.title)
+        if len(chain) < 3 and objective_titles:
+            chain.extend(list(objective_titles.values())[:2])
+        chain.append("AAR Finding")
+        return {"title": "Live Atlas Relationship Chain", "chain": chain}
+
+    def _knowledge_graph_payload(
+        self,
+        exercise: Exercise,
+        organization: Organization,
+        exercise_workspace: dict[str, Any],
+    ) -> dict[str, Any]:
+        created = _to_jsonable(exercise.created_at)
+        modified = _to_jsonable(exercise.updated_at)
+        nodes: list[dict[str, Any]] = [
+            _graph_node(
+                "kg-exercise",
+                exercise.name,
+                "Exercise",
+                exercise.description or "Active exercise package and graph root.",
+                exercise.name,
+                exercise_workspace["status"],
+                created,
+                modified,
+                50,
+                50,
+            ),
+            _graph_node(
+                "kg-organization",
+                organization.short_name,
+                "Organization",
+                organization.name,
+                exercise.name,
+                "Active",
+                created,
+                modified,
+                18,
+                15,
+            ),
+        ]
+        edges = [{"source": "kg-organization", "target": "kg-exercise", "type": "contains"}]
+        for index, objective in enumerate(self.planning_objectives):
+            node_id = f"kg-{objective.id}"
+            nodes.append(
+                _graph_node(
+                    node_id,
+                    objective.title,
+                    "Objective",
+                    "; ".join(objective.success_criteria) or "Planning objective.",
+                    exercise.name,
+                    objective.status,
+                    created,
+                    modified,
+                    24 + (index % 3) * 18,
+                    28 + (index // 3) * 14,
+                )
+            )
+            edges.append({"source": "kg-exercise", "target": node_id, "type": "contains"})
+        for index, controller in enumerate(self.controllers[:8]):
+            node_id = f"kg-{controller.id}"
+            nodes.append(
+                _graph_node(
+                    node_id,
+                    controller.role,
+                    "Controller",
+                    controller.task,
+                    exercise.name,
+                    controller.status,
+                    created,
+                    modified,
+                    16 + (index % 4) * 20,
+                    70 + (index // 4) * 12,
+                )
+            )
+            edges.append({"source": "kg-exercise", "target": node_id, "type": "contains"})
+            for objective_id in controller.linked_objectives:
+                edges.append(
+                    {
+                        "source": node_id,
+                        "target": f"kg-{objective_id}",
+                        "type": "assigned_to",
+                    }
+                )
+        controllers_by_user = {
+            controller.user_id: controller for controller in self.controllers if controller.user_id
+        }
+        for index, inject in enumerate(self.registry.list_injects(exercise.id)):
+            node_id = f"kg-{inject.id}"
+            nodes.append(
+                _graph_node(
+                    node_id,
+                    inject.title,
+                    "Inject",
+                    inject.description,
+                    exercise.name,
+                    _status_label(inject.status.value),
+                    _to_jsonable(inject.created_at),
+                    _to_jsonable(inject.updated_at),
+                    52 + (index % 3) * 14,
+                    24 + (index // 3) * 12,
+                )
+            )
+            objective_id = self.inject_objective_links.get(inject.id)
+            if objective_id:
+                edges.append(
+                    {"source": f"kg-{objective_id}", "target": node_id, "type": "supports"}
+                )
+            controller = controllers_by_user.get(inject.assigned_controller)
+            if controller:
+                edges.append(
+                    {
+                        "source": node_id,
+                        "target": f"kg-{controller.id}",
+                        "type": "assigned_to",
+                    }
+                )
+        for index, event in enumerate(self.registry.list_timeline_events(exercise.id)):
+            node_id = f"kg-{event.id}"
+            nodes.append(
+                _graph_node(
+                    node_id,
+                    event.title,
+                    "Timeline Event",
+                    event.description,
+                    exercise.name,
+                    _status_label(event.event_type.value),
+                    created,
+                    modified,
+                    30 + (index % 4) * 16,
+                    84,
+                )
+            )
+            edges.append({"source": "kg-exercise", "target": node_id, "type": "contains"})
+            if event.related_inject_id:
+                edges.append(
+                    {
+                        "source": f"kg-{event.related_inject_id}",
+                        "target": node_id,
+                        "type": "triggers",
+                    }
+                )
+        for index, product in enumerate(self.products[:10]):
+            node_id = f"kg-{product.id}"
+            nodes.append(
+                _graph_node(
+                    node_id,
+                    product.title,
+                    "Product",
+                    product.product_type,
+                    exercise.name,
+                    product.status,
+                    created,
+                    modified,
+                    78,
+                    18 + index * 7,
+                )
+            )
+            if product.metadata.get("inject_id"):
+                edges.append(
+                    {
+                        "source": f"kg-{product.metadata['inject_id']}",
+                        "target": node_id,
+                        "type": "produces",
+                    }
+                )
+        nodes = [_node_with_relationship_metadata(node, nodes, edges) for node in nodes]
+        return {
+            "name": "Forge Operational Knowledge Graph",
+            "purpose": "Connected intelligence layer for operational assets.",
+            "node_types": [
+                "Exercise",
+                "Objective",
+                "Inject",
+                "Timeline Event",
+                "Controller",
+                "Organization",
+                "Unit",
+                "Product",
+                "Intelligence Update",
+                "Weather Event",
+                "Media Event",
+                "Decision Point",
+                "Observation",
+                "AAR Finding",
+                "Template",
+            ],
+            "relationship_types": [
+                "supports",
+                "produces",
+                "triggers",
+                "depends_on",
+                "assigned_to",
+                "observes",
+                "evaluates",
+                "references",
+                "related_to",
+                "precedes",
+                "follows",
+                "contains",
+                "inherits",
+            ],
+            "nodes": nodes,
+            "edges": edges,
+            "default_node_id": "kg-exercise",
+            "filters": [
+                "Objectives",
+                "Injects",
+                "Controllers",
+                "Products",
+                "Weather",
+                "Intelligence",
+                "Observations",
+                "Timeline Events",
+                "AAR Findings",
+            ],
+            "filter_map": {
+                "Objectives": ["Objective"],
+                "Injects": ["Inject"],
+                "Controllers": ["Controller"],
+                "Products": ["Product"],
+                "Weather": ["Weather Event"],
+                "Intelligence": ["Intelligence Update"],
+                "Observations": ["Observation"],
+                "Timeline Events": ["Timeline Event", "Decision Point"],
+                "AAR Findings": ["AAR Finding"],
+            },
+            "navigation": [
+                "Click node",
+                "Expand neighbors",
+                "Collapse neighbors",
+                "Center graph",
+                "Filter by asset type",
+                "Search",
+                "Relationship highlighting",
+            ],
+        }
+
 
 def create_mock_exercise_store(registry: ForgeStudioRegistry | None = None) -> ExerciseStore:
     """Create the shared Exercise Data Engine for Mountain Exercise 3-27."""
@@ -1098,17 +1895,58 @@ def create_mock_exercise_store(registry: ForgeStudioRegistry | None = None) -> E
     _seed_platform_exercises(registry)
     organizations = _default_organizations()
     exercise_organization_map = _mock_exercise_organization_map()
+    sentinel_objectives = [
+        PlanningObjective(
+            id="objective-command-control",
+            title="Exercise command and control in complex mountain terrain.",
+            priority="Critical",
+            success_criteria=[
+                "Training audience maintains command rhythm during route disruption.",
+                "Commander decision points are recorded with rationale.",
+            ],
+            linked_assets=["inject-002", "timeline-008", "controller-exdir"],
+            status="Ready",
+        ),
+        PlanningObjective(
+            id="objective-intel-fusion",
+            title="Evaluate intelligence-to-operations handoff under time pressure.",
+            priority="High",
+            success_criteria=[
+                "Intelligence baseline reaches the training audience before movement.",
+                "ISR updates drive at least one operational decision.",
+            ],
+            linked_assets=["inject-005", "timeline-002", "controller-intel"],
+            status="Ready",
+        ),
+        PlanningObjective(
+            id="objective-medical-logistics",
+            title="Validate casualty evacuation and route disruption procedures.",
+            priority="High",
+            success_criteria=[
+                "Unit coordinates MEDEVAC under weather and route constraints.",
+                "Route disruption decisions are visible in the exercise timeline.",
+            ],
+            linked_assets=["inject-008", "inject-007", "controller-white"],
+            status="Draft",
+        ),
+        PlanningObjective(
+            id="objective-info-environment",
+            title="Assess media, cyber, and weather inject response.",
+            priority="Medium",
+            success_criteria=[
+                "Media, cyber, and weather controllers synchronize inject timing.",
+                "Review queue captures human approval before release.",
+            ],
+            linked_assets=["inject-003", "inject-004", "inject-006"],
+            status="Needs Review",
+        ),
+    ]
     mountain_context = ExerciseWorkspaceContext(
         products=_mock_products(),
         controllers=_mock_controllers(),
         library_folders=_library_folders(),
         settings=_settings(),
-        objectives=[
-            "Exercise command and control in complex mountain terrain.",
-            "Evaluate intelligence-to-operations handoff under time pressure.",
-            "Validate casualty evacuation and route disruption procedures.",
-            "Assess media, cyber, and weather inject response.",
-        ],
+        objectives=[item.title for item in sentinel_objectives],
         participating_units=[
             "2d Battalion, 8th Marines",
             "Mountain Warfare Training Center",
@@ -1129,6 +1967,16 @@ def create_mock_exercise_store(registry: ForgeStudioRegistry | None = None) -> E
         timeline_status="On Plan",
         exercise_health="Nominal",
         operational_time="0942",
+        planning_objectives=sentinel_objectives,
+        inject_objective_links={
+            "inject-002": "objective-command-control",
+            "inject-003": "objective-info-environment",
+            "inject-004": "objective-info-environment",
+            "inject-005": "objective-intel-fusion",
+            "inject-006": "objective-info-environment",
+            "inject-007": "objective-medical-logistics",
+            "inject-008": "objective-medical-logistics",
+        },
     )
     exercise_workspaces = {
         "mountain-exercise-3-27": mountain_context,
@@ -2265,6 +3113,73 @@ def _to_jsonable(value: Any) -> Any:
     if isinstance(value, dict):
         return {key: _to_jsonable(item) for key, item in value.items()}
     return value
+
+
+def _split_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    text = str(value).replace("\n", ";")
+    return [item.strip() for item in text.split(";") if item.strip()]
+
+
+def _objectives_from_titles(titles: list[str]) -> list[PlanningObjective]:
+    return [
+        PlanningObjective(
+            id=f"objective-{index + 1:03d}",
+            title=title,
+            priority="Medium",
+            success_criteria=["Define measurable success criteria."],
+            linked_assets=[],
+            status="Draft",
+        )
+        for index, title in enumerate(titles)
+    ]
+
+
+def _validation_item(label: str, issue_count: int, rule: str = "") -> dict[str, str]:
+    item = {
+        "label": label,
+        "status": "Complete" if issue_count == 0 else f"{issue_count} warning",
+        "state": "success" if issue_count == 0 else "warning",
+    }
+    if rule:
+        item["rule"] = rule
+    return item
+
+
+def _next_event_titles(event_id: str, events: list[TimelineEvent]) -> list[str]:
+    for index, event in enumerate(events):
+        if event.id == event_id:
+            return [item.title for item in events[index + 1 : index + 3]]
+    return []
+
+
+def _graph_node(
+    node_id: str,
+    name: str,
+    node_type: str,
+    description: str,
+    exercise: str,
+    status: str,
+    created: str,
+    modified: str,
+    x: int,
+    y: int,
+) -> dict[str, Any]:
+    return {
+        "id": node_id,
+        "name": name,
+        "type": node_type,
+        "description": description,
+        "exercise": exercise,
+        "status": status,
+        "created": created,
+        "modified": modified,
+        "x": x,
+        "y": y,
+    }
 
 
 def _required(payload: dict[str, Any], key: str) -> str:

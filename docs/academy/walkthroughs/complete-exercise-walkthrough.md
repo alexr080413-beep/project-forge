@@ -26,17 +26,17 @@ The walkthrough is intentionally scenario-based. Some actions are mock or future
 2. Create exercise.
    - Use [Create Exercise](../task-guides/create-exercise.md) to create Mountain Exercise 3-27 from the Project Sentinel reference package.
 3. Open Atlas.
-   - Use the `Exercise Designer` workspace to begin planning.
+   - Use the `Exercise Designer` workspace to begin planning in Atlas Alpha.
 4. Add objectives.
-   - Use [Sentinel objectives](../../../examples/sentinel/objectives.md) for command and control, intelligence fusion, review discipline, logistics and medical support, information environment response, and AAR evidence.
+   - Use [Sentinel objectives](../../../examples/sentinel/objectives.md) for command and control, intelligence fusion, review discipline, logistics and medical support, information environment response, and AAR evidence. Add priority, success criteria, and linked operational assets.
 5. Add controllers.
-   - Assign Exercise Director, Intelligence Controller, White Cell Controller, Weather Controller, Cyber Controller, and reviewers.
+   - Assign Exercise Director, Intelligence Controller, White Cell Controller, Weather Controller, Cyber Controller, and reviewers. Add responsibilities and link controllers to objectives or injects.
 6. Add injects.
-   - Use the [Sentinel inject library](../../../examples/sentinel/injects.md) with 50 intelligence, media, weather, cyber, medical, logistics, role player, command decision, civilian activity, and ISR injects.
+   - Use the [Sentinel inject library](../../../examples/sentinel/injects.md) with 50 intelligence, media, weather, cyber, medical, logistics, role player, command decision, civilian activity, and ISR injects. In Atlas Alpha, create representative injects and link each to an objective, controller, priority, notes, and planned time.
 7. Link operational assets.
-   - Connect objectives, injects, controllers, products, observations, and AAR findings.
+   - Connect objectives, injects, controllers, products, observations, and AAR findings. Confirm the Knowledge Graph updates as the exercise plan changes.
 8. Validate the exercise.
-   - Use [Validate Exercise](../task-guides/validate-exercise.md) to check objectives, controllers, timeline conflicts, review requirements, and publish readiness.
+   - Use [Validate Exercise](../task-guides/validate-exercise.md) to check objectives, controllers, timeline conflicts, missing relationships, and publish readiness.
 9. Publish to Mission Control.
    - Use [Publish To Mission Control](../task-guides/publish-to-mission-control.md). Current behavior is a placeholder; publishing remains future explicit human action.
 10. Execute the scenario.

@@ -2,7 +2,7 @@
 
 Project Atlas is the Forge Studio planning environment for designing an exercise before it is published into Mission Control.
 
-This document describes the first framework version only. It does not define persistence, drag and drop, real publishing, production approval routing, or a complete Exercise Designer implementation.
+This document describes the Atlas Alpha planning workspace. Atlas is now interactive in the local Forge Studio MVP, but it still does not define durable persistence, drag and drop, real publishing, production approval routing, collaborative editing, or versioned exercise plans.
 
 ## Purpose
 
@@ -21,7 +21,7 @@ It is intended to support:
 - Observer checkpoints.
 - Templates.
 
-The current implementation uses mock planning objects for Mountain Exercise 3-27 so the application can demonstrate the planning workflow without storing data or changing live exercise state.
+The current implementation uses Project Sentinel and Mountain Exercise 3-27 as the reference implementation. Planning edits are stored in the local in-memory Exercise Data Engine for the running session and update validation, activity, audit records, and the Knowledge Graph.
 
 ## Project Atlas
 
@@ -32,14 +32,18 @@ Atlas is separate from Mission Control:
 - Atlas is where plans are drafted and validated.
 - Mission Control is where approved exercise activity is executed and monitored.
 
-The first Atlas framework includes:
+Atlas Alpha includes:
 
 - Object Library.
 - Exercise Canvas / Timeline.
 - Properties Inspector.
 - Top toolbar.
-- Mock validation status.
-- Mock planning objects.
+- Editable exercise properties.
+- Editable objectives.
+- Editable controller assignments.
+- Editable inject planning.
+- Editable timeline planning.
+- Live validation status.
 - Exercise Relationship Engine.
 - Relationship map.
 
@@ -83,7 +87,7 @@ Supported relationship types:
 | `conflicts_with` | Two assets have a timing, ownership, or scenario conflict. |
 | `related_to` | General relationship when a more specific edge is not yet defined. |
 
-The current implementation uses mock relationship data for Mountain Exercise 3-27. It does not persist graph edits and does not implement drag and drop.
+The current implementation calculates relationship data from the local Exercise Data Engine for Mountain Exercise 3-27. It does not persist graph edits beyond the running session and does not implement drag and drop.
 
 ## Exercise Graph
 
@@ -106,9 +110,34 @@ flowchart LR
     finding -->|"traces to"| objective
 ```
 
-In the first UI version, Atlas displays this as a simple relationship chain:
+In the first UI version, Atlas displays this as a simple relationship chain built from the current exercise plan:
 
-`Objective Alpha -> Intelligence Baseline -> Civilian Protest -> Commander Decision Point -> Observer Checkpoint -> AAR Finding`
+`Exercise -> Objective -> Inject -> Controller -> Timeline Event -> AAR Finding`
+
+## Interactive Planning
+
+Atlas Alpha supports local CRUD-style planning workflows.
+
+Exercise Directors and EXCON users can:
+
+- Create exercises.
+- Edit exercise name, organization context, status, phase, director, dates, training audience, and description.
+- Save a draft.
+- Duplicate an exercise.
+- Archive an exercise.
+- Add, edit, and delete objectives.
+- Assign objective priority.
+- Add success criteria.
+- Link objectives to operational assets.
+- Add and edit controller assignments.
+- Assign roles and responsibilities.
+- Link controllers to injects and objectives.
+- Add, edit, delete, and move timeline events.
+- Assign timeline time and category.
+- Create and edit injects.
+- Assign inject controller, time, objective, priority, and notes.
+
+All operations remain local to the in-memory Exercise Data Engine.
 
 ## Relationship-Aware Inspector
 
@@ -135,7 +164,15 @@ The first validation rules are deliberately simple:
 | Products should reference a source event or inject. | Keeps the Exercise Library traceable. |
 | AAR findings should trace back to an objective or observation. | Keeps assessment evidence-based. |
 
-The current validation status is mock data. Future versions should calculate these rules from the persisted exercise graph.
+Atlas Alpha calculates these rules from the in-memory exercise plan. Future versions should calculate the same rules from a persisted exercise graph.
+
+Additional Alpha checks include:
+
+- Objectives complete.
+- Controllers assigned.
+- Timeline conflicts.
+- Missing relationships.
+- Publish readiness.
 
 ## Why Relationships Matter
 
@@ -247,17 +284,21 @@ Human approval remains authoritative.
 
 Atlas can help planners design and validate an exercise, but publishing to Mission Control should require explicit human action. Planned objects should not become live exercise objects without approval, review rules, and audit records.
 
-The current framework includes a `Publish to Mission Control` toolbar control as a placeholder only. It does not publish, persist, or mutate live exercise state.
+The current framework includes a `Publish` toolbar control as a placeholder only. It records a human-gated publish request in audit/activity data. It does not publish, persist, or mutate live exercise state.
 
 ## Current Boundaries
 
-The current framework does not implement:
+The current Alpha implementation does not implement:
 
-- Persistence.
+- Durable persistence.
 - Drag and drop.
 - Real publishing.
 - Collaborative editing.
 - Version control for plans.
+
+## Project Sentinel Reference
+
+Project Sentinel is the validation baseline for Atlas Alpha. Future Atlas work should preserve the ability to design, validate, inspect, and demonstrate Mountain Exercise 3-27 using Sentinel objectives, controllers, injects, timeline events, products, observations, and AAR relationships.
 - Approval routing.
 - Conflict resolution.
 - Template import or export.

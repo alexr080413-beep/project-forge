@@ -17,3 +17,18 @@
 - Every objective should connect to at least one expected product.
 - Every AAR measure should trace back to an observation or product.
 - Every command decision should link to a timeline event and controller.
+
+## Atlas Alpha Editing Notes
+
+When validating Atlas Alpha, use these objectives as editable planning records.
+
+Each objective should include:
+
+- Priority.
+- Success criteria.
+- Linked injects.
+- Linked controller assignments.
+- Linked timeline events.
+- Expected products or AAR measures.
+
+The local Atlas planner should show relationship warnings when an objective lacks success criteria or linked assets.

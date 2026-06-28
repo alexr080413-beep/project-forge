@@ -1096,6 +1096,63 @@ h1 {
   gap: 8px;
 }
 
+.atlas-form {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.atlas-form h3 {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.atlas-card-stack {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.atlas-mini-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(8, 13, 20, 0.7);
+  padding: 12px;
+}
+
+.atlas-mini-card .record-title {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+}
+
+.atlas-mini-card .record-title strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.atlas-mini-card .fs-badge {
+  max-width: 86px;
+  white-space: normal;
+  text-align: center;
+}
+
+.atlas-mini-card p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.atlas-inline-edit {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
 .atlas-category,
 .atlas-event {
   width: 100%;

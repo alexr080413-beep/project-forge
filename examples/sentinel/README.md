@@ -89,3 +89,21 @@ Future features should be validated against Project Sentinel when they affect:
 - AAR and archive workflows.
 
 Sentinel should remain safe, fictional, and deterministic.
+
+## Atlas Alpha Reference
+
+Atlas Alpha uses Sentinel as the default planning package for interactive exercise design.
+
+The reference workflow is:
+
+1. Open `Exercise Designer`.
+2. Edit Mountain Exercise 3-27 properties.
+3. Add or revise Sentinel objectives with priority, success criteria, and linked assets.
+4. Add controller responsibilities and connect controllers to objectives and injects.
+5. Create or revise injects from the Sentinel inject library.
+6. Add, move, or delete timeline events.
+7. Validate readiness.
+8. Confirm Knowledge Graph relationships update.
+9. Save draft or record a publish request.
+
+Publishing remains a human-gated placeholder. Atlas Alpha does not release exercise material into Mission Control automatically.

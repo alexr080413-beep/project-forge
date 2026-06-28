@@ -19,3 +19,15 @@ Operational Assets are graph nodes in the Forge Operational Knowledge Graph.
 | Observation | Captured evidence. |
 | AAR Finding | After-action finding tied to evidence. |
 | Template | Reusable planning pattern. |
+
+## Atlas Alpha Editable Assets
+
+Atlas Alpha supports local editing for:
+
+- Exercise properties.
+- Objectives with priority, success criteria, and linked assets.
+- Controller assignments with role, responsibilities, linked objectives, and linked injects.
+- Inject plans with controller, objective, priority, notes, and planned time.
+- Timeline events with category and scheduled time.
+
+These edits update the Exercise Data Engine and the Knowledge Graph for the running session.

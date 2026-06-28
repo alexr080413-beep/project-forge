@@ -87,6 +87,18 @@ function controllerOptions(selected = "") {
     .join("");
 }
 
+function objectiveOptions(selected = "") {
+  return (workspaceData?.designer?.objectives || [])
+    .map((objective) => `<option value="${objective.id}" ${objective.id === selected ? "selected" : ""}>${escapeHtml(objective.title)}</option>`)
+    .join("");
+}
+
+function statusOptions(values, selected = "") {
+  return values
+    .map((value) => `<option value="${value}" ${value === selected ? "selected" : ""}>${formatLabel(value)}</option>`)
+    .join("");
+}
+
 function collectForm(formId) {
   const form = document.querySelector(`#${formId}`);
   const data = {};
@@ -254,12 +266,15 @@ function renderRelationshipMap(map) {
 function renderExerciseDesigner(data) {
   const designer = data.designer;
   const defaultProperties = designer.exercise_properties;
+  const exercise = data.active_exercise;
   contentRoot.innerHTML = `
     <section class="atlas-shell">
       <div class="atlas-toolbar" aria-label="Exercise Designer toolbar">
-        ${designer.toolbar.map((label, index) => `
-          <button class="fs-button fs-button--${index === 3 ? "warning" : "secondary"}" type="button">${escapeHtml(label)}</button>
-        `).join("")}
+        ${commandButton("New Exercise", "exercise.create", {name: `${exercise.name} Planning Draft`, description: "Created from Atlas."})}
+        ${commandButton("Save Draft", "atlas.save_draft", {}, "success")}
+        ${commandButton("Validate", "atlas.validate")}
+        ${commandButton("Publish", "atlas.publish", {}, "warning")}
+        ${commandButton("Export", "atlas.export", {}, "ghost")}
       </div>
       <aside class="atlas-panel atlas-library">
         <div class="panel-header">
@@ -274,14 +289,59 @@ function renderExerciseDesigner(data) {
             </button>
           `).join("")}
         </div>
+        <form id="atlas-objective-form" class="crud-form atlas-form">
+          <h3>Add Objective</h3>
+          <input name="title" placeholder="Objective title" aria-label="Objective title">
+          <select name="priority" aria-label="Objective priority">${statusOptions(["Critical", "High", "Medium", "Low"], "High")}</select>
+          <input name="success_criteria" placeholder="Success criteria; separated by semicolons" aria-label="Success criteria">
+          <input name="linked_assets" placeholder="Linked assets; inject-002; controller-exdir" aria-label="Linked assets">
+          ${formButton("Add Objective", "objective.create", "atlas-objective-form")}
+        </form>
+        <div class="atlas-card-stack">
+          ${designer.objectives.map((objective, index) => `
+            <article class="atlas-mini-card">
+              <div class="record-title">
+                <strong>${escapeHtml(objective.title)}</strong>
+                ${UI.statusBadge(objective.priority)}
+              </div>
+              <p>${escapeHtml((objective.success_criteria || [])[0] || "Success criteria required.")}</p>
+              <form id="atlas-objective-edit-${index}" class="crud-form">
+                <input type="hidden" name="objective_id" value="${escapeHtml(objective.id)}">
+                <input name="title" value="${escapeHtml(objective.title)}" aria-label="Edit objective title">
+                <input name="success_criteria" value="${escapeHtml((objective.success_criteria || []).join("; "))}" aria-label="Edit success criteria">
+                <input name="linked_assets" value="${escapeHtml((objective.linked_assets || []).join("; "))}" aria-label="Edit linked assets">
+              </form>
+              <div class="action-row compact-actions">
+                ${formButton("Edit", "objective.edit", `atlas-objective-edit-${index}`)}
+                ${commandButton("Delete", "objective.delete", {objective_id: objective.id}, "danger")}
+              </div>
+            </article>
+          `).join("")}
+        </div>
       </aside>
       <section class="atlas-canvas">
         <div class="panel-header">
           <h2>Exercise Canvas / Timeline</h2>
           <span>${escapeHtml(data.workspace.exercise.name)}</span>
         </div>
+        <form id="atlas-timeline-form" class="crud-form inline-form">
+          <input name="title" placeholder="Timeline event" aria-label="Timeline event">
+          <input name="description" placeholder="Description" aria-label="Timeline description">
+          <input name="timestamp" placeholder="0945 or ISO time" aria-label="Timeline time">
+          <select name="event_type" aria-label="Timeline category">${statusOptions(["exercise_phase", "inject", "review", "audit", "note"], "note")}</select>
+          ${formButton("Add Timeline Event", "timeline.create", "atlas-timeline-form")}
+        </form>
+        <form id="atlas-inject-form" class="crud-form inline-form">
+          <input name="title" placeholder="Inject title" aria-label="Inject title">
+          <input name="description" placeholder="Inject description" aria-label="Inject description">
+          <select name="assigned_controller" aria-label="Assigned controller">${controllerOptions("user-controller")}</select>
+          <select name="objective_id" aria-label="Linked objective">${objectiveOptions()}</select>
+          <select name="priority" aria-label="Inject priority">${statusOptions(["critical", "high", "medium", "low"], "high")}</select>
+          <input name="scheduled_time" placeholder="0915 or ISO time" aria-label="Scheduled time">
+          ${formButton("Create Inject", "inject.create", "atlas-inject-form")}
+        </form>
         <div class="atlas-timeline">
-          ${designer.planning_objects.map((item) => `
+          ${designer.planning_objects.map((item, index) => `
             <button class="atlas-event" type="button" data-planning-object="${payloadAttr(item)}">
               <time>${escapeHtml(item.time)}</time>
               <span>
@@ -289,6 +349,15 @@ function renderExerciseDesigner(data) {
                 <small>${escapeHtml(item.type)} | ${escapeHtml(item.status)}</small>
               </span>
             </button>
+            ${item.type === "Timeline Event" ? `
+              <form id="atlas-event-edit-${index}" class="crud-form inline-form atlas-inline-edit">
+                <input type="hidden" name="event_id" value="${escapeHtml(item.id)}">
+                <input name="title" value="${escapeHtml(item.title)}" aria-label="Edit timeline title">
+                <input name="timestamp" value="${escapeHtml(item.time)}" aria-label="Move timeline event">
+                ${formButton("Edit", "timeline.edit", `atlas-event-edit-${index}`)}
+                ${commandButton("Delete", "timeline.delete", {event_id: item.id}, "danger")}
+              </form>
+            ` : ""}
           `).join("")}
         </div>
         ${renderRelationshipMap(designer.relationship_map)}
@@ -299,6 +368,50 @@ function renderExerciseDesigner(data) {
           <span id="atlas-inspector-mode">Exercise</span>
         </div>
         <div id="atlas-properties-root">${renderPropertyList(defaultProperties)}</div>
+        <form id="atlas-exercise-form" class="crud-form atlas-form">
+          <h3>Edit Exercise</h3>
+          <input name="name" value="${escapeHtml(exercise.name)}" aria-label="Exercise name">
+          <input name="description" value="${escapeHtml(exercise.description || "")}" aria-label="Exercise description">
+          <select name="status" aria-label="Exercise status">${statusOptions(["draft", "planning", "preparing", "active", "paused", "completed", "archived"], exercise.status)}</select>
+          <select name="phase" aria-label="Exercise phase">${statusOptions(["planning", "preparation", "execution", "assessment"], exercise.phase)}</select>
+          <input name="exercise_control" value="${escapeHtml(data.workspace.exercise.exercise_control)}" aria-label="Exercise control">
+          <input name="training_audience" value="${escapeHtml(data.workspace.exercise.training_audience)}" aria-label="Training audience">
+          <input name="start_date" value="${escapeHtml(exercise.start_date || "")}" aria-label="Start date">
+          <input name="end_date" value="${escapeHtml(exercise.end_date || "")}" aria-label="End date">
+          ${formButton("Edit Exercise", "exercise.edit", "atlas-exercise-form")}
+          ${commandButton("Duplicate", "exercise.duplicate")}
+          ${commandButton("Archive", "exercise.archive", {}, "warning")}
+        </form>
+        <form id="atlas-controller-form" class="crud-form atlas-form">
+          <h3>Add Controller</h3>
+          <input name="role" placeholder="Controller role" aria-label="Controller role">
+          <input name="name" placeholder="Name" aria-label="Controller name">
+          <input name="task" placeholder="Current task" aria-label="Controller task">
+          <input name="responsibilities" placeholder="Responsibilities; separated by semicolons" aria-label="Controller responsibilities">
+          <input name="linked_objectives" placeholder="Objective IDs; separated by semicolons" aria-label="Linked objectives">
+          <input name="linked_injects" placeholder="Inject IDs; separated by semicolons" aria-label="Linked injects">
+          ${formButton("Add Controller", "controller.create", "atlas-controller-form")}
+        </form>
+        <div class="atlas-card-stack">
+          ${designer.controllers.map((controller, index) => `
+            <article class="atlas-mini-card">
+              <div class="record-title">
+                <strong>${escapeHtml(controller.role)}</strong>
+                ${UI.statusBadge(controller.status)}
+              </div>
+              <p>${escapeHtml(controller.task)}</p>
+              <form id="atlas-controller-edit-${index}" class="crud-form">
+                <input type="hidden" name="controller_id" value="${escapeHtml(controller.id)}">
+                <input name="role" value="${escapeHtml(controller.role)}" aria-label="Edit controller role">
+                <input name="task" value="${escapeHtml(controller.task)}" aria-label="Edit controller task">
+                <input name="responsibilities" value="${escapeHtml((controller.responsibilities || []).join("; "))}" aria-label="Edit responsibilities">
+                <input name="linked_objectives" value="${escapeHtml((controller.linked_objectives || []).join("; "))}" aria-label="Edit linked objectives">
+                <input name="linked_injects" value="${escapeHtml((controller.linked_injects || []).join("; "))}" aria-label="Edit linked injects">
+              </form>
+              ${formButton("Edit", "controller.edit", `atlas-controller-edit-${index}`)}
+            </article>
+          `).join("")}
+        </div>
       </aside>
       <section class="atlas-validation">
         <div class="panel-header">
@@ -326,6 +439,7 @@ function renderExerciseDesigner(data) {
     </section>
   `;
   bindDesignerSelection(defaultProperties);
+  bindCommandActions();
 }
 
 function bindDesignerSelection(defaultProperties) {

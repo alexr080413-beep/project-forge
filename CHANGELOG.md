@@ -43,6 +43,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Forge governance foundation with GitHub issue and pull request templates, ADR process, RFC process, governance docs, engineering standards, Definition of Done, release changelog, and safe sample exercise documentation.
 - Project Sentinel reference exercise with canonical organization, scenario, objectives, timeline, controllers, 50-inject library, intelligence, weather, products, observations, AAR, Knowledge Graph relationships, Academy integration, and developer regression guidance.
 - Forge product foundation with product philosophy, product principles, feature specification process, roadmap process, release process, reference implementation policy, and permanent development policy.
+- Atlas Alpha interactive exercise planning with editable exercises, objectives, controllers, injects, timeline events, live validation, Knowledge Graph updates, Project Sentinel reference alignment, and Academy documentation updates.
 
 ### Changed
 
