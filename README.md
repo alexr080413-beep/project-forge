@@ -90,6 +90,20 @@ flowchart LR
 └── pyproject.toml         # Python project metadata and tooling configuration.
 ```
 
+## Documentation Map
+
+- [VISION.md](VISION.md): Executive vision, problem statement, goals, non-goals, and EXCON benefits.
+- [PLATFORM.md](PLATFORM.md): Platform architecture, layers, data flow, and core concepts.
+- [SERVICES.md](SERVICES.md): Service responsibilities, inputs, outputs, dependencies, and maturity.
+- [PROFILES.md](PROFILES.md): Profile concept, MWTC profile direction, dictionaries, and country mappings.
+- [PLUGINS.md](PLUGINS.md): Product SDK, plugin architecture, report plugins, and future plugin types.
+- [WORKFLOWS.md](WORKFLOWS.md): Workflow philosophy, example workflows, and pipeline execution.
+- [DEVELOPMENT.md](DEVELOPMENT.md): Coding standards, milestone naming, commit conventions, tickets, and contribution workflow.
+- [ARCHITECTURE.md](ARCHITECTURE.md): Current architecture notes and implementation boundaries.
+- [ROADMAP.md](ROADMAP.md): Phased capability growth.
+- [RUNBOOK.md](RUNBOOK.md): Operational maintenance notes.
+- [CONTRIBUTING.md](CONTRIBUTING.md): Contributor expectations.
+
 ## Setup Overview
 
 Project Forge is not yet functional, but the local development environment is ready to be extended.
