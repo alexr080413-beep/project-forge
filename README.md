@@ -308,6 +308,7 @@ The platform is ready for iterative capability growth while preserving controlle
 ├── PLATFORM.md            # Platform layers, data flow, and core concepts
 ├── SERVICES.md            # Service responsibilities and boundaries
 ├── WORKFLOWS.md           # Workflow philosophy and demo pipeline
+├── FORGE_STUDIO_UX.md     # UX blueprint for the future Forge Studio application
 ├── PROFILES.md            # Profile model and governance
 ├── PLUGINS.md             # Product SDK and plugin model
 ├── DEVELOPMENT.md         # Coding, testing, milestone, and contribution standards
@@ -327,6 +328,7 @@ The platform is ready for iterative capability growth while preserving controlle
 | [SERVICES.md](SERVICES.md) | Service responsibilities, inputs, outputs, dependencies, status, and boundaries. |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Architecture notes and foundation design boundaries. |
 | [WORKFLOWS.md](WORKFLOWS.md) | Workflow philosophy, demo pipeline, and future workflow direction. |
+| [FORGE_STUDIO_UX.md](FORGE_STUDIO_UX.md) | User personas, workspaces, navigation, workflows, wireframes, and accessibility guidance for Forge Studio. |
 | [PROFILES.md](PROFILES.md) | Profile concepts, MWTC direction, dictionaries, mappings, and governance. |
 | [PLUGINS.md](PLUGINS.md) | Product SDK, plugin architecture, report plugins, and future plugin types. |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Coding standards, test standards, ticket conventions, and review expectations. |
