@@ -47,6 +47,12 @@ The foundation supports exact, partial, tag, metadata, date, service, relevance,
 
 The foundation supports audit capture for service execution, workflows, review actions, approvals, rejections, configuration changes, profile selection, AI request metadata, product generation, distribution, and automation execution. It intentionally does not implement persistent storage or database connections.
 
+## Metrics Service Foundation
+
+`project_forge.metrics_service` provides local operational observability for Forge services. `Metric` defines a stream, `MetricValue` records a value, `MetricRegistry` stores and queries metrics, `MetricCollector` offers convenience recording methods, `MetricSnapshot` captures point-in-time state, and `MetricReport` summarizes snapshot values.
+
+The foundation supports counters, gauges, timers, histogram placeholders, tags, metadata, snapshots, and standard metrics for workflow executions, products generated, review queue size, QA pass/fail rates, translation operations, AI requests, automation executions, search requests, and distribution events. It intentionally avoids visualization and external monitoring systems.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:

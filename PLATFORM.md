@@ -29,7 +29,7 @@ flowchart LR
     N --> H
 ```
 
-The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, a storage service foundation, a search service foundation, an audit service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
+The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, a storage service foundation, a search service foundation, an audit service foundation, a metrics service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
 
 ## Platform Layers
 
@@ -114,6 +114,7 @@ Primary services:
 - Pipeline Orchestrator
 - Search Service
 - Audit Service
+- Metrics Service
 
 ## Data Flow
 
@@ -129,6 +130,7 @@ The platform data flow follows a controlled path:
 8. Approved products can later be handled by the Distribution Service through local, dry-run, or placeholder channels, while the Storage Service provides controlled local artifact access, listing, metadata, and archive behavior.
 9. The Search Service can provide ranked local discovery across configured service indexes without external APIs or semantic/vector search.
 10. The Audit Service can record significant actions, correlation IDs, parent/child events, severity, tags, and metadata for traceability and after-action review.
+11. The Metrics Service can collect local counters, gauges, timers, histogram placeholders, snapshots, and reports for health, performance, and exercise analytics.
 
 ## Core Concepts
 
@@ -183,3 +185,7 @@ Search provides a unified discovery interface across Forge services. The current
 ### Audit
 
 Audit records significant actions across the platform. The current foundation supports in-memory events, actors, actions, categories, sessions, correlation IDs, parent/child relationships, severity, tags, metadata, and filtering without persistent storage or database connections.
+
+### Metrics And Observability
+
+Metrics and observability provide local insight into platform health, throughput, and exercise activity. The current foundation supports counters, gauges, timers, histogram placeholders, tags, metadata, snapshots, collectors, and reports without visualization or external monitoring systems.

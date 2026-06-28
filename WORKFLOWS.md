@@ -110,6 +110,12 @@ The Audit Service records significant platform actions for traceability, account
 
 The current foundation is in-memory only. It does not persist audit entries, connect to databases, or store AI prompt or response content.
 
+## Metrics Execution
+
+The Metrics Service collects local operational metrics across Forge services. It supports counters, gauges, timers, histogram placeholders, tags, metadata, snapshots, collectors, and reports for workflow executions, product generation, review queue size, QA pass/fail rates, translation operations, AI requests, automation executions, search requests, and distribution events.
+
+The current foundation does not implement visualization, dashboards, external monitoring systems, or histogram aggregation.
+
 ## Automation Execution
 
 The Automation Service records when a workflow would be triggered by a cron schedule, manual action, event payload, workflow event, or condition. It preserves execution history and retry policy metadata, but it does not invoke workflow handlers or depend on an external scheduler.
@@ -225,6 +231,7 @@ Future workflow work should add:
 - Storage-backed artifact retention
 - Cross-service search surfaces
 - Audit-backed after-action review
+- Metrics-backed health and performance snapshots
 - Automation runtime integration
 - Runtime observability
 - Controller-facing workflow status

@@ -61,6 +61,7 @@ flowchart LR
 - **Storage service**: Provides a common local abstraction for artifact metadata, listing, dry-run writes, and archiving.
 - **Search service**: Provides a unified local search interface across Forge service indexes.
 - **Audit service**: Records significant platform actions in memory for traceability and after-action review.
+- **Metrics service**: Collects local operational metrics and snapshots for health, performance, and exercise analytics.
 - **Automation service**: Records schedule, manual, event, workflow, and conditional triggers without external schedulers.
 - **Review queue**: Holds prepared products for human approval, rejection, or revision before release.
 - **Pipeline orchestrator**: Coordinates local Project Forge services into ordered, auditable workflows.
@@ -169,7 +170,7 @@ See [SETUP.md](SETUP.md) for the longer setup notes.
 
 ## Current Status
 
-Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, an Integration Service for source definitions and dry-run connectors, a Profile Manager for exercise environments, a Review Queue for human release control, a Distribution Service for approved outputs, a Storage Service for local artifact handling, a Search Service for cross-service discovery, an Audit Service for traceability, an Automation Service for local trigger recording, and a Pipeline Orchestrator that can run ordered in-process workflows.
+Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, an Integration Service for source definitions and dry-run connectors, a Profile Manager for exercise environments, a Review Queue for human release control, a Distribution Service for approved outputs, a Storage Service for local artifact handling, a Search Service for cross-service discovery, an Audit Service for traceability, a Metrics Service for local observability, an Automation Service for local trigger recording, and a Pipeline Orchestrator that can run ordered in-process workflows.
 
 ### Integration Service
 
@@ -198,6 +199,10 @@ The `project_forge.search_service` package provides search queries, filters, sco
 ### Audit Service
 
 The `project_forge.audit_service` package provides actors, actions, categories, events, entries, sessions, registry support, validation, timestamps, correlation IDs, parent/child event links, severity, tags, metadata, and filtering. It records service execution, workflow execution, review actions, approvals, rejections, configuration changes, profile selection, AI request metadata, product generation, distribution, and automation execution in memory only. It does not implement persistent storage or connect to databases.
+
+### Metrics Service
+
+The `project_forge.metrics_service` package provides metrics, metric types, values, snapshots, registry support, collector helpers, reports, validation, tags, and metadata for local operational observability. It supports counters, gauges, timers, histogram placeholders, snapshots, and standard metrics for workflows, products, review queues, QA, translation, AI requests, automation, search, and distribution. It does not implement visualization or use external monitoring systems.
 
 ### Automation Service
 

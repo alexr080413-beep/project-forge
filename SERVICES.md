@@ -25,6 +25,7 @@ This document describes the current and planned service boundaries for Project F
 | Storage Service | Read metadata, list, dry-run write, and archive project artifacts through local and placeholder providers | Implemented foundation |
 | Search Service | Query and rank local indexes across Forge service domains | Implemented foundation |
 | Audit Service | Record and filter significant platform actions for traceability and after-action review | Implemented foundation |
+| Metrics Service | Collect local operational metrics, snapshots, and reports for health and exercise analytics | Implemented foundation |
 | Automation Service | Record schedule, manual, event, workflow, and conditional triggers for workflows | Implemented foundation |
 | Workflow Engine | Execute ordered local workflow steps | Implemented foundation |
 | Pipeline Orchestrator | Coordinate platform services into end-to-end pipelines | Implemented foundation |
@@ -570,6 +571,40 @@ The service does not perform semantic search, vector search, hybrid search, embe
 **Current Boundary**
 
 The service stores entries in memory only. It does not implement persistent storage, connect to databases, or store AI prompt/response content.
+
+## Metrics Service
+
+**Responsibilities**
+
+- Register local metrics across Forge services.
+- Collect counters, gauges, timers, and histogram placeholders.
+- Record metric values with tags and metadata.
+- Create metric snapshots.
+- Produce local metric reports.
+- Query metrics by type, name, tag, and metadata.
+- Support standard metrics for workflow executions, products generated, review queue size, QA pass/fail rates, translation operations, AI requests, automation executions, search requests, and distribution events.
+
+**Inputs**
+
+- `Metric`
+- `MetricValue`
+- `MetricFilter`
+- Collector updates from platform services
+
+**Outputs**
+
+- `MetricSnapshot`
+- `MetricReport`
+- Queried metric lists
+
+**Dependencies**
+
+- Python standard library only
+- Platform services that emit metric values
+
+**Current Boundary**
+
+The service does not implement visualization, dashboards, external monitoring integrations, or histogram aggregation. Histogram metrics are placeholders only.
 
 ## Automation Service
 
