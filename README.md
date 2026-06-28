@@ -57,6 +57,7 @@ flowchart LR
 - **AI-assisted transformation engine**: Converts source material into scenario-consistent notional drafts.
 - **Human review controls**: Keeps EXCON staff in charge of approval, release, and correction.
 - **Output generation**: Produces structured reports, injects, summaries, and other exercise artifacts.
+- **Review queue**: Holds prepared products for human approval, rejection, or revision before release.
 - **Pipeline orchestrator**: Coordinates local Project Forge services into ordered, auditable workflows.
 
 ## Forge Principles
@@ -163,11 +164,15 @@ See [SETUP.md](SETUP.md) for the longer setup notes.
 
 ## Current Status
 
-Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, a Profile Manager for exercise environments, and a Pipeline Orchestrator that can run ordered in-process workflows.
+Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, a Profile Manager for exercise environments, a Review Queue for human release control, and a Pipeline Orchestrator that can run ordered in-process workflows.
 
 ### Profile Manager
 
 The `project_forge.profile_manager` package provides profile metadata, component definitions, registry lookup, YAML loading, and validation for exercise-specific Forge profiles. Profiles select enabled services, enabled plugins, knowledge base paths, template paths, translation dictionary paths, workflow paths, default scenarios, and metadata without modifying Forge Core.
+
+### Review Queue
+
+The `project_forge.review_queue` package provides local review items, ordered review queues, reviewer assignment, approval, rejection, revision requests, notes, timestamps, audit history, registry support, and manager operations. It does not publish products automatically.
 
 ### Pipeline Orchestrator
 

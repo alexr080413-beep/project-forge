@@ -19,9 +19,9 @@ This document describes the current and planned service boundaries for Project F
 | AI Reasoning Engine | Build bounded prompts and provider interfaces without live API calls | Implemented foundation |
 | Product SDK | Load, validate, discover, register, and format product plugins | Implemented foundation |
 | QA Service | Run deterministic product checks and aggregate QA status | Implemented foundation |
+| Review Queue | Hold products for human controller review before release | Implemented foundation |
 | Workflow Engine | Execute ordered local workflow steps | Implemented foundation |
 | Pipeline Orchestrator | Coordinate platform services into end-to-end pipelines | Implemented foundation |
-| Review Queue | Hold products for human controller review | Planned |
 | Output Generation | Export approved products to final formats | Planned |
 
 ## Core Models
@@ -362,6 +362,38 @@ The current foundation does not perform live API calls.
 - Scenario and profile rules
 - Translation Engine for leakage control
 
+## Review Queue
+
+**Responsibilities**
+
+- Hold prepared or generated products before release.
+- Preserve queue ordering by priority and submission time.
+- Support reviewer assignment, approval, rejection, and revision requests.
+- Retain review comments, notes, audit history, and timestamps.
+- Provide registry and manager interfaces for local queue operations.
+
+**Inputs**
+
+- Product identifiers and product metadata
+- Reviewer assignments
+- Review decisions
+- Review comments and notes
+
+**Outputs**
+
+- `ReviewItem`
+- `ReviewQueue`
+- `ReviewDecision`
+- `ReviewComment`
+- `ReviewStatus`
+- `Reviewer`
+
+**Dependencies**
+
+- Product SDK
+- QA Service
+- Human controller workflow
+
 ## Workflow Engine
 
 **Responsibilities**
@@ -418,37 +450,7 @@ The current foundation does not perform live API calls.
 - AI Reasoning Engine
 - Product SDK
 - QA Service
-- Future Review Queue
-
-## Review Queue
-
-**Responsibilities**
-
-- Hold prepared products for human review.
-- Track approval, rejection, correction, and release decisions.
-- Preserve review history and controller authority.
-
-**Inputs**
-
-- QA-cleared products
-- Product metadata
-- Controller review actions
-
-**Outputs**
-
-- Review status
-- Approval records
-- Rejection or correction notes
-
-**Dependencies**
-
-- Product SDK
-- QA Service
-- Human controller workflow
-
-**Current Boundary**
-
-The review queue is represented in pipeline documentation and example flow, but a production review service is planned future work.
+- Review Queue
 
 ## Output Generation
 

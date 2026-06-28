@@ -16,6 +16,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Pipeline Orchestrator foundation with ordered stage execution, execution logging, metadata, failure handling, registry support, and a real-world event example pipeline.
 - Executive and platform documentation covering vision, architecture, services, profiles, plugins, workflows, and development conventions.
 - Profile Manager foundation with YAML loading, profile validation, registry lookup, and example MWTC, ITX, and Joint Exercise profiles.
+- Review Queue Service foundation with ordered queues, reviewer assignment, approval, rejection, revision requests, audit history, notes, timestamps, registry support, manager operations, and sample review items.
 
 ### Changed
 

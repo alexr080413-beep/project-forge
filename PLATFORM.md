@@ -28,7 +28,7 @@ flowchart LR
     N --> H
 ```
 
-The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, product plugin definitions, workflow foundations, and a pipeline orchestrator. Production services, external integrations, user interfaces, and report export surfaces remain future work.
+The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, product plugin definitions, workflow foundations, a review queue foundation, and a pipeline orchestrator. Production services, external integrations, user interfaces, and report export surfaces remain future work.
 
 ## Platform Layers
 
@@ -96,7 +96,7 @@ This layer checks whether a prepared product is complete, scenario-safe, source-
 Primary services:
 
 - QA Service
-- Future review queue
+- Review Queue
 - Future approval and release controls
 
 ### 7. Orchestration Layer
