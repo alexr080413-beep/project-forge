@@ -116,6 +116,7 @@ Primary services:
 - Audit Service
 - Metrics Service
 - Configuration Service
+- Security Service
 
 ## Data Flow
 
@@ -133,6 +134,7 @@ The platform data flow follows a controlled path:
 10. The Audit Service can record significant actions, correlation IDs, parent/child events, severity, tags, and metadata for traceability and after-action review.
 11. The Metrics Service can collect local counters, gauges, timers, histogram placeholders, snapshots, and reports for health, performance, and exercise analytics.
 12. The Configuration Service can load and resolve local settings across platform, service, profile, workflow, plugin, environment, and user scopes.
+13. The Security Service can evaluate local role-based access decisions for users, service accounts, and system actors while preserving audit-ready allow/deny records.
 
 ## Core Concepts
 
@@ -195,3 +197,7 @@ Metrics and observability provide local insight into platform health, throughput
 ### Configuration
 
 Configuration provides central local settings management. The current foundation supports YAML and JSON loading, default values, deterministic override precedence, required field validation, environment variable placeholders, metadata, audit-ready change records, and registry lookup without secret managers, network calls, or databases.
+
+### Security
+
+Security provides local authorization foundations for the platform. The current foundation supports principals, roles, permissions, policies, security contexts, allow/deny decisions, validation, default Forge roles, metadata, and audit-ready decision records without real authentication, CAC integration, external identity providers, credential storage, or network calls.

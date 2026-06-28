@@ -64,6 +64,7 @@ flowchart LR
 - **Metrics service**: Collects local operational metrics and snapshots for health, performance, and exercise analytics.
 - **Configuration service**: Loads and resolves local platform, service, profile, workflow, plugin, environment, and user settings.
 - **Automation service**: Records schedule, manual, event, workflow, and conditional triggers without external schedulers.
+- **Security service**: Provides local principals, roles, permissions, policies, RBAC decisions, validation, and audit-ready decision records.
 - **Review queue**: Holds prepared products for human approval, rejection, or revision before release.
 - **Pipeline orchestrator**: Coordinates local Project Forge services into ordered, auditable workflows.
 
@@ -171,7 +172,7 @@ See [SETUP.md](SETUP.md) for the longer setup notes.
 
 ## Current Status
 
-Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, an Integration Service for source definitions and dry-run connectors, a Profile Manager for exercise environments, a Review Queue for human release control, a Distribution Service for approved outputs, a Storage Service for local artifact handling, a Search Service for cross-service discovery, an Audit Service for traceability, a Metrics Service for local observability, a Configuration Service for local settings, an Automation Service for local trigger recording, and a Pipeline Orchestrator that can run ordered in-process workflows.
+Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, an Integration Service for source definitions and dry-run connectors, a Profile Manager for exercise environments, a Review Queue for human release control, a Distribution Service for approved outputs, a Storage Service for local artifact handling, a Search Service for cross-service discovery, an Audit Service for traceability, a Metrics Service for local observability, a Configuration Service for local settings, an Automation Service for local trigger recording, a Security Service for local RBAC foundations, and a Pipeline Orchestrator that can run ordered in-process workflows.
 
 ### Integration Service
 
@@ -212,6 +213,10 @@ The `project_forge.configuration_service` package provides configuration items, 
 ### Automation Service
 
 The `project_forge.automation_service` package provides automation rules, cron schedules, manual triggers, event triggers, workflow triggers, conditional triggers, retry policy, enable/disable controls, execution history, validation, and registry support. It records trigger intent only; it does not run workflows or use external schedulers.
+
+### Security Service
+
+The `project_forge.security_service` package provides local security principals, roles, permissions, policies, contexts, decisions, registry lookup, validation, default Forge roles, role-based access control, allow/deny evaluation, metadata, and audit-ready decision records. It supports users, service accounts, and system actors without real authentication, CAC integration, identity provider integration, or network calls.
 
 ### Pipeline Orchestrator
 

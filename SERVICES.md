@@ -28,6 +28,7 @@ This document describes the current and planned service boundaries for Project F
 | Metrics Service | Collect local operational metrics, snapshots, and reports for health and exercise analytics | Implemented foundation |
 | Configuration Service | Load, resolve, validate, and look up local platform configuration | Implemented foundation |
 | Automation Service | Record schedule, manual, event, workflow, and conditional triggers for workflows | Implemented foundation |
+| Security Service | Define local principals, roles, permissions, policies, RBAC decisions, validation, and audit-ready decision records | Implemented foundation |
 | Workflow Engine | Execute ordered local workflow steps | Implemented foundation |
 | Pipeline Orchestrator | Coordinate platform services into end-to-end pipelines | Implemented foundation |
 
@@ -677,6 +678,42 @@ The service does not connect to external secret managers, perform network calls,
 **Current Boundary**
 
 The service does not use external schedulers and does not execute workflows. It records that a trigger matched or was skipped so future runtime services can act deliberately.
+
+## Security Service
+
+**Responsibilities**
+
+- Define local users, service accounts, and system actors.
+- Define roles, permissions, and policies.
+- Register and look up principals, roles, permissions, policies, and decisions.
+- Validate role, permission, principal, and policy references.
+- Evaluate role-based access control decisions.
+- Preserve metadata and audit-ready allow/deny decision records.
+- Provide default Forge roles for administrators, exercise directors, EXCON controllers, intelligence controllers, media controllers, reviewers, viewers, and system actors.
+
+**Inputs**
+
+- `SecurityPrincipal`
+- `SecurityRole`
+- `SecurityPermission`
+- `SecurityPolicy`
+- Requested action and resource identifiers
+
+**Outputs**
+
+- `SecurityContext`
+- `SecurityDecision`
+- Registry lookup results
+- Validation failures for inconsistent security definitions
+
+**Dependencies**
+
+- Python standard library only
+- Future platform services that need local access decisions
+
+**Current Boundary**
+
+The service does not perform real authentication, integrate with CAC, call external identity providers, manage sessions, connect to a network service, or store credentials. It is a deterministic local authorization foundation only.
 
 ## Workflow Engine
 

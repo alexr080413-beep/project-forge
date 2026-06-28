@@ -59,6 +59,12 @@ The foundation supports counters, gauges, timers, histogram placeholders, tags, 
 
 The foundation supports platform, service, profile, workflow, plugin, environment, and user scopes, plus defaults, deterministic overrides, environment variable placeholders, and metadata. It intentionally avoids external secret managers, network calls, and database connections.
 
+## Security Service Foundation
+
+`project_forge.security_service` provides local authorization foundations for Project Forge. `SecurityPrincipal` identifies users, service accounts, and system actors, `SecurityRole` groups permissions, `SecurityPermission` defines action/resource access, `SecurityPolicy` records allow or deny rules, `SecurityContext` resolves effective roles and permissions, `SecurityDecision` preserves audit-ready evaluation records, and `SecurityRegistry` provides in-memory lookup and RBAC evaluation.
+
+The foundation supports default Forge roles, policy validation, role-based access control, metadata, and allow/deny decision records. It intentionally avoids real authentication, CAC integration, external identity providers, credential storage, sessions, databases, and network calls.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:
