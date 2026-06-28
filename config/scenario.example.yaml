@@ -1,0 +1,75 @@
+{
+  "scenarios": [
+    {
+      "identifier": "scenario-forge-example",
+      "scenario_name": "Forge Example Scenario",
+      "description": "A notional exercise scenario used to validate Project Forge foundation engines.",
+      "current_exercise_day": 2,
+      "current_phase": "execution",
+      "active_objectives": [
+        {
+          "identifier": "obj-shared-awareness",
+          "title": "Maintain shared scenario awareness",
+          "description": "Keep EXCON and training audiences aligned on the current notional picture.",
+          "status": "active",
+          "tags": ["awareness"],
+          "metadata": {}
+        },
+        {
+          "identifier": "obj-decision-rhythm",
+          "title": "Validate EXCON decision rhythm",
+          "description": "Exercise controller review and approval processes under tempo.",
+          "status": "active",
+          "tags": ["excon", "decision"],
+          "metadata": {}
+        }
+      ],
+      "active_constraints": [
+        {
+          "identifier": "constraint-no-kinetic-escalation",
+          "description": "Do not introduce kinetic escalation without senior controller approval.",
+          "severity": "high",
+          "tags": ["escalation"],
+          "metadata": {}
+        }
+      ],
+      "active_assumptions": [
+        {
+          "identifier": "assumption-notional-border-activity",
+          "description": "Border activity remains notional and bounded by exercise control measures.",
+          "confidence": 0.85,
+          "tags": ["border", "notional"],
+          "metadata": {}
+        }
+      ],
+      "active_control_measures": [
+        {
+          "identifier": "cm-senior-controller-release",
+          "title": "Senior Controller Release Authority",
+          "description": "Senior Controller approval is required before escalation-sensitive products enter play.",
+          "owner": "EXCON",
+          "tags": ["release", "approval"],
+          "metadata": {}
+        }
+      ],
+      "escalation_level": "elevated",
+      "tempo": "steady",
+      "related_entities": [
+        "org-excon",
+        "unit-jtf-hq",
+        "platform-watchtower"
+      ],
+      "related_events": [
+        "evt-001",
+        "evt-002"
+      ],
+      "related_knowledge_documents": [
+        "knowledge_base/README.md"
+      ],
+      "metadata": {
+        "notional": true
+      },
+      "status": "current"
+    }
+  ]
+}
