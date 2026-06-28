@@ -57,6 +57,7 @@ flowchart LR
 - **AI-assisted transformation engine**: Converts source material into scenario-consistent notional drafts.
 - **Human review controls**: Keeps EXCON staff in charge of approval, release, and correction.
 - **Output generation**: Produces structured reports, injects, summaries, and other exercise artifacts.
+- **Pipeline orchestrator**: Coordinates local Project Forge services into ordered, auditable workflows.
 
 ## Forge Principles
 
@@ -148,4 +149,14 @@ See [SETUP.md](SETUP.md) for the longer setup notes.
 
 ## Current Status
 
-Project Forge is a clean project skeleton with an initial typed core model layer for the primary domain entities. The README describes the intended system, and the first implementation milestone now includes foundational data models for sources, exercise context, scenario entities, report requests, generated reports, and review quality checks.
+Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, and a Pipeline Orchestrator that can run ordered in-process workflows.
+
+### Pipeline Orchestrator
+
+The `project_forge.pipeline_orchestrator` package provides a local execution foundation for end-to-end workflows. Pipelines register ordered stages dynamically, execute without external APIs, capture execution logs and metadata, stop on stage failure, and expose execution status through `PipelineStatus`.
+
+The included example pipeline demonstrates the intended platform flow:
+
+```text
+Real World Event -> Context -> Translation -> AI Reasoning -> Product SDK -> QA -> Review Queue
+```

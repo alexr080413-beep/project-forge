@@ -13,6 +13,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Python package source layout.
 - Test, asset, configuration, knowledge base, output, and GitHub Actions directories.
 - Typed core models for source items, exercise context, scenario actors and locations, scenario mappings, report requests, generated reports, review status, and quality checks.
+- Pipeline Orchestrator foundation with ordered stage execution, execution logging, metadata, failure handling, registry support, and a real-world event example pipeline.
 
 ### Changed
 

@@ -4,7 +4,7 @@ This document records the intended architecture for Project Forge. It exists bef
 
 ## Current State
 
-Project Forge currently contains only a project skeleton. There are no implemented workflows, services, external integrations, data models, or command-line entry points yet.
+Project Forge contains a typed local foundation for core domain models and deterministic service modules. It now includes an in-process Pipeline Orchestrator foundation for ordered workflows, but it does not yet include production services, external integrations, or command-line entry points.
 
 ## Intended Boundaries
 
@@ -23,6 +23,12 @@ Project Forge currently contains only a project skeleton. There are no implement
 - Keep configuration loading explicit and documented.
 - Record significant architecture decisions in this file or future ADRs.
 
+## Pipeline Orchestrator Foundation
+
+`project_forge.pipeline_orchestrator` coordinates Project Forge services through local, ordered pipeline stages. A `Pipeline` owns the ordered stage list, `PipelineStage` wraps one deterministic callable, `PipelineContext` carries shared data and metadata, `PipelineExecution` records status, stage results, and execution logs, and `PipelineRegistry` provides in-memory registration for pipelines and reusable stages.
+
+The foundation intentionally avoids external APIs, AI provider calls, and report generation. It is designed to connect existing deterministic service foundations while preserving auditable status, failure handling, and human review boundaries.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:
@@ -30,7 +36,6 @@ As functionality is implemented, expand this document with:
 - Core workflows
 - Data flow diagrams
 - Configuration model
-- External dependencies
 - Error handling strategy
 - Testing strategy
 - Deployment and operations model
