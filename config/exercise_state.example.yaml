@@ -1,0 +1,41 @@
+exercise_name: Forge Example Exercise
+current_day:
+  day_number: 2
+  label: Training Day 2
+current_phase: execution
+current_operational_summary: Controllers are maintaining a steady operational picture for notional play.
+active_training_objectives:
+  - Maintain shared scenario awareness
+  - Validate EXCON decision rhythm
+active_scenario_actors:
+  - Host Nation Government
+  - Joint Task Force Headquarters
+active_locations:
+  - Capital Operations Center
+  - Northern Border Region
+recent_notional_events:
+  - Host nation leaders requested additional coordination support
+  - Simulated border activity increased overnight
+constraints_or_escalation_limits:
+  - Do not introduce kinetic escalation without senior controller approval
+  - Keep all outputs clearly marked as exercise material
+exercise_tempo: steady
+escalation_level: elevated
+scenario_situation:
+  summary: The scenario remains tense but controlled, with EXCON preserving room for branch play.
+  political:
+    summary: Host nation officials are balancing public reassurance with coalition coordination.
+    key_dynamics:
+      - Cabinet-level consultations continue
+      - Opposition voices are questioning response timelines
+  military:
+    summary: Friendly forces are postured for monitoring and coordination rather than direct action.
+    force_posture: Heightened readiness with no authorized escalation.
+    key_dynamics:
+      - Joint staff coordination tempo is increasing
+      - Regional units are reporting through normal exercise channels
+  information_environment:
+    summary: Public narratives are fragmented but still manageable for training purposes.
+    active_narratives:
+      - Calls for transparency from local media
+      - Rumors about border incidents on simulated social media
