@@ -77,6 +77,12 @@ The foundation is intentionally demonstrative and local. It uses repository samp
 
 The foundation intentionally avoids frontend implementation, web server dependencies, persistence, authentication, automatic publishing, and external calls. Injects are not considered releasable until explicit human approval is recorded.
 
+## Forge Studio Web MVP
+
+`project_forge.forge_studio.web_app` provides the first runnable local Forge Studio application. It uses the Forge Studio MVP models, local mock data, a stdlib HTTP server, and static HTML/CSS/JavaScript assets to render a dark command-center dashboard and placeholder navigation sections.
+
+The web MVP is intentionally local and demonstrative. It does not add authentication, persistence, a frontend framework, external calls, automatic publishing, or real distribution behavior.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:

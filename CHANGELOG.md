@@ -31,6 +31,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Forge metallic shield logo and dark command-center brand identity guidance.
 - Official Forge brand kit covering identity, vision, messaging, voice, logo guidance, colors, typography, icons, imagery prompts, UI guidance, and presentation guidance.
 - Forge Studio MVP foundation with exercise, user, inject, timeline, human review, audit models, in-memory registry, and framework-neutral API module scaffolding.
+- Runnable Forge Studio Web MVP with local stdlib server, mock data, dark themed dashboard, sidebar navigation, placeholder pages, and documentation.
 
 ### Changed
 

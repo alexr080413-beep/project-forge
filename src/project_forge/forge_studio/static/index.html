@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Forge Studio MVP</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Forge Studio navigation">
+        <div class="brand-block">
+          <img src="/assets/forge-logo.png" alt="Forge logo" class="brand-logo">
+          <div>
+            <div class="brand-title">Forge Studio</div>
+            <div class="brand-kicker">Every Event. Every Inject. Every Exercise.</div>
+          </div>
+        </div>
+        <nav class="nav-list">
+          <button class="nav-item active" data-page="dashboard">Dashboard</button>
+          <button class="nav-item" data-page="exercises">Exercises</button>
+          <button class="nav-item" data-page="timeline">Timeline</button>
+          <button class="nav-item" data-page="inject-library">Inject Library</button>
+          <button class="nav-item" data-page="controllers">Controllers</button>
+          <button class="nav-item" data-page="reports">Reports</button>
+          <button class="nav-item" data-page="settings">Settings</button>
+        </nav>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Human Command. Machine Assistance.</p>
+            <h1 id="page-title">Dashboard</h1>
+          </div>
+          <div class="status-pill">Local MVP</div>
+        </header>
+
+        <section id="dashboard-page" class="page active-page">
+          <div class="dashboard-grid">
+            <article class="summary-card wide">
+              <span class="card-label">Active Exercise</span>
+              <h2 id="active-exercise">Loading...</h2>
+              <p id="active-exercise-description">Loading exercise context.</p>
+            </article>
+            <article class="summary-card">
+              <span class="card-label">Exercise Status</span>
+              <strong id="exercise-status">--</strong>
+            </article>
+            <article class="summary-card">
+              <span class="card-label">Exercise Phase</span>
+              <strong id="exercise-phase">--</strong>
+            </article>
+            <article class="summary-card">
+              <span class="card-label">Pending Reviews</span>
+              <strong id="pending-reviews">--</strong>
+            </article>
+            <article class="summary-card">
+              <span class="card-label">Active Injects</span>
+              <strong id="active-injects">--</strong>
+            </article>
+            <article class="summary-card">
+              <span class="card-label">Timeline Summary</span>
+              <strong id="timeline-count">--</strong>
+            </article>
+            <article class="summary-card">
+              <span class="card-label">Controller Count</span>
+              <strong id="controller-count">--</strong>
+            </article>
+          </div>
+
+          <div class="work-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Timeline Summary</h2>
+                <span>Latest activity</span>
+              </div>
+              <div id="timeline-list" class="record-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Human Review Queue</h2>
+                <span>Approval required</span>
+              </div>
+              <div id="review-list" class="record-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="placeholder-page" class="page">
+          <div class="placeholder-panel">
+            <p class="eyebrow">Forge Studio MVP</p>
+            <h2 id="placeholder-title">Section</h2>
+            <p id="placeholder-copy">
+              This workspace is scaffolded for the running MVP. Future sprints will connect it to the Forge Studio domain and API foundation.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

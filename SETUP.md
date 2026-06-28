@@ -38,6 +38,18 @@ Run the local end-to-end demo pipeline with:
 python -m project_forge.demo_pipeline
 ```
 
+Run the local Forge Studio Web MVP with:
+
+```bash
+python -m project_forge.forge_studio.web_app
+```
+
+Open:
+
+```text
+http://127.0.0.1:8765
+```
+
 Future quality checks should add canonical commands for:
 
 - Formatting code
