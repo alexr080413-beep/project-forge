@@ -356,6 +356,7 @@ The platform is ready for iterative capability growth while preserving controlle
 ├── brand/                 # Official Forge brand kit, messaging, visual system, and marketing guidance
 ├── config/                # Safe sample configuration, profiles, workflows, dictionaries, plugins
 ├── design_system/         # Forge Studio reusable UI components, tokens, and usage guidance
+├── docs/                  # Forge Academy, vision docs, documentation policy, and prompts
 ├── knowledge_base/        # Durable exercise knowledge references
 ├── outputs/               # Local generated artifacts, ignored except placeholders
 ├── src/project_forge/     # Forge Python package and service foundations
@@ -390,6 +391,9 @@ The platform is ready for iterative capability growth while preserving controlle
 | --- | --- |
 | [brand/README.md](brand/README.md) | Official Forge brand kit covering identity, messaging, voice, logo, colors, typography, icons, imagery, UI guidance, and presentations. |
 | [design_system/README.md](design_system/README.md) | Forge Studio reusable UI components, tokens, usage examples, accessibility rules, responsive guidance, and runtime implementation contract. |
+| [docs/academy/README.md](docs/academy/README.md) | Forge Academy training system with role-based learning paths, walkthroughs, lessons, task guides, troubleshooting, and reference material. |
+| [docs/DOCUMENTATION_POLICY.md](docs/DOCUMENTATION_POLICY.md) | Documentation policy requiring workflow, setup, API, plugin, data model, and architecture changes to update relevant docs. |
+| [docs/prompts/codex-ticket-template.md](docs/prompts/codex-ticket-template.md) | Standard Codex ticket template with documentation, testing, human-in-the-loop, security, and no-go constraint sections. |
 | [VISION.md](VISION.md) | Executive vision, problem statement, goals, non-goals, and EXCON benefits. |
 | [PLATFORM.md](PLATFORM.md) | Platform layers, architecture, data flow, and core concepts. |
 | [EXERCISE.md](EXERCISE.md) | Exercise lifecycle model, object model, hierarchy, workspace mapping, controller mapping, workflow mapping, product mapping, profile mapping, plugin mapping, and navigation implications. |

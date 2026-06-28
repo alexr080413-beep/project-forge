@@ -39,6 +39,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Project Atlas Exercise Designer framework with Object Library, planning timeline canvas, Properties Inspector, toolbar, mock validation status, and planning documentation.
 - Project Atlas Exercise Relationship Engine with exercise asset types, relationship types, mock graph links, relationship-aware inspector fields, relationship map, validation rules, and documentation for Mission Replay and AAR traceability.
 - Forge Operational Knowledge Graph workspace with operational asset nodes, relationship edges, graph visualization, node inspector, asset filters, search, neighbor controls, highlighting, and future AI/Replay/analytics documentation.
+- Forge Academy documentation system with learning paths, walkthroughs, lessons, exercises, task guides, troubleshooting, reference docs, documentation policy, and Codex ticket template.
 
 ### Changed
 
