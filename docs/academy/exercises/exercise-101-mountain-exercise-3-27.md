@@ -1,10 +1,10 @@
-# Exercise 101: Mountain Exercise 3-27
+# Exercise 101: Project Sentinel / Mountain Exercise 3-27
 
-Mountain Exercise 3-27 is the flagship Forge Academy scenario.
+Project Sentinel is the official Forge reference exercise. It uses Mountain Exercise 3-27 as the flagship Forge Academy scenario.
 
 ## Training Goal
 
-Practice the complete Forge workflow from organization setup through archive using a mountain warfare exercise.
+Practice the complete Forge workflow from organization setup through archive using the canonical Sentinel mountain warfare exercise.
 
 ## Scenario Inputs
 
@@ -12,9 +12,10 @@ Practice the complete Forge workflow from organization setup through archive usi
 | --- | --- |
 | Exercise Director | Col Smith |
 | Exercise Control | Bridgeport EXCON |
-| Training Audience | 2d Battalion, 8th Marines |
-| Phase | EXECUTE |
-| Status | ACTIVE |
+| Training Audience | Infantry Battalion |
+| Phase | Planning |
+| Status | Planning |
+| Reference Package | [examples/sentinel](../../../examples/sentinel/README.md) |
 
 ## Practice Tasks
 

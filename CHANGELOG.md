@@ -41,6 +41,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Forge Operational Knowledge Graph workspace with operational asset nodes, relationship edges, graph visualization, node inspector, asset filters, search, neighbor controls, highlighting, and future AI/Replay/analytics documentation.
 - Forge Academy documentation system with learning paths, walkthroughs, lessons, exercises, task guides, troubleshooting, reference docs, documentation policy, and Codex ticket template.
 - Forge governance foundation with GitHub issue and pull request templates, ADR process, RFC process, governance docs, engineering standards, Definition of Done, release changelog, and safe sample exercise documentation.
+- Project Sentinel reference exercise with canonical organization, scenario, objectives, timeline, controllers, 50-inject library, intelligence, weather, products, observations, AAR, Knowledge Graph relationships, Academy integration, and developer regression guidance.
 
 ### Changed
 

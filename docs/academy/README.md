@@ -2,7 +2,9 @@
 
 Forge Academy is the training, walkthrough, task-guide, reference, and troubleshooting system for Forge.
 
-Academy teaches Forge through realistic training, with Mountain Exercise 3-27 as the flagship scenario.
+Academy teaches Forge through realistic training, with Project Sentinel as the flagship scenario.
+
+Project Sentinel is the canonical Forge reference exercise. It uses Mountain Exercise 3-27 at Marine Corps Mountain Warfare Training Center and should be used for Academy walkthroughs, UI demonstrations, documentation examples, screenshots, and future regression testing.
 
 ## Academy Structure
 
@@ -18,7 +20,7 @@ Academy teaches Forge through realistic training, with Mountain Exercise 3-27 as
 
 ## How To Use Academy
 
-Start with a learning path for your role. Then run the complete Mountain Exercise walkthrough. Use task guides for point actions, reference pages for terms, and troubleshooting pages when something does not behave as expected.
+Start with a learning path for your role. Then run the complete Project Sentinel walkthrough. Use task guides for point actions, reference pages for terms, and troubleshooting pages when something does not behave as expected.
 
 ## Core Principle
 

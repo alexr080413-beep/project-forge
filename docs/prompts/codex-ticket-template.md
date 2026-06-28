@@ -26,9 +26,13 @@ Explain the current system state, relevant docs, related services, and known con
 
 State required tests, commands, fixtures, and any browser or documentation checks.
 
+State whether the change must be validated against Project Sentinel.
+
 ## Documentation Updates
 
 List required updates to Forge Academy, reference docs, troubleshooting docs, architecture docs, setup docs, or README.
+
+State whether Project Sentinel documentation or examples must be updated.
 
 ## Human-in-the-loop Considerations
 

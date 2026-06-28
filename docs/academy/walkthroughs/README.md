@@ -2,7 +2,7 @@
 
 Walkthroughs provide scenario-based sets and reps.
 
-The flagship walkthrough is Mountain Exercise 3-27, which follows an exercise from organization setup through archive.
+The flagship walkthrough is Project Sentinel, the canonical Forge reference exercise built around Mountain Exercise 3-27.
 
 ## Available Walkthroughs
 

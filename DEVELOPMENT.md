@@ -34,6 +34,7 @@ Recommended practices:
 - Test validation failures, duplicate identifiers, missing fields, and deterministic ordering.
 - Keep tests free of external API dependencies unless explicitly isolated and documented.
 - Use local fixtures and safe example configuration.
+- Use Project Sentinel as the reference exercise for workflow, UI, graph, product, review, archive, and future regression scenarios when applicable.
 
 Canonical test command:
 
@@ -55,6 +56,8 @@ Documentation should be updated when a change affects:
 - Contributor expectations
 
 Documentation should be clear enough for both leadership and future developers. Avoid unexplained acronyms where a broader audience may need context.
+
+Project Sentinel in `examples/sentinel/` is the canonical reference exercise for documentation, Academy, UI demonstrations, screenshots, conference demonstrations, development examples, and future automated testing.
 
 ## Milestone Naming
 
@@ -120,6 +123,7 @@ Tickets should include:
 - Acceptance criteria
 - Documentation expectations
 - Testing expectations
+- Project Sentinel validation expectations when applicable
 
 Good tickets make boundaries clear. For example, a ticket may say "Do not implement code" or "No external APIs" to preserve scope.
 

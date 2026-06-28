@@ -402,6 +402,7 @@ The platform is ready for iterative capability growth while preserving controlle
 | [docs/rfcs/README.md](docs/rfcs/README.md) | RFC proposal lifecycle, statuses, review expectations, and template. |
 | [docs/releases/CHANGELOG.md](docs/releases/CHANGELOG.md) | Keep-a-Changelog style release history beginning with v0.1.0 Foundation Release. |
 | [examples/README.md](examples/README.md) | Safe sample exercise documentation for Mountain Exercise 3-27, humanitarian assistance, information warfare, island chain defense, and arctic operations. |
+| [examples/sentinel/README.md](examples/sentinel/README.md) | Project Sentinel, the canonical Forge reference exercise for Academy, UI demonstrations, development, regression testing, documentation, screenshots, and conference demonstrations. |
 | [VISION.md](VISION.md) | Executive vision, problem statement, goals, non-goals, and EXCON benefits. |
 | [PLATFORM.md](PLATFORM.md) | Platform layers, architecture, data flow, and core concepts. |
 | [EXERCISE.md](EXERCISE.md) | Exercise lifecycle model, object model, hierarchy, workspace mapping, controller mapping, workflow mapping, product mapping, profile mapping, plugin mapping, and navigation implications. |

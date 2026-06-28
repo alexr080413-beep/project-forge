@@ -1,6 +1,8 @@
 # Complete Exercise Walkthrough
 
-This walkthrough uses Mountain Exercise 3-27 to practice Forge from planning through AAR.
+This walkthrough uses Project Sentinel to practice Forge from planning through AAR.
+
+Project Sentinel is the canonical Forge reference exercise for Academy, UI demonstrations, development, regression testing, documentation, screenshots, conference demonstrations, and future automated testing.
 
 The walkthrough is intentionally scenario-based. Some actions are mock or future-facing in the current MVP, and those boundaries are called out in the relevant task guides.
 
@@ -10,25 +12,27 @@ The walkthrough is intentionally scenario-based. Some actions are mock or future
 | --- | --- |
 | Organization | Marine Corps Mountain Warfare Training Center |
 | Exercise | Mountain Exercise 3-27 |
-| Status | ACTIVE |
-| Phase | EXECUTE |
-| Exercise Director | Col Smith |
+| Status | Planning |
+| Phase | Planning |
+| Exercise Director | Colonel Smith |
 | Exercise Control | Bridgeport EXCON |
+| Training Audience | Infantry Battalion |
+| Reference Package | [examples/sentinel](../../../examples/sentinel/README.md) |
 
 ## Walkthrough Steps
 
 1. Create organization.
    - Use [Create Organization](../task-guides/create-organization.md) to establish the owning command or training venue.
 2. Create exercise.
-   - Use [Create Exercise](../task-guides/create-exercise.md) to create Mountain Exercise 3-27.
+   - Use [Create Exercise](../task-guides/create-exercise.md) to create Mountain Exercise 3-27 from the Project Sentinel reference package.
 3. Open Atlas.
    - Use the `Exercise Designer` workspace to begin planning.
 4. Add objectives.
-   - Define objectives such as Objective Alpha for command and control in mountain terrain.
+   - Use [Sentinel objectives](../../../examples/sentinel/objectives.md) for command and control, intelligence fusion, review discipline, logistics and medical support, information environment response, and AAR evidence.
 5. Add controllers.
    - Assign Exercise Director, Intelligence Controller, White Cell Controller, Weather Controller, Cyber Controller, and reviewers.
 6. Add injects.
-   - Add Civilian Protest, Weather Impact Inject, GPS Interference, and media events.
+   - Use the [Sentinel inject library](../../../examples/sentinel/injects.md) with 50 intelligence, media, weather, cyber, medical, logistics, role player, command decision, civilian activity, and ISR injects.
 7. Link operational assets.
    - Connect objectives, injects, controllers, products, observations, and AAR findings.
 8. Validate the exercise.

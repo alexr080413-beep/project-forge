@@ -31,6 +31,7 @@ Forge engineering standards preserve long-term maintainability, operational trus
 - Add integration tests for cross-service workflows.
 - Keep tests deterministic.
 - Avoid external APIs in tests unless isolated and documented.
+- Validate workflow, UI, graph, product, review, timeline, and archive changes against Project Sentinel when applicable.
 - Run relevant test subsets and the full suite when feasible.
 
 Canonical command:
@@ -106,5 +107,20 @@ Every future Codex implementation prompt shall include:
 - Release notes when applicable.
 - Screenshots when UI changes.
 - Testing requirements.
+- Project Sentinel validation when the change affects user workflows, UI demonstrations, operational assets, graph relationships, products, review, archive, or regression behavior.
 
 Codex prompts should also state no-go constraints, human-in-the-loop considerations, and security considerations for the requested change.
+
+## Project Sentinel Reference Exercise
+
+Project Sentinel is the canonical Forge reference exercise. Future development should use Sentinel for:
+
+- UI demonstrations.
+- Screenshots.
+- Forge Academy walkthroughs.
+- Regression testing plans.
+- Documentation examples.
+- Conference demonstrations.
+- Future automated test fixture design.
+
+Do not create a new reference scenario when Sentinel can cover the workflow. Extend Sentinel documentation first, then add variants only when a feature requires a distinct exercise family.
