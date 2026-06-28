@@ -98,6 +98,12 @@ The Storage Service provides a common artifact access boundary for project folde
 
 The current foundation supports local filesystem, archive folder, output folder, knowledge base folder, and template folder providers. S3, Azure Blob, and SharePoint providers are placeholders and do not make cloud, SharePoint, or network calls.
 
+## Search Execution
+
+The Search Service provides ranked discovery across local Forge service indexes. It supports exact search, partial search, tag search, metadata search, date filtering, service filtering, relevance scoring, and pagination.
+
+The current foundation is lexical and deterministic. Semantic search, vector search, and hybrid search are represented as future capabilities only and are not executed.
+
 ## Automation Execution
 
 The Automation Service records when a workflow would be triggered by a cron schedule, manual action, event payload, workflow event, or condition. It preserves execution history and retry policy metadata, but it does not invoke workflow handlers or depend on an external scheduler.
@@ -211,6 +217,7 @@ Future workflow work should add:
 - Human approval events
 - Export workflow stages
 - Storage-backed artifact retention
+- Cross-service search surfaces
 - Automation runtime integration
 - Runtime observability
 - Controller-facing workflow status

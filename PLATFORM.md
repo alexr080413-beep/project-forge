@@ -29,7 +29,7 @@ flowchart LR
     N --> H
 ```
 
-The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, a storage service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
+The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, a storage service foundation, a search service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
 
 ## Platform Layers
 
@@ -112,6 +112,7 @@ Primary services:
 - Automation Service
 - Workflow Engine
 - Pipeline Orchestrator
+- Search Service
 
 ## Data Flow
 
@@ -125,6 +126,7 @@ The platform data flow follows a controlled path:
 6. The QA Service validates required metadata, source references, confidence, and fiction boundaries.
 7. The Review Queue receives the prepared product for human controller action.
 8. Approved products can later be handled by the Distribution Service through local, dry-run, or placeholder channels, while the Storage Service provides controlled local artifact access, listing, metadata, and archive behavior.
+9. The Search Service can provide ranked local discovery across configured service indexes without external APIs or semantic/vector search.
 
 ## Core Concepts
 
@@ -171,3 +173,7 @@ Distribution handles approved product outputs after human review. The foundation
 ### Storage
 
 Storage provides a common abstraction over project artifact folders. The foundation supports local filesystem, output, archive, knowledge base, and template folders, plus placeholder cloud and collaboration providers, while preserving path validation and audit metadata.
+
+### Search
+
+Search provides a unified discovery interface across Forge services. The current foundation supports deterministic exact, partial, tag, metadata, date, service, relevance, and pagination behavior over local indexes, with semantic, vector, and hybrid search reserved for future implementation.

@@ -21,6 +21,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Automation Service foundation with automation rules, cron schedules, manual triggers, event triggers, workflow triggers, conditional triggers, enable/disable controls, execution history, retry policy validation, and registry support.
 - Integration Service foundation with YAML-loaded source definitions, connector registration, source validation, dry-run collection, status tracking, metadata capture, error handling, and audit metadata for RSS, website, manual upload, local file, and placeholder external source types.
 - Storage Service foundation with provider registration, path validation, metadata reads, dry-run writes, local folder listing, archive operations, audit metadata, and placeholder S3, Azure Blob, and SharePoint providers.
+- Search Service foundation with query validation, multiple local indexes, exact search, partial search, tag search, metadata search, date and service filtering, relevance ranking, pagination, and future semantic/vector/hybrid capability declarations.
 
 ### Changed
 

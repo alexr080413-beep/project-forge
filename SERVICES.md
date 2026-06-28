@@ -23,6 +23,7 @@ This document describes the current and planned service boundaries for Project F
 | Review Queue | Hold products for human controller review before release | Implemented foundation |
 | Distribution Service | Handle approved product outputs after review through local and placeholder channels | Implemented foundation |
 | Storage Service | Read metadata, list, dry-run write, and archive project artifacts through local and placeholder providers | Implemented foundation |
+| Search Service | Query and rank local indexes across Forge service domains | Implemented foundation |
 | Automation Service | Record schedule, manual, event, workflow, and conditional triggers for workflows | Implemented foundation |
 | Workflow Engine | Execute ordered local workflow steps | Implemented foundation |
 | Pipeline Orchestrator | Coordinate platform services into end-to-end pipelines | Implemented foundation |
@@ -502,6 +503,40 @@ The service does not send email, call SharePoint, call Teams, use external APIs,
 **Current Boundary**
 
 The service does not call S3, Azure Blob Storage, SharePoint, cloud APIs, or network services. Cloud and SharePoint providers are placeholders that record intent and audit metadata only.
+
+## Search Service
+
+**Responsibilities**
+
+- Register multiple local search indexes.
+- Validate search queries, filters, indexes, and ranked results.
+- Search knowledge documents, events, entities, exercise state, scenarios, products, review queue items, QA findings, workflows, and profiles.
+- Support exact, partial, tag, metadata, date-filtered, and service-filtered search.
+- Rank results with deterministic relevance scoring.
+- Return paginated results.
+- Declare future semantic, vector, and hybrid search capabilities without implementing them.
+
+**Inputs**
+
+- `SearchQuery`
+- `SearchFilter`
+- `SearchIndex`
+- Local indexed `SearchMatch` records from Forge services
+
+**Outputs**
+
+- `SearchResult`
+- Ranked `SearchMatch` records
+- Search metadata
+
+**Dependencies**
+
+- Registered local service indexes
+- Python standard library only
+
+**Current Boundary**
+
+The service does not perform semantic search, vector search, hybrid search, embedding generation, external API calls, or network calls.
 
 ## Automation Service
 

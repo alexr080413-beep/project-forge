@@ -35,6 +35,12 @@ The foundation intentionally avoids external APIs, AI provider calls, and report
 
 The foundation implements local filesystem behavior only. S3, Azure Blob, and SharePoint providers are placeholders and do not perform network or cloud calls.
 
+## Search Service Foundation
+
+`project_forge.search_service` provides a unified discovery interface across Forge service indexes. A `SearchIndex` acts as a local provider for one service and scope, `SearchQuery` and `SearchFilter` describe deterministic lexical search intent, `SearchMatch` represents indexed service records, `SearchResult` returns ranked paginated results, and `SearchRegistry` coordinates multiple indexes.
+
+The foundation supports exact, partial, tag, metadata, date, service, relevance, and pagination behavior only. Semantic, vector, and hybrid search are explicit future capabilities and are not implemented.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:
