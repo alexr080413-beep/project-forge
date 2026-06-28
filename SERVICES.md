@@ -26,6 +26,7 @@ This document describes the current and planned service boundaries for Project F
 | Search Service | Query and rank local indexes across Forge service domains | Implemented foundation |
 | Audit Service | Record and filter significant platform actions for traceability and after-action review | Implemented foundation |
 | Metrics Service | Collect local operational metrics, snapshots, and reports for health and exercise analytics | Implemented foundation |
+| Configuration Service | Load, resolve, validate, and look up local platform configuration | Implemented foundation |
 | Automation Service | Record schedule, manual, event, workflow, and conditional triggers for workflows | Implemented foundation |
 | Workflow Engine | Execute ordered local workflow steps | Implemented foundation |
 | Pipeline Orchestrator | Coordinate platform services into end-to-end pipelines | Implemented foundation |
@@ -605,6 +606,41 @@ The service stores entries in memory only. It does not implement persistent stor
 **Current Boundary**
 
 The service does not implement visualization, dashboards, external monitoring integrations, or histogram aggregation. Histogram metrics are placeholders only.
+
+## Configuration Service
+
+**Responsibilities**
+
+- Load local YAML and JSON configuration files.
+- Resolve default values and deterministic override precedence.
+- Validate required configuration fields.
+- Support platform, service, profile, workflow, plugin, environment, and user scopes.
+- Support environment variable placeholders with safe fallbacks.
+- Register and look up configuration by scope and key.
+- Preserve metadata and audit-ready change records.
+
+**Inputs**
+
+- `ConfigurationSource`
+- Local YAML or JSON configuration files
+- `ConfigurationItem`
+- `ConfigurationProfile`
+
+**Outputs**
+
+- `ConfigurationRegistry`
+- `ConfigurationResult`
+- Resolved configuration values
+- Audit-ready `ConfigurationChangeRecord` entries
+
+**Dependencies**
+
+- Local filesystem
+- Python standard library only, with optional PyYAML when available
+
+**Current Boundary**
+
+The service does not connect to external secret managers, perform network calls, connect to databases, or decrypt/manage secrets.
 
 ## Automation Service
 

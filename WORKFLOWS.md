@@ -116,6 +116,12 @@ The Metrics Service collects local operational metrics across Forge services. It
 
 The current foundation does not implement visualization, dashboards, external monitoring systems, or histogram aggregation.
 
+## Configuration Execution
+
+The Configuration Service resolves local platform settings before services, workflows, profiles, plugins, and runtime behavior consume them. It supports YAML and JSON loading, default values, deterministic override precedence, required field validation, environment variable placeholders, metadata, and audit-ready change records.
+
+The current foundation does not use external secret managers, network services, or databases.
+
 ## Automation Execution
 
 The Automation Service records when a workflow would be triggered by a cron schedule, manual action, event payload, workflow event, or condition. It preserves execution history and retry policy metadata, but it does not invoke workflow handlers or depend on an external scheduler.
@@ -232,6 +238,7 @@ Future workflow work should add:
 - Cross-service search surfaces
 - Audit-backed after-action review
 - Metrics-backed health and performance snapshots
+- Configuration-backed runtime selection
 - Automation runtime integration
 - Runtime observability
 - Controller-facing workflow status

@@ -29,7 +29,7 @@ flowchart LR
     N --> H
 ```
 
-The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, a storage service foundation, a search service foundation, an audit service foundation, a metrics service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
+The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, a storage service foundation, a search service foundation, an audit service foundation, a metrics service foundation, a configuration service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
 
 ## Platform Layers
 
@@ -115,6 +115,7 @@ Primary services:
 - Search Service
 - Audit Service
 - Metrics Service
+- Configuration Service
 
 ## Data Flow
 
@@ -131,6 +132,7 @@ The platform data flow follows a controlled path:
 9. The Search Service can provide ranked local discovery across configured service indexes without external APIs or semantic/vector search.
 10. The Audit Service can record significant actions, correlation IDs, parent/child events, severity, tags, and metadata for traceability and after-action review.
 11. The Metrics Service can collect local counters, gauges, timers, histogram placeholders, snapshots, and reports for health, performance, and exercise analytics.
+12. The Configuration Service can load and resolve local settings across platform, service, profile, workflow, plugin, environment, and user scopes.
 
 ## Core Concepts
 
@@ -189,3 +191,7 @@ Audit records significant actions across the platform. The current foundation su
 ### Metrics And Observability
 
 Metrics and observability provide local insight into platform health, throughput, and exercise activity. The current foundation supports counters, gauges, timers, histogram placeholders, tags, metadata, snapshots, collectors, and reports without visualization or external monitoring systems.
+
+### Configuration
+
+Configuration provides central local settings management. The current foundation supports YAML and JSON loading, default values, deterministic override precedence, required field validation, environment variable placeholders, metadata, audit-ready change records, and registry lookup without secret managers, network calls, or databases.

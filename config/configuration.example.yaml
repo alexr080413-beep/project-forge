@@ -1,0 +1,43 @@
+{
+  "items": [
+    {
+      "scope": "platform",
+      "key": "environment",
+      "value": "development",
+      "required": true,
+      "metadata": {"owner": "Project Forge"}
+    },
+    {
+      "scope": "service",
+      "key": "audit_service.enabled",
+      "value": true,
+      "required": true,
+      "metadata": {"service": "audit_service"}
+    },
+    {
+      "scope": "profile",
+      "key": "default_profile",
+      "value": "${FORGE_DEFAULT_PROFILE:-mwtc}",
+      "required": true,
+      "metadata": {"placeholder": "environment"}
+    },
+    {
+      "scope": "workflow",
+      "key": "default_workflow_path",
+      "default": "config/workflows.example.yaml",
+      "required": true,
+      "metadata": {"notional": true}
+    }
+  ],
+  "profiles": [
+    {
+      "profile_id": "development",
+      "display_name": "Development Configuration",
+      "items": [
+        {"scope": "platform", "key": "environment"},
+        {"scope": "profile", "key": "default_profile"}
+      ],
+      "metadata": {"notional": true}
+    }
+  ]
+}

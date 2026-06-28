@@ -24,6 +24,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Search Service foundation with query validation, multiple local indexes, exact search, partial search, tag search, metadata search, date and service filtering, relevance ranking, pagination, and future semantic/vector/hybrid capability declarations.
 - Audit Service foundation with in-memory actors, actions, categories, events, entries, sessions, validation, timestamps, correlation IDs, parent/child events, severity, tags, metadata, and filtering.
 - Metrics Service foundation with counters, gauges, timers, histogram placeholders, tags, metadata, snapshots, collectors, reports, validation, and standard Forge operational metrics.
+- Configuration Service foundation with YAML/JSON loading, scoped configuration items, profiles, defaults, deterministic overrides, required field validation, environment variable placeholders, metadata, registry lookup, and audit-ready change records.
 
 ### Changed
 

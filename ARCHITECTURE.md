@@ -53,6 +53,12 @@ The foundation supports audit capture for service execution, workflows, review a
 
 The foundation supports counters, gauges, timers, histogram placeholders, tags, metadata, snapshots, and standard metrics for workflow executions, products generated, review queue size, QA pass/fail rates, translation operations, AI requests, automation executions, search requests, and distribution events. It intentionally avoids visualization and external monitoring systems.
 
+## Configuration Service Foundation
+
+`project_forge.configuration_service` provides central local configuration management. `ConfigurationSource` identifies local files and precedence, `ConfigurationItem` represents one scoped setting, `ConfigurationProfile` groups settings for a named runtime profile, `ConfigurationLoader` loads YAML or JSON, `ConfigurationRegistry` provides lookup by scope and key, `ConfigurationResult` records resolved items and audit-ready changes, and `ConfigurationValidator` enforces required fields.
+
+The foundation supports platform, service, profile, workflow, plugin, environment, and user scopes, plus defaults, deterministic overrides, environment variable placeholders, and metadata. It intentionally avoids external secret managers, network calls, and database connections.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:
