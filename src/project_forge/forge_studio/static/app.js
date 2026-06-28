@@ -206,6 +206,7 @@ function renderActivity(records) {
 
 function renderDashboard(data) {
   const exercise = data.workspace.exercise;
+  const execution = data.execution;
   const dashboardGrid = document.querySelector("#dashboard-grid");
   dashboardGrid.innerHTML = `
     ${UI.dashboardWidget({
@@ -215,6 +216,7 @@ function renderDashboard(data) {
       body: `${exercise.exercise_control} | Director: ${exercise.exercise_director} | Start ${exercise.start}`,
       wide: true
     })}
+    ${UI.dashboardWidget({label: "Execution State", value: execution.state, icon: "EX"})}
     ${UI.dashboardWidget({label: "Exercise Status", value: data.metrics.exercise_status, icon: "ST"})}
     ${UI.dashboardWidget({label: "Exercise Phase", value: data.metrics.exercise_phase, icon: "PH"})}
     ${UI.dashboardWidget({label: "Exercise Health", value: data.metrics.exercise_health, icon: "HL"})}
@@ -224,12 +226,42 @@ function renderDashboard(data) {
     ${UI.dashboardWidget({label: "Products Generated", value: data.metrics.products_generated, icon: "PR"})}
     ${UI.dashboardWidget({label: "Current Operational Time", value: data.metrics.current_operational_time, icon: "TM"})}
   `;
+  dashboardGrid.insertAdjacentHTML("beforeend", `
+    <article class="dashboard-widget wide-widget">
+      <span class="widget-icon">GO</span>
+      <div>
+        <span>Execution Controls</span>
+        <div class="action-row compact-actions">
+          ${commandButton("Start Exercise", "execution.start", {}, "success")}
+          ${commandButton("Pause Exercise", "execution.pause", {}, "warning")}
+          ${commandButton("Resume Exercise", "execution.resume")}
+          ${commandButton("End Exercise", "execution.end", {}, "danger")}
+          ${commandButton("Archive Exercise", "execution.archive", {}, "ghost")}
+        </div>
+      </div>
+    </article>
+    <article class="dashboard-widget wide-widget">
+      <span class="widget-icon">AL</span>
+      <div>
+        <span>Execution Alerts</span>
+        <strong>${execution.execution_alerts.length ? execution.execution_alerts[0] : "No active alerts"}</strong>
+      </div>
+    </article>
+    <article class="dashboard-widget wide-widget">
+      <span class="widget-icon">UP</span>
+      <div>
+        <span>Upcoming Timeline Events</span>
+        <strong>${execution.upcoming_timeline_events.slice(0, 3).map((event) => escapeHtml(event.title)).join(" | ") || "None"}</strong>
+      </div>
+    </article>
+  `);
   renderActivity(data.activity);
   renderRecords("#timeline-list", data.timeline_events.slice(-5), "No timeline events yet.");
 }
 
 function renderMissionControl(data) {
   renderDashboard(data);
+  bindCommandActions();
 }
 
 function renderPropertyList(properties) {
@@ -809,6 +841,12 @@ function renderTimeline(data) {
           time: timeFromIso(event.timestamp),
           actions: `
             <div class="action-row compact-actions">
+              ${UI.statusBadge(event.execution_status)}
+              ${commandButton("Activate Event", "timeline.activate", {event_id: event.id}, "success")}
+              ${commandButton("Complete Event", "timeline.complete", {event_id: event.id})}
+              ${commandButton("Delay Event", "timeline.delay", {event_id: event.id}, "warning")}
+              ${commandButton("Skip Event", "timeline.skip", {event_id: event.id}, "ghost")}
+              ${commandButton("Add Note", "timeline.note", {event_id: event.id, note: `${event.title} execution note.`})}
               ${commandButton("Edit", "timeline.edit", {event_id: event.id, title: `${event.title} Updated`})}
               ${commandButton("Delete", "timeline.delete", {event_id: event.id}, "danger")}
             </div>
@@ -845,8 +883,13 @@ function renderInjectLibrary(data) {
               <dt>Scheduled Time</dt><dd>${timeFromIso(inject.scheduled_time)}</dd>
               <dt>Controller</dt><dd>${inject.assigned_controller_name || "Unassigned"}</dd>
               <dt>Priority</dt><dd>${formatLabel(inject.priority)}</dd>
+              <dt>Execution</dt><dd>${inject.execution_status}</dd>
             </dl>
             <div class="action-row compact-actions">
+              ${commandButton("Release Inject", "inject.release", {inject_id: inject.id}, "success")}
+              ${commandButton("Acknowledge Inject", "inject.acknowledge", {inject_id: inject.id})}
+              ${commandButton("Complete Inject", "inject.complete_execution", {inject_id: inject.id})}
+              ${commandButton("Return for Revision", "inject.return_revision", {inject_id: inject.id}, "warning")}
               ${commandButton("Edit", "inject.edit", {inject_id: inject.id, title: `${inject.title} Updated`})}
               ${commandButton("Approve", "inject.approve", {inject_id: inject.id}, "success")}
               ${commandButton("Reject", "inject.reject", {inject_id: inject.id}, "danger")}
@@ -865,9 +908,24 @@ function renderInjectLibrary(data) {
 function renderControllers(data) {
   contentRoot.innerHTML = `
     <section class="controller-grid">
-      ${data.controllers.map((controller) => UI.controllerCard(controller)).join("")}
+      ${data.controllers.map((controller, index) => `
+        <div>
+          ${UI.controllerCard(controller)}
+          <form id="controller-status-${index}" class="crud-form">
+            <input type="hidden" name="controller_id" value="${escapeHtml(controller.id)}">
+            <select name="status" aria-label="Controller status">${statusOptions(["Online", "Working", "Monitoring", "Blocked", "Offline"], controller.status)}</select>
+            <input name="note" value="${escapeHtml(controller.task)}" aria-label="Controller note">
+            ${formButton("Update Task Status", "controller.status", `controller-status-${index}`)}
+          </form>
+          <div class="record-list controller-assignment-list">
+            ${(controller.assigned_injects || []).map((inject) => card(inject.title, `${inject.execution_status} | ${inject.priority}`, "assigned inject")).join("")}
+            ${(controller.upcoming_events || []).map((event) => card(event.title, `${timeFromIso(event.timestamp)} | ${event.execution_status}`, "upcoming")).join("")}
+          </div>
+        </div>
+      `).join("")}
     </section>
   `;
+  bindCommandActions();
 }
 
 function renderIntelligence(data) {
@@ -920,7 +978,7 @@ function renderReviewQueue(data) {
               <span>${item.reviewed_by || "Unassigned"}</span>
               <span>${timeFromIso(item.timestamp)}</span>
               <span class="review-actions">
-                ${canReview ? `${commandButton("Approve", "review.approve", {review_id: item.id}, "success")}${commandButton("Reject", "review.reject", {review_id: item.id}, "danger")}${commandButton("Return for Revision", "review.revision", {review_id: item.id}, "warning")}` : "Complete"}
+                ${canReview ? `${commandButton("Approve", "review.approve", {review_id: item.id}, "success")}${item.releasable ? commandButton("Approve and Release", "review.approve_release", {review_id: item.id}, "success") : ""}${commandButton("Reject", "review.reject", {review_id: item.id}, "danger")}${commandButton("Return for Revision", "review.revision", {review_id: item.id}, "warning")}` : "Complete"}
               </span>
             </div>
           `;
@@ -996,6 +1054,16 @@ function renderAnalytics(data) {
         <h2>Metrics Snapshot</h2>
         <div class="mini-metric-grid">
           ${Object.entries(data.statistics).map(([label, value]) => `<div class="mini-metric"><span>${formatLabel(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("")}
+        </div>
+      </article>
+      <article class="panel wide-panel">
+        <h2>Execution Metrics</h2>
+        <div class="mini-metric-grid">
+          ${UI.statCard({label: "Released Injects", value: data.metrics.released_injects, icon: "RI"})}
+          ${UI.statCard({label: "Completed Events", value: data.metrics.completed_events, icon: "CE"})}
+          ${UI.statCard({label: "Delayed Events", value: data.metrics.delayed_events, icon: "DE"})}
+          ${UI.statCard({label: "Controller Workload", value: data.metrics.controller_workload, icon: "CW"})}
+          ${UI.statCard({label: "Execution Tempo", value: data.metrics.execution_tempo, icon: "ET"})}
         </div>
       </article>
       <article class="panel">

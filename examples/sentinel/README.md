@@ -109,3 +109,28 @@ The reference workflow is:
 11. Confirm Mission Control, Timeline, Inject Library, Exercise Library, Controllers, Review Queue, Analytics, and Knowledge Graph reflect the published package.
 
 Publishing remains human-gated. Atlas Alpha publishes in-memory for the running session, creates a versioned Exercise Package, and does not perform durable persistence or external distribution.
+
+## Live Execution Reference
+
+Sentinel is also the reference exercise for the Forge Studio Live Execution Engine.
+
+After publication, Mountain Exercise 3-27 should support:
+
+- Start, pause, resume, end, and archive execution controls.
+- Timeline events moving from pending to active, completed, delayed, or skipped.
+- Injects moving from queued to released, acknowledged, completed, or returned for revision.
+- Controller task updates from assigned injects and upcoming events.
+- Review decisions that can approve, reject, return for revision, or approve and release.
+- Activity feed and audit records for every execution action.
+- Analytics for released injects, completed events, delayed events, pending reviews, controller workload, and execution tempo.
+
+Reference activity examples:
+
+| Time | Activity |
+| --- | --- |
+| 0930 | Exercise Started |
+| 0937 | Civilian Protest Inject Released |
+| 0942 | White Cell completed inject |
+| 0945 | Review approved intelligence product |
+
+Future features that affect live execution should be validated against this Sentinel flow before they are considered complete.

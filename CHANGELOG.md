@@ -45,6 +45,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Forge product foundation with product philosophy, product principles, feature specification process, roadmap process, release process, reference implementation policy, and permanent development policy.
 - Atlas Alpha interactive exercise planning with editable exercises, objectives, controllers, injects, timeline events, live validation, Knowledge Graph updates, Project Sentinel reference alignment, and Academy documentation updates.
 - Atlas Publish Pipeline with blocking validation, versioned Exercise Packages, publication summaries, version history, Mission Control handoff, Studio workspace population, and Project Sentinel documentation updates.
+- Forge Studio Live Execution Engine with exercise execution controls, timeline execution states, inject release workflow, controller task updates, Review Queue approve-and-release actions, activity feed records, audit records, execution metrics, and Sentinel documentation updates.
 
 ### Changed
 

@@ -51,3 +51,33 @@ It contains:
 - Version number.
 
 Exercise Packages populate Mission Control, Timeline, Inject Library, Exercise Library, Controller Workspace, Review Queue, Analytics, and Knowledge Graph for the running session.
+
+## Live Execution States
+
+After publication, Forge Studio treats the exercise as a live execution context.
+
+Exercise execution states:
+
+- Not Started.
+- Running.
+- Paused.
+- Completed.
+- Archived.
+
+Timeline event execution states:
+
+- Pending.
+- Active.
+- Completed.
+- Skipped.
+- Delayed.
+
+Inject execution states:
+
+- Queued.
+- Released.
+- Acknowledged.
+- Completed.
+- Returned for Revision.
+
+Execution actions create activity feed items and audit records. Analytics derive released injects, completed events, delayed events, controller workload, pending reviews, and execution tempo from the shared Exercise Data Engine.

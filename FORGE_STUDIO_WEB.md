@@ -2,9 +2,9 @@
 
 Forge Studio Web MVP is the first runnable local application for Forge Studio. It proves the platform architecture by connecting the Forge Studio MVP domain models to a small web interface with mock operational data.
 
-This is intentionally minimal. It does not implement authentication, persistence, frontend build tooling, automatic publishing, external APIs, or every Forge Studio feature.
+This is intentionally minimal. It does not implement authentication, persistence, frontend build tooling, external APIs, or every Forge Studio feature.
 
-The current sprint introduces interactive CRUD workflows on top of the Forge Studio Exercise Data Engine. The active exercise is the single source of truth for dashboard metrics, timeline events, injects, products, controllers, review queue items, audit records, and exercise statistics.
+The current application introduces interactive planning, publishing, and live execution workflows on top of the Forge Studio Exercise Data Engine. The active exercise is the single source of truth for dashboard metrics, timeline events, injects, products, controllers, review queue items, audit records, activity feed items, execution state, and exercise statistics.
 
 Forge Studio now uses the shared design system primitives in `src/project_forge/forge_studio/static/design-system/components.js`. These helpers keep buttons, cards, status chips, timeline cards, controller cards, product rows, notifications, empty states, and skeleton loaders consistent across the static MVP.
 
@@ -64,6 +64,7 @@ The app displays:
 - Inject Library page
 - Controller cards
 - Review Queue mock approval workflow
+- Live execution controls
 - Exercise Library product repository
 - Audit history page
 - Settings cards
@@ -102,6 +103,7 @@ Navigation sections:
 - Exercise workspace metadata
 - Exercise Designer mock planning data
 - Exercise Designer relationship assets, graph links, and validation rules
+- Live execution state for the exercise, timeline events, injects, controller tasks, execution alerts, and activity feed
 - Operational Knowledge Graph nodes, edges, filters, and navigation metadata
 
 The local web server creates one `ExerciseStore` when it starts. Every page asks for the same exercise snapshot instead of constructing local mock objects. Organization and exercise switching are local in-memory commands that load a different exercise context from the same store.
@@ -127,6 +129,20 @@ flowchart LR
     store -->|"updated snapshot"| dashboard
     store -->|"audit entry"| audit
 ```
+
+## Live Execution Engine
+
+Publishing a valid Atlas plan creates a versioned Exercise Package and stages the selected exercise in Studio with execution state `Not Started`. Mission Control then provides the live execution controls:
+
+- Start Exercise.
+- Pause Exercise.
+- Resume Exercise.
+- End Exercise.
+- Archive Exercise.
+
+Starting execution changes the exercise to a running operational context. Timeline events can be activated, completed, delayed, skipped, or annotated. Injects can be released, acknowledged, completed, or returned for revision. Controllers can update current tasks and status. Review Queue decisions can approve, reject, return for revision, or approve and release a linked inject.
+
+Every execution action records an audit entry and activity feed item. Analytics summarize released injects, completed events, delayed events, pending reviews, controller workload, and execution tempo.
 
 ### Single Source of Truth
 
@@ -176,7 +192,7 @@ Pages do not own independent copies of exercise data. After each CRUD command, t
 
 ### Propagation
 
-Review and CRUD actions mutate the shared store. After a command, the returned snapshot updates:
+Review, CRUD, publication, and execution actions mutate the shared store. After a command, the returned snapshot updates:
 
 - Dashboard pending review count
 - Inject Library status and approver
@@ -186,12 +202,13 @@ Review and CRUD actions mutate the shared store. After a command, the returned s
 - Exercise Library product status and counts
 - Latest Activity Feed
 - Audit History
+- Execution controls, alerts, and metrics
 
 This gives the MVP one platform behavior model instead of independent page-level mock data.
 
 ### Human Review Principle
 
-Forge continues to preserve human release authority. The Review Queue is a mock workflow, but it still requires an explicit approve or reject action. Approval updates the linked inject; rejection prevents it from being treated as releasable. No automatic publishing or distribution is implemented.
+Forge continues to preserve human release authority. The Review Queue is a mock workflow, but it still requires an explicit approve or reject action. Approval updates the linked inject; rejection prevents it from being treated as releasable. The `Approve and Release` action is explicit and human-initiated. No automatic distribution is implemented.
 
 ## Interactive Workflows
 
@@ -202,9 +219,10 @@ The runnable MVP now supports local CRUD operations through existing application
 - Timeline: add, edit, and delete timeline events. Events sort chronologically.
 - Review Queue: approve, reject, and return items for revision.
 - Exercise Library: open products, view metadata, view version history, archive, and delete products.
+- Live Execution: start, pause, resume, end, and archive exercises; activate, complete, delay, skip, and annotate timeline events; release, acknowledge, complete, and return injects for revision; update controller task status.
 - Audit: displays every command recorded by the Exercise Data Engine.
 
-All operations are local mock actions. They do not publish injects, send email, call external APIs, scrape web content, or persist to a database.
+All operations are local mock actions. They do not send email, call external APIs, scrape web content, or persist to a database.
 
 ## Design System Runtime
 
@@ -292,6 +310,11 @@ Dashboard metrics:
 - Exercise Phase
 - Pending Reviews
 - Open Injects
+- Active Injects
+- Upcoming Timeline Events
+- Execution State
+- Execution Alerts
+- Controller Status
 - Products Generated
 - Timeline Summary
 - Controller Count
@@ -304,7 +327,7 @@ Dashboard metrics:
 
 The Review Queue page displays every review item in the active exercise. It shows pending, in-review, approved, and rejected states, along with decision, reviewer, timestamp, and mock approval buttons.
 
-Approving, rejecting, or returning an item for revision records an audit entry and returns a refreshed exercise snapshot. For inject review items, the linked inject status is updated through the existing Forge Studio registry review methods.
+Approving, rejecting, returning an item for revision, or using approve-and-release records an audit entry and returns a refreshed exercise snapshot. For inject review items, the linked inject status is updated through the existing Forge Studio registry review methods, and approve-and-release explicitly moves the linked inject into released execution state.
 
 ## Audit History
 
@@ -380,7 +403,7 @@ Current boundaries:
 - No npm dependency
 - No authentication
 - No database
-- No automatic publishing
+- No durable publishing
 - No real distribution
 - No external network calls
 - No live AI provider calls

@@ -240,7 +240,8 @@ def test_publish_pipeline_creates_versioned_package_and_opens_mission_control() 
 
     published = store.apply_action("atlas.publish", {})
 
-    assert published["active_exercise"]["status"] == "executing"
+    assert published["active_exercise"]["status"] == "published"
+    assert published["execution"]["state"] == "Not Started"
     assert published["workspace"]["exercise"]["timeline_status"] == "Published to Mission Control"
     assert published["publication"]["summary"]["status"] == "published"
     assert published["publication"]["summary"]["version"] == 1
@@ -273,6 +274,90 @@ def test_publish_pipeline_creates_versioned_package_and_opens_mission_control() 
     republished = store.apply_action("atlas.publish", {})
     assert republished["publication"]["summary"]["version"] == 2
     assert [item["version"] for item in republished["publication"]["version_history"]] == [1, 2]
+
+
+def test_live_execution_engine_updates_state_metrics_activity_and_audit() -> None:
+    store = create_mock_exercise_store()
+    for review_id in ("review-001", "review-002", "review-003"):
+        store.approve_review(review_id)
+    store.apply_action("atlas.publish", {})
+
+    started = store.apply_action("execution.start", {})
+    assert started["active_exercise"]["status"] == "executing"
+    assert started["execution"]["state"] == "Running"
+    assert started["activity"][0]["title"] == "Exercise Started"
+    assert started["audit_log"][0]["action"] == "execution.started"
+
+    active_event = store.apply_action("timeline.activate", {"event_id": "timeline-003"})
+    event = next(item for item in active_event["timeline_events"] if item["id"] == "timeline-003")
+    assert event["execution_status"] == "Active"
+    assert active_event["execution"]["active_timeline_events"][0]["id"] == "timeline-003"
+
+    delayed = store.apply_action("timeline.delay", {"event_id": "timeline-004"})
+    delayed_event = next(item for item in delayed["timeline_events"] if item["id"] == "timeline-004")
+    assert delayed_event["execution_status"] == "Delayed"
+    assert delayed["metrics"]["delayed_events"] == 1
+    assert delayed["execution"]["execution_alerts"][0] == "Cyber Event delayed."
+
+    completed_event = store.apply_action("timeline.complete", {"event_id": "timeline-003"})
+    event = next(
+        item for item in completed_event["timeline_events"] if item["id"] == "timeline-003"
+    )
+    assert event["execution_status"] == "Completed"
+    assert completed_event["metrics"]["completed_events"] == 1
+
+    released = store.apply_action("inject.release", {"inject_id": "inject-002"})
+    inject = next(item for item in released["injects"] if item["id"] == "inject-002")
+    assert inject["execution_status"] == "Released"
+    assert released["metrics"]["released_injects"] == 1
+    assert released["audit_log"][0]["action"] == "inject.released"
+
+    acknowledged = store.apply_action("inject.acknowledge", {"inject_id": "inject-002"})
+    inject = next(item for item in acknowledged["injects"] if item["id"] == "inject-002")
+    assert inject["execution_status"] == "Acknowledged"
+
+    completed = store.apply_action("inject.complete_execution", {"inject_id": "inject-002"})
+    inject = next(item for item in completed["injects"] if item["id"] == "inject-002")
+    assert inject["execution_status"] == "Completed"
+    assert inject["status"] == "completed"
+    assert completed["activity"][0]["title"] == "Capt Nguyen completed inject"
+
+    controller_update = store.apply_action(
+        "controller.status",
+        {
+            "controller_id": "controller-white",
+            "status": "Working",
+            "note": "Managing civilian protest execution.",
+        },
+    )
+    controller = next(
+        item for item in controller_update["controllers"] if item["id"] == "controller-white"
+    )
+    assert controller["status"] == "Working"
+    assert controller["notes"] == "Managing civilian protest execution."
+
+    paused = store.apply_action("execution.pause", {})
+    assert paused["execution"]["state"] == "Paused"
+    resumed = store.apply_action("execution.resume", {})
+    assert resumed["execution"]["state"] == "Running"
+    ended = store.apply_action("execution.end", {})
+    assert ended["execution"]["state"] == "Completed"
+    archived = store.apply_action("execution.archive", {})
+    assert archived["execution"]["state"] == "Archived"
+
+
+def test_review_approve_and_release_affects_execution_flow() -> None:
+    store = create_mock_exercise_store()
+
+    payload = store.apply_action("review.approve_release", {"review_id": "review-001"})
+
+    review = next(item for item in payload["review_queue"] if item["id"] == "review-001")
+    inject = next(item for item in payload["injects"] if item["id"] == "inject-002")
+
+    assert review["status"] == "approved"
+    assert inject["status"] == "approved"
+    assert inject["execution_status"] == "Released"
+    assert payload["audit_log"][0]["action"] == "inject.released"
 
 
 def test_exercise_and_product_crud_actions_generate_audit_records() -> None:

@@ -117,6 +117,11 @@ class ExerciseWorkspaceContext:
     operational_time: str
     planning_objectives: list[PlanningObjective] = field(default_factory=list)
     inject_objective_links: dict[str, str] = field(default_factory=dict)
+    execution_state: str = "Not Started"
+    timeline_execution: dict[str, str] = field(default_factory=dict)
+    inject_execution: dict[str, str] = field(default_factory=dict)
+    controller_notes: dict[str, str] = field(default_factory=dict)
+    execution_alerts: list[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -151,6 +156,11 @@ class ExerciseStore:
     inject_objective_links: dict[str, str] = field(default_factory=dict)
     exercise_packages: list[ExercisePackage] = field(default_factory=list)
     publication_summary: dict[str, Any] = field(default_factory=dict)
+    execution_state: str = "Not Started"
+    timeline_execution: dict[str, str] = field(default_factory=dict)
+    inject_execution: dict[str, str] = field(default_factory=dict)
+    controller_notes: dict[str, str] = field(default_factory=dict)
+    execution_alerts: list[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if not self.organizations:
@@ -218,6 +228,7 @@ class ExerciseStore:
         audit_logs = self.registry.list_audit_logs(exercise.id)
         pending_statuses = {StudioReviewStatus.PENDING, StudioReviewStatus.IN_REVIEW}
         publication = self._publication_payload(exercise.id)
+        execution = self._execution_payload()
 
         return {
             "platform": {
@@ -263,10 +274,15 @@ class ExerciseStore:
                 "timeline_events": statistics["timeline_events"],
                 "controller_count": statistics["controllers_online"],
                 "exercise_duration": statistics["exercise_duration"],
+                "released_injects": statistics["released_injects"],
+                "completed_events": statistics["completed_events"],
+                "delayed_events": statistics["delayed_events"],
+                "controller_workload": statistics["controller_workload"],
+                "execution_tempo": statistics["execution_tempo"],
             },
             "activity": list(self.activity),
-            "timeline_summary": [_to_jsonable(event) for event in timeline_events],
-            "timeline_events": [_to_jsonable(event) for event in timeline_events],
+            "timeline_summary": [self._timeline_payload(event) for event in timeline_events],
+            "timeline_events": [self._timeline_payload(event) for event in timeline_events],
             "pending_reviews": [
                 self._review_payload(item)
                 for item in review_items
@@ -286,6 +302,7 @@ class ExerciseStore:
             "audit_log": [self._audit_payload(log) for log in reversed(audit_logs)],
             "statistics": statistics,
             "publication": publication,
+            "execution": execution,
             "search_results": self._mock_search_results(),
             "designer": self._designer_payload(exercise, exercise_workspace),
             "knowledge_graph": self._knowledge_graph_payload(
@@ -310,6 +327,7 @@ class ExerciseStore:
         }
 
         return {
+            "execution_state": self.execution_state,
             "open_injects": sum(item.status in open_statuses for item in injects),
             "completed_injects": sum(item.status is InjectStatus.COMPLETED for item in injects),
             "pending_reviews": sum(item.status in pending_statuses for item in review_items),
@@ -317,6 +335,23 @@ class ExerciseStore:
             "products_generated": len(self.products),
             "timeline_events": len(self.registry.list_timeline_events(exercise.id)),
             "exercise_duration": _duration_label(exercise.start_date, exercise.end_date),
+            "released_injects": sum(
+                status in {"Released", "Acknowledged", "Completed"}
+                for status in self.inject_execution.values()
+            ),
+            "completed_events": sum(
+                status == "Completed" for status in self.timeline_execution.values()
+            ),
+            "delayed_events": sum(
+                status == "Delayed" for status in self.timeline_execution.values()
+            ),
+            "controller_workload": sum(
+                1
+                for inject in injects
+                if self.inject_execution.get(inject.id, "Queued")
+                in {"Queued", "Released", "Acknowledged", "Returned for Revision"}
+            ),
+            "execution_tempo": self._execution_tempo(),
         }
 
     def approve_review(self, review_id: str, reviewer_id: str = "user-reviewer") -> dict[str, Any]:
@@ -404,6 +439,22 @@ class ExerciseStore:
             "atlas.validate": self.validate_atlas_plan,
             "atlas.publish": self.publish_atlas_plan,
             "atlas.export": self.export_atlas_plan,
+            "execution.start": self.start_exercise_execution,
+            "execution.pause": self.pause_exercise_execution,
+            "execution.resume": self.resume_exercise_execution,
+            "execution.end": self.end_exercise_execution,
+            "execution.archive": self.archive_exercise_execution,
+            "timeline.activate": self.activate_timeline_event,
+            "timeline.complete": self.complete_timeline_event,
+            "timeline.delay": self.delay_timeline_event,
+            "timeline.skip": self.skip_timeline_event,
+            "timeline.note": self.add_timeline_note,
+            "inject.release": self.release_inject,
+            "inject.acknowledge": self.acknowledge_inject,
+            "inject.complete_execution": self.complete_inject_execution,
+            "inject.return_revision": self.return_inject_for_revision,
+            "controller.status": self.update_controller_status,
+            "review.approve_release": self.approve_and_release_review,
             "review.approve": lambda data: self.approve_review(_required(data, "review_id")),
             "review.reject": lambda data: self.reject_review(_required(data, "review_id")),
             "review.revision": lambda data: self.return_review_for_revision(
@@ -864,7 +915,6 @@ class ExerciseStore:
         self.exercise_packages.append(package)
         exercise.transition_status(ExerciseStatus.PUBLISHED)
         self._promote_package_to_studio(package)
-        exercise.transition_status(ExerciseStatus.EXECUTING)
         self.publication_summary = {
             "status": "published",
             "message": f"Exercise Version {package.version} published to Mission Control.",
@@ -886,6 +936,219 @@ class ExerciseStore:
         payload_out = self.snapshot()
         payload_out["navigation"] = {"open_workspace": "mission-control"}
         return payload_out
+
+    def start_exercise_execution(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        exercise = self._required_active_exercise()
+        if exercise.status not in {
+            ExerciseStatus.PUBLISHED,
+            ExerciseStatus.EXECUTING,
+            ExerciseStatus.ACTIVE,
+            ExerciseStatus.PAUSED,
+        }:
+            raise ValueError("exercise must be published before execution can start")
+        exercise.transition_status(ExerciseStatus.EXECUTING)
+        self.execution_state = "Running"
+        self.exercise_health = "Running"
+        self.timeline_status = "Execution Running"
+        self.operational_time = _time_label(_operation_timestamp())
+        self._record_operation(
+            actor_id="user-exdir",
+            action="execution.started",
+            target_type="exercise",
+            target_id=exercise.id,
+            result="running",
+            activity_title="Exercise Started",
+        )
+        return self.snapshot()
+
+    def pause_exercise_execution(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        exercise = self._required_active_exercise()
+        exercise.transition_status(ExerciseStatus.PAUSED)
+        self.execution_state = "Paused"
+        self.exercise_health = "Paused"
+        self.execution_alerts.insert(0, "Exercise paused by Exercise Director.")
+        self._record_operation(
+            actor_id="user-exdir",
+            action="execution.paused",
+            target_type="exercise",
+            target_id=exercise.id,
+            result="paused",
+            activity_title="Exercise Paused",
+        )
+        return self.snapshot()
+
+    def resume_exercise_execution(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        exercise = self._required_active_exercise()
+        exercise.transition_status(ExerciseStatus.EXECUTING)
+        self.execution_state = "Running"
+        self.exercise_health = "Running"
+        self._record_operation(
+            actor_id="user-exdir",
+            action="execution.resumed",
+            target_type="exercise",
+            target_id=exercise.id,
+            result="running",
+            activity_title="Exercise Resumed",
+        )
+        return self.snapshot()
+
+    def end_exercise_execution(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        exercise = self._required_active_exercise()
+        exercise.transition_status(ExerciseStatus.COMPLETED)
+        self.execution_state = "Completed"
+        self.exercise_health = "Completed"
+        self.timeline_status = "Execution Complete"
+        self._record_operation(
+            actor_id="user-exdir",
+            action="execution.completed",
+            target_type="exercise",
+            target_id=exercise.id,
+            result="completed",
+            activity_title="Exercise Ended",
+        )
+        return self.snapshot()
+
+    def archive_exercise_execution(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        exercise = self._required_active_exercise()
+        exercise.transition_status(ExerciseStatus.ARCHIVED)
+        self.execution_state = "Archived"
+        self.exercise_health = "Archived"
+        self.timeline_status = "Archived"
+        self._record_operation(
+            actor_id="user-exdir",
+            action="execution.archived",
+            target_type="exercise",
+            target_id=exercise.id,
+            result="archived",
+            activity_title="Exercise Archived",
+        )
+        return self.snapshot()
+
+    def activate_timeline_event(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._set_timeline_execution(_required(payload, "event_id"), "Active")
+
+    def complete_timeline_event(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._set_timeline_execution(_required(payload, "event_id"), "Completed")
+
+    def delay_timeline_event(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._set_timeline_execution(_required(payload, "event_id"), "Delayed")
+
+    def skip_timeline_event(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._set_timeline_execution(_required(payload, "event_id"), "Skipped")
+
+    def add_timeline_note(self, payload: dict[str, Any]) -> dict[str, Any]:
+        event = self._required_timeline_event(_required(payload, "event_id"))
+        note = str(payload.get("note") or f"Execution note added for {event.title}.")
+        self._record_operation(
+            actor_id="user-controller",
+            action="timeline.event.note_added",
+            target_type="timeline_event",
+            target_id=event.id,
+            result="noted",
+            activity_title=f"{event.title} Note Added",
+        )
+        self.execution_alerts.insert(0, note)
+        self.execution_alerts[:] = self.execution_alerts[:6]
+        return self.snapshot()
+
+    def release_inject(self, payload: dict[str, Any]) -> dict[str, Any]:
+        inject = self._required_inject(_required(payload, "inject_id"))
+        if not inject.releasable:
+            raise ValueError("inject requires human approval before release")
+        self.inject_execution[inject.id] = "Released"
+        self._record_operation(
+            actor_id=inject.assigned_controller or "user-controller",
+            action="inject.released",
+            target_type="inject",
+            target_id=inject.id,
+            result="released",
+            activity_title=f"{inject.title} Inject Released",
+        )
+        return self.snapshot()
+
+    def acknowledge_inject(self, payload: dict[str, Any]) -> dict[str, Any]:
+        inject = self._required_inject(_required(payload, "inject_id"))
+        self.inject_execution[inject.id] = "Acknowledged"
+        self._record_operation(
+            actor_id=inject.assigned_controller or "user-controller",
+            action="inject.acknowledged",
+            target_type="inject",
+            target_id=inject.id,
+            result="acknowledged",
+            activity_title=f"{inject.title} Inject Acknowledged",
+        )
+        return self.snapshot()
+
+    def complete_inject_execution(self, payload: dict[str, Any]) -> dict[str, Any]:
+        inject = self._required_inject(_required(payload, "inject_id"))
+        inject.status = InjectStatus.COMPLETED
+        inject.updated_at = _operation_timestamp()
+        self.inject_execution[inject.id] = "Completed"
+        self._upsert_product_for_inject(inject, "Logged")
+        self._record_operation(
+            actor_id=inject.assigned_controller or "user-controller",
+            action="inject.execution.completed",
+            target_type="inject",
+            target_id=inject.id,
+            result="completed",
+            activity_title=f"{self._user_name(inject.assigned_controller)} completed inject",
+        )
+        return self.snapshot()
+
+    def return_inject_for_revision(self, payload: dict[str, Any]) -> dict[str, Any]:
+        inject = self._required_inject(_required(payload, "inject_id"))
+        inject.status = InjectStatus.PENDING_REVIEW
+        inject.approved_by = ""
+        inject.updated_at = _operation_timestamp()
+        self.inject_execution[inject.id] = "Returned for Revision"
+        self._record_operation(
+            actor_id="user-reviewer",
+            action="inject.returned_for_revision",
+            target_type="inject",
+            target_id=inject.id,
+            result="revision_requested",
+            activity_title=f"{inject.title} Returned for Revision",
+        )
+        return self.snapshot()
+
+    def update_controller_status(self, payload: dict[str, Any]) -> dict[str, Any]:
+        controller = self._required_controller(_required(payload, "controller_id"))
+        status = str(payload.get("status") or "Working").strip()
+        note = str(payload.get("note") or controller.task).strip()
+        replacement = ControllerAssignment(
+            id=controller.id,
+            role=controller.role,
+            name=controller.name,
+            task=note,
+            status=status,
+            products_today=controller.products_today,
+            pending_reviews=controller.pending_reviews,
+            user_id=controller.user_id,
+            responsibilities=list(controller.responsibilities),
+            linked_objectives=list(controller.linked_objectives),
+            linked_injects=list(controller.linked_injects),
+        )
+        self.controllers = [
+            replacement if item.id == controller.id else item for item in self.controllers
+        ]
+        self.controller_notes[controller.id] = note
+        self._record_operation(
+            actor_id=controller.user_id or "user-controller",
+            action="controller.status.updated",
+            target_type="controller",
+            target_id=controller.id,
+            result=status.lower().replace(" ", "_"),
+            activity_title=f"{controller.role} Status Updated",
+        )
+        return self.snapshot()
+
+    def approve_and_release_review(self, payload: dict[str, Any]) -> dict[str, Any]:
+        review_id = _required(payload, "review_id")
+        item = self._required_review(review_id)
+        self.approve_review(review_id)
+        if item.item_type is ReviewItemType.INJECT:
+            return self.release_inject({"inject_id": item.item_id})
+        return self.snapshot()
 
     def export_atlas_plan(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         exercise = self._required_active_exercise()
@@ -1128,6 +1391,22 @@ class ExerciseStore:
         self.activity.insert(0, {"time": _time_label(timestamp), "title": activity_title})
         self.activity[:] = self.activity[:8]
 
+    def _set_timeline_execution(self, event_id: str, status: str) -> dict[str, Any]:
+        event = self._required_timeline_event(event_id)
+        self.timeline_execution[event.id] = status
+        self._record_operation(
+            actor_id="user-controller",
+            action=f"timeline.event.{status.lower().replace(' ', '_')}",
+            target_type="timeline_event",
+            target_id=event.id,
+            result=status.lower().replace(" ", "_"),
+            activity_title=f"{event.title} {status}",
+        )
+        if status == "Delayed":
+            self.execution_alerts.insert(0, f"{event.title} delayed.")
+            self.execution_alerts[:] = self.execution_alerts[:6]
+        return self.snapshot()
+
     def _register_timeline(
         self,
         *,
@@ -1154,16 +1433,40 @@ class ExerciseStore:
         payload["title"] = self._item_title(item.item_id)
         payload["reviewed_by"] = self._user_name(item.reviewer_id) if item.reviewer_id else ""
         payload["timestamp"] = _to_jsonable(item.reviewed_at or item.created_at)
+        payload["releasable"] = (
+            item.item_type is ReviewItemType.INJECT
+            and item.status in {StudioReviewStatus.PENDING, StudioReviewStatus.IN_REVIEW}
+        )
         return payload
 
     def _inject_payload(self, item: Any) -> dict[str, Any]:
         payload = _to_jsonable(item)
         payload["assigned_controller_name"] = self._user_name(item.assigned_controller)
         payload["approved_by_name"] = self._user_name(item.approved_by) if item.approved_by else ""
+        payload["execution_status"] = self.inject_execution.get(item.id, "Queued")
+        return payload
+
+    def _timeline_payload(self, item: TimelineEvent) -> dict[str, Any]:
+        payload = _to_jsonable(item)
+        payload["execution_status"] = self.timeline_execution.get(item.id, "Pending")
         return payload
 
     def _controller_payload(self, item: ControllerAssignment) -> dict[str, Any]:
         payload = _to_jsonable(item)
+        injects = self.registry.list_injects(self.exercise_id)
+        assigned_injects = [
+            inject
+            for inject in injects
+            if item.user_id and inject.assigned_controller == item.user_id
+        ]
+        payload["assigned_injects"] = [self._inject_payload(inject) for inject in assigned_injects]
+        payload["upcoming_events"] = [
+            self._timeline_payload(event)
+            for event in self.registry.list_timeline_events(self.exercise_id)
+            if event.related_inject_id in {inject.id for inject in assigned_injects}
+            and self.timeline_execution.get(event.id, "Pending") in {"Pending", "Delayed"}
+        ]
+        payload["notes"] = self.controller_notes.get(item.id, "")
         if item.user_id:
             pending_statuses = {StudioReviewStatus.PENDING, StudioReviewStatus.IN_REVIEW}
             injects_by_id = {inject.id: inject for inject in self.registry.injects}
@@ -1175,6 +1478,11 @@ class ExerciseStore:
             )
             payload["products_today"] = sum(
                 product.author == item.name for product in self.products
+            )
+            payload["current_tasks"] = sum(
+                self.inject_execution.get(inject.id, "Queued")
+                in {"Queued", "Released", "Acknowledged", "Returned for Revision"}
+                for inject in assigned_injects
             )
         return payload
 
@@ -1249,6 +1557,54 @@ class ExerciseStore:
             if controller.id == controller_id:
                 return controller
         raise ValueError(f"controller not found: {controller_id}")
+
+    def _execution_payload(self) -> dict[str, Any]:
+        timeline_events = [
+            self._timeline_payload(event)
+            for event in self.registry.list_timeline_events(self.exercise_id)
+        ]
+        injects = [
+            self._inject_payload(inject)
+            for inject in self.registry.list_injects(self.exercise_id)
+        ]
+        return {
+            "state": self.execution_state,
+            "current_time": self.operational_time,
+            "controls": [
+                "Start Exercise",
+                "Pause Exercise",
+                "Resume Exercise",
+                "End Exercise",
+                "Archive Exercise",
+            ],
+            "upcoming_timeline_events": [
+                event
+                for event in timeline_events
+                if event["execution_status"] in {"Pending", "Delayed"}
+            ][:5],
+            "active_timeline_events": [
+                event for event in timeline_events if event["execution_status"] == "Active"
+            ],
+            "active_injects": [
+                inject
+                for inject in injects
+                if inject["execution_status"] in {"Released", "Acknowledged"}
+            ],
+            "execution_alerts": list(self.execution_alerts),
+        }
+
+    def _execution_tempo(self) -> str:
+        if self.execution_state == "Not Started":
+            return "Not Started"
+        active_count = sum(status == "Active" for status in self.timeline_execution.values())
+        delayed_count = sum(status == "Delayed" for status in self.timeline_execution.values())
+        if delayed_count:
+            return "Friction"
+        if active_count:
+            return "High"
+        if self.execution_state == "Running":
+            return "Steady"
+        return self.execution_state
 
     def _replace_timeline_event(self, replacement: TimelineEvent) -> None:
         self.registry.timeline_events = [
@@ -1342,6 +1698,8 @@ class ExerciseStore:
             if self.exercise_organization_map.get(exercise.id) == organization_id
         ]
         preferred_statuses = (
+            ExerciseStatus.EXECUTING,
+            ExerciseStatus.PUBLISHED,
             ExerciseStatus.ACTIVE,
             ExerciseStatus.PLANNING,
             ExerciseStatus.PREPARING,
@@ -1372,6 +1730,11 @@ class ExerciseStore:
             operational_time=self.operational_time,
             planning_objectives=list(self.planning_objectives),
             inject_objective_links=dict(self.inject_objective_links),
+            execution_state=self.execution_state,
+            timeline_execution=dict(self.timeline_execution),
+            inject_execution=dict(self.inject_execution),
+            controller_notes=dict(self.controller_notes),
+            execution_alerts=list(self.execution_alerts),
         )
 
     def _load_workspace_context(self, exercise_id: str) -> None:
@@ -1396,6 +1759,11 @@ class ExerciseStore:
         self.operational_time = context.operational_time
         self.planning_objectives = list(context.planning_objectives)
         self.inject_objective_links = dict(context.inject_objective_links)
+        self.execution_state = context.execution_state
+        self.timeline_execution = dict(context.timeline_execution)
+        self.inject_execution = dict(context.inject_execution)
+        self.controller_notes = dict(context.controller_notes)
+        self.execution_alerts = list(context.execution_alerts)
         if not self.planning_objectives:
             self.planning_objectives = _objectives_from_titles(self.objectives)
         self.objectives = [item.title for item in self.planning_objectives]
@@ -1653,9 +2021,18 @@ class ExerciseStore:
         )
 
     def _promote_package_to_studio(self, package: ExercisePackage) -> None:
+        self.execution_state = "Not Started"
         self.exercise_health = "Published"
         self.timeline_status = "Published to Mission Control"
         self.operational_time = _time_label(package.publication_timestamp)
+        self.timeline_execution = {
+            event.id: "Pending"
+            for event in self.registry.list_timeline_events(package.exercise_id)
+        }
+        self.inject_execution = {
+            inject.id: "Queued"
+            for inject in self.registry.list_injects(package.exercise_id)
+        }
         for inject in self.registry.list_injects(package.exercise_id):
             if inject.status in {InjectStatus.DRAFT, InjectStatus.PENDING_REVIEW}:
                 inject.approve("user-reviewer")

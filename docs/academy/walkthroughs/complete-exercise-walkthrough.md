@@ -40,13 +40,13 @@ The walkthrough is intentionally scenario-based. Some actions are mock or future
 9. Publish to Mission Control.
    - Use [Publish To Mission Control](../task-guides/publish-to-mission-control.md). Publishing creates a versioned Exercise Package, populates live Studio workspaces, and opens Mission Control after validation succeeds.
 10. Execute the scenario.
-    - Use Mission Control for the common operational picture.
+    - Use [Run Live Exercise](../task-guides/run-live-exercise.md). Start the exercise from Mission Control, move timeline events through execution states, release approved injects, update controller tasks, and monitor activity, audit, alerts, and analytics.
 11. Use Timeline.
-    - Track STARTEX, intelligence baseline, weather update, injects, decision points, and ENDEX.
+    - Track STARTEX, intelligence baseline, weather update, injects, decision points, and ENDEX. During execution, mark events active, completed, delayed, skipped, or annotated with notes.
 12. Use Inject Library.
-    - Create, schedule, approve, reject, or revise injects.
+    - Create, schedule, approve, reject, revise, release, acknowledge, and complete injects.
 13. Use Review Queue.
-    - Preserve human release authority for injects and products.
+    - Preserve human release authority for injects and products. Use `Approve and Release` only when the reviewer intends to authorize an inject for execution.
 14. Use Exercise Library.
     - Review products, metadata, versions, review status, and archive materials.
 15. Use Knowledge Graph.
