@@ -1,0 +1,130 @@
+{
+  "workflows": [
+    {
+      "identifier": "daily-intelligence-summary",
+      "name": "Daily Intelligence Summary",
+      "description": "Orchestrates deterministic preparation steps for a daily intelligence summary.",
+      "metadata": {"product_family": "daily"},
+      "steps": [
+        {
+          "identifier": "load-current-context",
+          "name": "Load Current Context",
+          "action": "build_current_context",
+          "max_attempts": 1,
+          "metadata": {}
+        },
+        {
+          "identifier": "evaluate-decisions",
+          "name": "Evaluate Decisions",
+          "action": "evaluate_decisions",
+          "dependencies": ["load-current-context"],
+          "max_attempts": 1,
+          "metadata": {}
+        },
+        {
+          "identifier": "stage-summary-inputs",
+          "name": "Stage Summary Inputs",
+          "action": "stage_inputs",
+          "dependencies": ["evaluate-decisions"],
+          "max_attempts": 1,
+          "metadata": {"no_report_generation": true}
+        }
+      ]
+    },
+    {
+      "identifier": "breaking-news-inject",
+      "name": "Breaking News Inject",
+      "description": "Orchestrates deterministic preparation for a breaking news inject.",
+      "metadata": {"product_family": "inject"},
+      "steps": [
+        {
+          "identifier": "load-event-context",
+          "name": "Load Event Context",
+          "action": "build_event_context",
+          "max_attempts": 1,
+          "metadata": {}
+        },
+        {
+          "identifier": "translate-event-terms",
+          "name": "Translate Event Terms",
+          "action": "translate_terms",
+          "dependencies": ["load-event-context"],
+          "max_attempts": 2,
+          "metadata": {}
+        },
+        {
+          "identifier": "stage-inject-inputs",
+          "name": "Stage Inject Inputs",
+          "action": "stage_inputs",
+          "dependencies": ["translate-event-terms"],
+          "condition_key": "inject_required",
+          "condition_equals": true,
+          "max_attempts": 1,
+          "metadata": {"no_report_generation": true}
+        }
+      ]
+    },
+    {
+      "identifier": "white-cell-morning-products",
+      "name": "White Cell Morning Products",
+      "description": "Orchestrates deterministic morning preparation for white cell products.",
+      "metadata": {"product_family": "white_cell"},
+      "steps": [
+        {
+          "identifier": "load-daily-context",
+          "name": "Load Daily Context",
+          "action": "build_daily_context",
+          "max_attempts": 1,
+          "metadata": {}
+        },
+        {
+          "identifier": "check-control-measures",
+          "name": "Check Control Measures",
+          "action": "check_control_measures",
+          "dependencies": ["load-daily-context"],
+          "max_attempts": 1,
+          "metadata": {}
+        },
+        {
+          "identifier": "stage-white-cell-inputs",
+          "name": "Stage White Cell Inputs",
+          "action": "stage_inputs",
+          "dependencies": ["check-control-measures"],
+          "max_attempts": 1,
+          "metadata": {"no_report_generation": true}
+        }
+      ]
+    },
+    {
+      "identifier": "intelligence-report-generation",
+      "name": "Intelligence Report Generation",
+      "description": "Orchestrates deterministic prerequisites for future intelligence report generation.",
+      "metadata": {"product_family": "intelligence_report"},
+      "steps": [
+        {
+          "identifier": "load-current-context",
+          "name": "Load Current Context",
+          "action": "build_current_context",
+          "max_attempts": 1,
+          "metadata": {}
+        },
+        {
+          "identifier": "validate-scenario-consistency",
+          "name": "Validate Scenario Consistency",
+          "action": "validate_scenario",
+          "dependencies": ["load-current-context"],
+          "max_attempts": 1,
+          "metadata": {}
+        },
+        {
+          "identifier": "stage-report-inputs",
+          "name": "Stage Report Inputs",
+          "action": "stage_inputs",
+          "dependencies": ["validate-scenario-consistency"],
+          "max_attempts": 1,
+          "metadata": {"no_report_generation": true}
+        }
+      ]
+    }
+  ]
+}
