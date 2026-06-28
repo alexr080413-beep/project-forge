@@ -5,7 +5,7 @@ Forge Studio workspaces are views into the selected Exercise.
 | Workspace | Purpose |
 | --- | --- |
 | Mission Control | Real-time operational picture and exercise health. |
-| Exercise Designer | Project Atlas interactive planning environment for exercises, objectives, controllers, injects, timeline events, validation, and graph relationships. |
+| Exercise Designer | Project Atlas interactive planning environment for exercises, objectives, controllers, injects, timeline events, validation, graph relationships, package publication, and version history. |
 | Knowledge Graph | Operational asset graph and relationship explorer. |
 | Timeline | Chronological exercise events and controller updates. |
 | Intelligence | Intelligence picture and product recommendations. |

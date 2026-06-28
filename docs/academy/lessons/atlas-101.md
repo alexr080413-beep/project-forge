@@ -30,5 +30,7 @@ You can:
 - Create and edit injects with controller, objective, priority, notes, and time.
 - Add, edit, delete, and move timeline events.
 - Validate readiness and see relationship warnings update live.
+- Publish a validated exercise package into Mission Control.
+- Review publication summary and version history.
 
-Atlas Alpha does not implement durable persistence, drag and drop, collaborative editing, or real publishing. `Publish` records a human-gated publish request only.
+Atlas Alpha does not implement durable persistence, drag and drop, collaborative editing, or production release routing. `Publish` is functional in-memory: it creates an Exercise Package, increments version history, populates live Studio workspaces, and opens Mission Control after validation succeeds.

@@ -44,6 +44,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Project Sentinel reference exercise with canonical organization, scenario, objectives, timeline, controllers, 50-inject library, intelligence, weather, products, observations, AAR, Knowledge Graph relationships, Academy integration, and developer regression guidance.
 - Forge product foundation with product philosophy, product principles, feature specification process, roadmap process, release process, reference implementation policy, and permanent development policy.
 - Atlas Alpha interactive exercise planning with editable exercises, objectives, controllers, injects, timeline events, live validation, Knowledge Graph updates, Project Sentinel reference alignment, and Academy documentation updates.
+- Atlas Publish Pipeline with blocking validation, versioned Exercise Packages, publication summaries, version history, Mission Control handoff, Studio workspace population, and Project Sentinel documentation updates.
 
 ### Changed
 

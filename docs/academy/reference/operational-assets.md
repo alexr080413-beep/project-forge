@@ -31,3 +31,23 @@ Atlas Alpha supports local editing for:
 - Timeline events with category and scheduled time.
 
 These edits update the Exercise Data Engine and the Knowledge Graph for the running session.
+
+## Exercise Package
+
+An Exercise Package is created by the Atlas Publish Pipeline after validation succeeds.
+
+It contains:
+
+- Exercise.
+- Objectives.
+- Timeline.
+- Injects.
+- Controllers.
+- Operational assets.
+- Knowledge Graph.
+- Relationships.
+- Validation summary.
+- Publication timestamp.
+- Version number.
+
+Exercise Packages populate Mission Control, Timeline, Inject Library, Exercise Library, Controller Workspace, Review Queue, Analytics, and Knowledge Graph for the running session.

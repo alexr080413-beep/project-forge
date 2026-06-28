@@ -216,6 +216,65 @@ def test_atlas_inject_and_controller_edits_update_relationships_live() -> None:
     assert edited_controller["audit_log"][0]["action"] == "controller.updated"
 
 
+def test_publish_pipeline_blocks_until_validation_succeeds() -> None:
+    store = create_mock_exercise_store()
+
+    blocked = store.apply_action("atlas.publish", {})
+
+    assert blocked["publication"]["summary"]["status"] == "blocked"
+    assert blocked["publication"]["version_history"] == []
+    assert blocked["audit_log"][0]["action"] == "atlas.publish.blocked"
+    assert "review-001 is still awaiting human review." in (
+        blocked["publication"]["summary"]["validation"]["blocking_issues"]
+    )
+
+
+def test_publish_pipeline_creates_versioned_package_and_opens_mission_control() -> None:
+    store = create_mock_exercise_store()
+    for review_id in ("review-001", "review-002", "review-003"):
+        store.approve_review(review_id)
+
+    validated = store.apply_action("atlas.validate", {})
+    assert validated["active_exercise"]["status"] == "validated"
+    assert validated["publication"]["summary"]["status"] == "validated"
+
+    published = store.apply_action("atlas.publish", {})
+
+    assert published["active_exercise"]["status"] == "executing"
+    assert published["workspace"]["exercise"]["timeline_status"] == "Published to Mission Control"
+    assert published["publication"]["summary"]["status"] == "published"
+    assert published["publication"]["summary"]["version"] == 1
+    assert published["publication"]["version_history"] == [
+        {
+            "package_id": "mountain-exercise-3-27-version-1",
+            "version": 1,
+            "published_at": "2027-03-27T09:43:00+00:00",
+            "validation_status": "ready",
+        }
+    ]
+    package = published["publication"]["latest_package"]
+    assert package["version"] == 1
+    assert package["exercise"]["name"] == "Mountain Exercise 3-27"
+    assert package["objectives"][0]["title"] == (
+        "Exercise command and control in complex mountain terrain."
+    )
+    assert package["timeline"][0]["title"] == "Exercise Begins"
+    assert package["injects"][0]["title"] == "IED Discovery"
+    assert package["controllers"][0]["role"] == "Exercise Director"
+    assert package["knowledge_graph"]["nodes"]
+    assert package["relationships"]
+    assert package["validation_summary"]["status"] == "ready"
+    assert package["publication_timestamp"] == "2027-03-27T09:43:00+00:00"
+    assert package["id"] == "mountain-exercise-3-27-version-1"
+    assert published["navigation"]["open_workspace"] == "mission-control"
+    assert published["products"][0]["title"] == "Exercise Version 1 Publication Summary"
+    assert published["audit_log"][0]["action"] == "atlas.exercise.published"
+
+    republished = store.apply_action("atlas.publish", {})
+    assert republished["publication"]["summary"]["version"] == 2
+    assert [item["version"] for item in republished["publication"]["version_history"]] == [1, 2]
+
+
 def test_exercise_and_product_crud_actions_generate_audit_records() -> None:
     store = create_mock_exercise_store()
 

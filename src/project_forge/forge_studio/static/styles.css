@@ -1277,6 +1277,44 @@ h1 {
   line-height: 1.4;
 }
 
+.atlas-publication-panel {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.atlas-pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.pipeline-stage {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pipeline-complete {
+  border-color: rgba(84, 163, 106, 0.55);
+  color: var(--text);
+}
+
+.pipeline-active {
+  border-color: rgba(246, 168, 110, 0.55);
+  background: rgba(246, 168, 110, 0.1);
+  color: var(--orange);
+}
+
+.version-table {
+  margin-top: 12px;
+}
+
 .validation-success {
   border-left: 3px solid var(--success);
 }

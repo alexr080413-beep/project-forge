@@ -21,4 +21,4 @@ Use Atlas to draft the exercise structure before execution.
 
 Atlas Alpha is interactive and updates the Exercise Data Engine, Mission Control counts, Knowledge Graph relationships, validation status, activity feed, and audit log during the running session.
 
-Durable persistence, drag and drop, real publishing, collaborative editing, and versioned exercise plans are not implemented yet.
+Durable persistence, drag and drop, collaborative editing, production release routing, and persisted plan storage are not implemented yet. In-memory publishing and version history are available through the Publish Pipeline.

@@ -9,6 +9,7 @@ This changelog follows the spirit of [Keep a Changelog](https://keepachangelog.c
 - Governance foundation with ADR process, RFC process, engineering standards, definition of done, GitHub templates, support policy, and example exercise documentation.
 - Product foundation with product philosophy, feature specification process, roadmap process, release process, Project Sentinel reference implementation policy, and permanent development policy.
 - Atlas Alpha interactive planning workspace with editable exercise plans, objectives, controllers, injects, timeline events, live validation, Knowledge Graph propagation, and Project Sentinel documentation updates.
+- Atlas Publish Pipeline with validation gates, in-memory Exercise Packages, version history, Mission Control handoff, and Studio workspace population.
 
 ## [v0.1.0] - Foundation Release
 

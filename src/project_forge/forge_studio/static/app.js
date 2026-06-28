@@ -121,7 +121,11 @@ async function postAction(action, payload = {}, page = currentPage) {
     throw new Error(error.error || "Action failed");
   }
   workspaceData = await response.json();
+  const nextWorkspace = workspaceData.navigation?.open_workspace || page;
   showPage(page);
+  if (nextWorkspace !== page) {
+    showPage(nextWorkspace);
+  }
 }
 
 function renderGlobalContext(data) {
@@ -372,7 +376,7 @@ function renderExerciseDesigner(data) {
           <h3>Edit Exercise</h3>
           <input name="name" value="${escapeHtml(exercise.name)}" aria-label="Exercise name">
           <input name="description" value="${escapeHtml(exercise.description || "")}" aria-label="Exercise description">
-          <select name="status" aria-label="Exercise status">${statusOptions(["draft", "planning", "preparing", "active", "paused", "completed", "archived"], exercise.status)}</select>
+          <select name="status" aria-label="Exercise status">${statusOptions(["draft", "planning", "validated", "published", "executing", "preparing", "active", "paused", "completed", "archived"], exercise.status)}</select>
           <select name="phase" aria-label="Exercise phase">${statusOptions(["planning", "preparation", "execution", "assessment"], exercise.phase)}</select>
           <input name="exercise_control" value="${escapeHtml(data.workspace.exercise.exercise_control)}" aria-label="Exercise control">
           <input name="training_audience" value="${escapeHtml(data.workspace.exercise.training_audience)}" aria-label="Training audience">
@@ -434,6 +438,42 @@ function renderExerciseDesigner(data) {
               <small>${escapeHtml(item.rule)}</small>
             </div>
           `).join("")}
+        </div>
+        <div class="atlas-publication-panel">
+          <div class="panel-header">
+            <h2>Publish Pipeline</h2>
+            <span>${escapeHtml(designer.publication?.summary?.message || "Draft not published")}</span>
+          </div>
+          <div class="atlas-pipeline">
+            ${(designer.publication?.summary?.stages || [
+              {label: "Draft", status: "complete"},
+              {label: "Validate", status: "active"},
+              {label: "Publish", status: "pending"},
+              {label: "Studio", status: "pending"},
+              {label: "Mission Control", status: "pending"}
+            ]).map((stage) => `
+              <span class="pipeline-stage pipeline-${escapeHtml(stage.status)}">${escapeHtml(stage.label)}</span>
+            `).join("")}
+          </div>
+          <div class="atlas-validation-rules">
+            ${designer.publication_validation.results.map((item) => `
+              <div class="mini-metric validation-${escapeHtml(item.state)}">
+                <span>${escapeHtml(item.label)}</span>
+                <strong>${escapeHtml(item.status)}</strong>
+                <small>${escapeHtml((item.issues || [])[0] || "Ready")}</small>
+              </div>
+            `).join("")}
+          </div>
+          <div class="data-table version-table">
+            <div class="table-row table-head"><span>Version</span><span>Published</span><span>Status</span></div>
+            ${(designer.publication?.version_history || []).map((item) => `
+              <div class="table-row">
+                <span>Version ${escapeHtml(item.version)}</span>
+                <span>${timeFromIso(item.published_at)}</span>
+                <span>${UI.statusBadge(item.validation_status)}</span>
+              </div>
+            `).join("") || `<div class="table-row"><span>No versions yet</span><span>--</span><span>Draft</span></div>`}
+          </div>
         </div>
       </section>
     </section>

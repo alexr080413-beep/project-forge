@@ -11,6 +11,9 @@ class ExerciseStatus(str, Enum):
 
     DRAFT = "draft"
     PLANNING = "planning"
+    VALIDATED = "validated"
+    PUBLISHED = "published"
+    EXECUTING = "executing"
     PREPARING = "preparing"
     ACTIVE = "active"
     PAUSED = "paused"

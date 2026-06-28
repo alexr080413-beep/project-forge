@@ -71,6 +71,25 @@ class PlanningObjective:
 
 
 @dataclass(frozen=True, slots=True)
+class ExercisePackage:
+    """Versioned package created when Atlas publishes an exercise plan."""
+
+    id: str
+    exercise_id: str
+    version: int
+    exercise: dict[str, Any]
+    objectives: list[dict[str, Any]]
+    timeline: list[dict[str, Any]]
+    injects: list[dict[str, Any]]
+    controllers: list[dict[str, Any]]
+    operational_assets: list[dict[str, Any]]
+    knowledge_graph: dict[str, Any]
+    relationships: list[dict[str, Any]]
+    validation_summary: dict[str, Any]
+    publication_timestamp: datetime
+
+
+@dataclass(frozen=True, slots=True)
 class Organization:
     """One Forge Studio organization that owns exercise workspaces."""
 
@@ -130,6 +149,8 @@ class ExerciseStore:
     exercise_workspaces: dict[str, ExerciseWorkspaceContext] = field(default_factory=dict)
     planning_objectives: list[PlanningObjective] = field(default_factory=list)
     inject_objective_links: dict[str, str] = field(default_factory=dict)
+    exercise_packages: list[ExercisePackage] = field(default_factory=list)
+    publication_summary: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not self.organizations:
@@ -196,6 +217,7 @@ class ExerciseStore:
         injects = self.registry.list_injects(exercise.id)
         audit_logs = self.registry.list_audit_logs(exercise.id)
         pending_statuses = {StudioReviewStatus.PENDING, StudioReviewStatus.IN_REVIEW}
+        publication = self._publication_payload(exercise.id)
 
         return {
             "platform": {
@@ -263,6 +285,7 @@ class ExerciseStore:
             ],
             "audit_log": [self._audit_payload(log) for log in reversed(audit_logs)],
             "statistics": statistics,
+            "publication": publication,
             "search_results": self._mock_search_results(),
             "designer": self._designer_payload(exercise, exercise_workspace),
             "knowledge_graph": self._knowledge_graph_payload(
@@ -791,31 +814,78 @@ class ExerciseStore:
 
     def validate_atlas_plan(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         exercise = self._required_active_exercise()
-        validation = self._atlas_validation()
-        readiness = next(
-            item for item in validation["summary"] if item["label"] == "Publish readiness"
-        )
+        validation = self._publish_validation()
+        if validation["ready"]:
+            exercise.transition_status(ExerciseStatus.VALIDATED)
+            result = "validated"
+        else:
+            exercise.transition_status(ExerciseStatus.PLANNING)
+            result = "blocked"
+        self.publication_summary = {
+            "status": result,
+            "message": "Validation succeeded." if validation["ready"] else "Validation blocked publication.",
+            "validation": validation,
+            "stages": _publish_stages("validated" if validation["ready"] else "blocked"),
+        }
         self._record_operation(
             actor_id="user-exdir",
             action="atlas.plan.validated",
             target_type="exercise",
             target_id=exercise.id,
-            result=readiness["status"].lower().replace(" ", "_"),
-            activity_title=f"{exercise.name} Validated",
+            result=result,
+            activity_title=(
+                f"{exercise.name} Validated"
+                if validation["ready"]
+                else f"{exercise.name} Validation Blocked"
+            ),
         )
         return self.snapshot()
 
     def publish_atlas_plan(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         exercise = self._required_active_exercise()
+        validation = self._publish_validation()
+        if not validation["ready"]:
+            self.publication_summary = {
+                "status": "blocked",
+                "message": "Publication is blocked until validation succeeds.",
+                "validation": validation,
+                "stages": _publish_stages("blocked"),
+            }
+            self._record_operation(
+                actor_id="user-exdir",
+                action="atlas.publish.blocked",
+                target_type="exercise",
+                target_id=exercise.id,
+                result="blocked",
+                activity_title=f"{exercise.name} Publish Blocked",
+            )
+            return self.snapshot()
+        package = self._create_exercise_package(validation)
+        self.exercise_packages.append(package)
+        exercise.transition_status(ExerciseStatus.PUBLISHED)
+        self._promote_package_to_studio(package)
+        exercise.transition_status(ExerciseStatus.EXECUTING)
+        self.publication_summary = {
+            "status": "published",
+            "message": f"Exercise Version {package.version} published to Mission Control.",
+            "package_id": package.id,
+            "version": package.version,
+            "published_at": _to_jsonable(package.publication_timestamp),
+            "validation": validation,
+            "stages": _publish_stages("published"),
+            "opened_workspace": "mission-control",
+        }
         self._record_operation(
             actor_id="user-exdir",
-            action="atlas.publish.requested",
+            action="atlas.exercise.published",
             target_type="exercise",
             target_id=exercise.id,
-            result="human_approval_required",
-            activity_title=f"{exercise.name} Publish Requested",
+            result=f"version_{package.version}",
+            activity_title=f"{exercise.name} Version {package.version} Published",
         )
-        return self.snapshot()
+        payload_out = self.snapshot()
+        payload_out["navigation"] = {"open_workspace": "mission-control"}
+        return payload_out
 
     def export_atlas_plan(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         exercise = self._required_active_exercise()
@@ -1357,6 +1427,257 @@ class ExerciseStore:
             )
         return results
 
+    def _publication_payload(self, exercise_id: str) -> dict[str, Any]:
+        packages = [item for item in self.exercise_packages if item.exercise_id == exercise_id]
+        latest = packages[-1] if packages else None
+        return {
+            "latest_package": _to_jsonable(latest) if latest else None,
+            "version_history": [
+                {
+                    "package_id": package.id,
+                    "version": package.version,
+                    "published_at": _to_jsonable(package.publication_timestamp),
+                    "validation_status": package.validation_summary["status"],
+                }
+                for package in packages
+            ],
+            "summary": dict(self.publication_summary),
+        }
+
+    def _publish_validation(self) -> dict[str, Any]:
+        exercise = self._required_active_exercise()
+        organization = self._required_active_organization()
+        injects = self.registry.list_injects(exercise.id)
+        timeline_events = self.registry.list_timeline_events(exercise.id)
+        review_items = self.registry.list_review_items(exercise.id)
+        graph = self._knowledge_graph_payload(
+            exercise,
+            organization,
+            {
+                "status": exercise.status.value.upper(),
+                "phase": exercise.phase.value.upper(),
+                "training_audience": self.training_audience,
+                "exercise_director": self._user_name(self.exercise_director_id),
+            },
+        )
+        objective_ids = {item.id for item in self.planning_objectives}
+        time_counts: dict[str, int] = {}
+        for event in timeline_events:
+            key = _time_label(event.timestamp)
+            time_counts[key] = time_counts.get(key, 0) + 1
+        pending_statuses = {StudioReviewStatus.PENDING, StudioReviewStatus.IN_REVIEW}
+        product_types = {product.product_type for product in self.products}
+        required_product_types = {"Intelligence", "Inject", "Weather", "Report"}
+        results = [
+            _validation_detail(
+                "Exercise metadata",
+                [
+                    "Exercise name is required." if not exercise.name else "",
+                    "Exercise description is required." if not exercise.description else "",
+                    "Organization is required." if not organization.id else "",
+                    "Exercise Director is required." if not self.exercise_director_id else "",
+                    "Start date is required." if not exercise.start_date else "",
+                    "End date is required." if not exercise.end_date else "",
+                    "Training audience is required." if not self.training_audience else "",
+                ],
+            ),
+            _validation_detail(
+                "Objectives",
+                [
+                    "At least one objective is required." if not self.planning_objectives else "",
+                    *[
+                        f"{objective.title} needs success criteria."
+                        for objective in self.planning_objectives
+                        if not objective.success_criteria
+                    ],
+                    *[
+                        f"{objective.title} needs linked operational assets."
+                        for objective in self.planning_objectives
+                        if not objective.linked_assets
+                    ],
+                ],
+            ),
+            _validation_detail(
+                "Timeline",
+                [
+                    "At least one timeline event is required." if not timeline_events else "",
+                    *[
+                        f"{event.title} needs a scheduled time."
+                        for event in timeline_events
+                        if not event.timestamp
+                    ],
+                    *[
+                        f"{time_value} has conflicting timeline events."
+                        for time_value, count in time_counts.items()
+                        if count > 1
+                    ],
+                ],
+            ),
+            _validation_detail(
+                "Injects",
+                [
+                    "At least one inject is required." if not injects else "",
+                    *[
+                        f"{inject.title} needs an assigned controller."
+                        for inject in injects
+                        if not inject.assigned_controller
+                    ],
+                    *[
+                        f"{inject.title} needs an objective link."
+                        for inject in injects
+                        if inject.id not in self.inject_objective_links
+                    ],
+                ],
+            ),
+            _validation_detail(
+                "Controllers",
+                [
+                    "At least one controller is required." if not self.controllers else "",
+                    *[
+                        f"{controller.id} needs role and name."
+                        for controller in self.controllers
+                        if not controller.role or not controller.name
+                    ],
+                ],
+            ),
+            _validation_detail(
+                "Relationships",
+                [
+                    *[
+                        f"{inject_id} links to an unknown objective."
+                        for inject_id, objective_id in self.inject_objective_links.items()
+                        if objective_id not in objective_ids
+                    ],
+                    *[
+                        f"{inject.title} needs objective relationship."
+                        for inject in injects
+                        if inject.id not in self.inject_objective_links
+                    ],
+                ],
+            ),
+            _validation_detail(
+                "Knowledge Graph",
+                [
+                    "Knowledge Graph needs nodes." if not graph["nodes"] else "",
+                    "Knowledge Graph needs relationships." if not graph["edges"] else "",
+                ],
+            ),
+            _validation_detail(
+                "Required Products",
+                [
+                    f"Missing required product type: {product_type}."
+                    for product_type in sorted(required_product_types - product_types)
+                ],
+            ),
+            _validation_detail(
+                "Review Requirements",
+                [
+                    f"{item.id} is still awaiting human review."
+                    for item in review_items
+                    if item.status in pending_statuses
+                ],
+            ),
+        ]
+        blocking_issues = [
+            issue
+            for result in results
+            for issue in result["issues"]
+        ]
+        ready = not blocking_issues
+        return {
+            "status": "ready" if ready else "blocked",
+            "ready": ready,
+            "results": results,
+            "blocking_issues": blocking_issues,
+            "checked_at": _to_jsonable(_operation_timestamp()),
+        }
+
+    def _create_exercise_package(self, validation: dict[str, Any]) -> ExercisePackage:
+        exercise = self._required_active_exercise()
+        organization = self._required_active_organization()
+        graph = self._knowledge_graph_payload(
+            exercise,
+            organization,
+            {
+                "status": ExerciseStatus.PUBLISHED.value.upper(),
+                "phase": exercise.phase.value.upper(),
+                "training_audience": self.training_audience,
+                "exercise_director": self._user_name(self.exercise_director_id),
+            },
+        )
+        version = (
+            max(
+                (
+                    package.version
+                    for package in self.exercise_packages
+                    if package.exercise_id == exercise.id
+                ),
+                default=0,
+            )
+            + 1
+        )
+        timestamp = _operation_timestamp()
+        package_id = f"{exercise.id}-version-{version}"
+        return ExercisePackage(
+            id=package_id,
+            exercise_id=exercise.id,
+            version=version,
+            exercise=_to_jsonable(exercise),
+            objectives=[_to_jsonable(item) for item in self.planning_objectives],
+            timeline=[
+                _to_jsonable(item)
+                for item in self.registry.list_timeline_events(exercise.id)
+            ],
+            injects=[
+                self._inject_payload(item)
+                for item in self.registry.list_injects(exercise.id)
+            ],
+            controllers=[self._controller_payload(item) for item in self.controllers],
+            operational_assets=self._designer_payload(
+                exercise,
+                {
+                    "status": ExerciseStatus.PUBLISHED.value.upper(),
+                    "phase": exercise.phase.value.upper(),
+                    "training_audience": self.training_audience,
+                    "exercise_director": self._user_name(self.exercise_director_id),
+                },
+            )["exercise_assets"],
+            knowledge_graph=graph,
+            relationships=graph["edges"],
+            validation_summary={
+                "status": validation["status"],
+                "results": validation["results"],
+                "blocking_issues": validation["blocking_issues"],
+            },
+            publication_timestamp=timestamp,
+        )
+
+    def _promote_package_to_studio(self, package: ExercisePackage) -> None:
+        self.exercise_health = "Published"
+        self.timeline_status = "Published to Mission Control"
+        self.operational_time = _time_label(package.publication_timestamp)
+        for inject in self.registry.list_injects(package.exercise_id):
+            if inject.status in {InjectStatus.DRAFT, InjectStatus.PENDING_REVIEW}:
+                inject.approve("user-reviewer")
+            if inject.status is InjectStatus.APPROVED and inject.scheduled_time:
+                inject.schedule(inject.scheduled_time)
+        self.products.insert(
+            0,
+            ExerciseProduct(
+                id=f"product-{package.id}-publication-summary",
+                folder="Reports",
+                product_type="Report",
+                title=f"Exercise Version {package.version} Publication Summary",
+                status="Published",
+                version=f"v{package.version}.0",
+                last_updated=self.operational_time,
+                author="Forge Studio",
+                review_status="Approved",
+                metadata={"exercise": package.exercise_id, "package_id": package.id},
+                version_history=[f"v{package.version}.0"],
+            ),
+        )
+
     def _designer_payload(
         self,
         exercise: Exercise,
@@ -1546,6 +1867,8 @@ class ExerciseStore:
             "relationship_map": self._atlas_relationship_map(),
             "validation": validation["summary"],
             "relationship_validation": validation["relationships"],
+            "publication_validation": self._publish_validation(),
+            "publication": self._publication_payload(exercise.id),
         }
 
     def _atlas_validation(self) -> dict[str, list[dict[str, str]]]:
@@ -1970,6 +2293,7 @@ def create_mock_exercise_store(registry: ForgeStudioRegistry | None = None) -> E
         planning_objectives=sentinel_objectives,
         inject_objective_links={
             "inject-002": "objective-command-control",
+            "inject-001": "objective-command-control",
             "inject-003": "objective-info-environment",
             "inject-004": "objective-info-environment",
             "inject-005": "objective-intel-fusion",
@@ -3147,6 +3471,36 @@ def _validation_item(label: str, issue_count: int, rule: str = "") -> dict[str, 
     if rule:
         item["rule"] = rule
     return item
+
+
+def _validation_detail(label: str, issues: list[str]) -> dict[str, Any]:
+    filtered = [issue for issue in issues if issue]
+    return {
+        "label": label,
+        "status": "Passed" if not filtered else f"{len(filtered)} issue",
+        "state": "success" if not filtered else "danger",
+        "issues": filtered,
+    }
+
+
+def _publish_stages(state: str) -> list[dict[str, str]]:
+    stages = ["Draft", "Validate", "Publish", "Studio", "Mission Control"]
+    if state == "blocked":
+        completed = {"Draft"}
+        active = "Validate"
+    elif state == "validated":
+        completed = {"Draft", "Validate"}
+        active = "Publish"
+    else:
+        completed = set(stages)
+        active = "Mission Control"
+    return [
+        {
+            "label": stage,
+            "status": "complete" if stage in completed else "active" if stage == active else "pending",
+        }
+        for stage in stages
+    ]
 
 
 def _next_event_titles(event_id: str, events: list[TimelineEvent]) -> list[str]:

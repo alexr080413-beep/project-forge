@@ -104,6 +104,8 @@ The reference workflow is:
 6. Add, move, or delete timeline events.
 7. Validate readiness.
 8. Confirm Knowledge Graph relationships update.
-9. Save draft or record a publish request.
+9. Publish the validated plan to Mission Control.
+10. Confirm Version 1 appears in version history.
+11. Confirm Mission Control, Timeline, Inject Library, Exercise Library, Controllers, Review Queue, Analytics, and Knowledge Graph reflect the published package.
 
-Publishing remains a human-gated placeholder. Atlas Alpha does not release exercise material into Mission Control automatically.
+Publishing remains human-gated. Atlas Alpha publishes in-memory for the running session, creates a versioned Exercise Package, and does not perform durable persistence or external distribution.

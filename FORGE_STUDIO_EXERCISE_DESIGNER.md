@@ -2,7 +2,7 @@
 
 Project Atlas is the Forge Studio planning environment for designing an exercise before it is published into Mission Control.
 
-This document describes the Atlas Alpha planning workspace. Atlas is now interactive in the local Forge Studio MVP, but it still does not define durable persistence, drag and drop, real publishing, production approval routing, collaborative editing, or versioned exercise plans.
+This document describes the Atlas Alpha planning workspace. Atlas is interactive in the local Forge Studio MVP and now includes an in-memory Publish Pipeline. It still does not define durable persistence, drag and drop, production approval routing, collaborative editing, or persisted exercise plan storage.
 
 ## Purpose
 
@@ -44,6 +44,9 @@ Atlas Alpha includes:
 - Editable inject planning.
 - Editable timeline planning.
 - Live validation status.
+- Publish Pipeline.
+- Exercise Package generation.
+- Version history.
 - Exercise Relationship Engine.
 - Relationship map.
 
@@ -243,19 +246,41 @@ Planners assemble objectives, units, controllers, injects, decision points, and 
 
 Forge checks whether the plan has enough structure to become an executable exercise package.
 
-The current mock validation checks are:
+The current validation checks are:
 
-- Objectives linked.
-- Controllers assigned.
+- Exercise metadata.
+- Objectives.
+- Timeline.
+- Injects.
 - Timeline conflicts.
+- Controllers assigned.
+- Relationships.
+- Knowledge Graph.
+- Required products.
 - Review requirements.
 - Publish readiness.
 
 ### Publish
 
-In the future, publishing will convert validated planning objects into live exercise objects.
+Publishing converts validated planning objects into a versioned in-memory Exercise Package.
 
-Publishing must remain explicit. Forge should never silently push draft planning material into Mission Control.
+Publishing must remain explicit. Forge blocks publication until validation succeeds and then opens Mission Control.
+
+The Exercise Package contains:
+
+- Exercise.
+- Objectives.
+- Timeline.
+- Injects.
+- Controllers.
+- Operational assets.
+- Knowledge Graph.
+- Relationships.
+- Validation summary.
+- Publication timestamp.
+- Version number.
+
+The first publish creates Version 1. Subsequent publishes create Version 2, Version 3, and so on.
 
 ### Execute
 
@@ -263,7 +288,7 @@ Mission Control, Timeline, Inject Library, Review Queue, Exercise Library, Contr
 
 ## Planned Objects To Live Objects
 
-Future mapping direction:
+Current publish mapping:
 
 | Atlas Planning Object | Future Live Exercise Object |
 | --- | --- |
@@ -284,7 +309,7 @@ Human approval remains authoritative.
 
 Atlas can help planners design and validate an exercise, but publishing to Mission Control should require explicit human action. Planned objects should not become live exercise objects without approval, review rules, and audit records.
 
-The current framework includes a `Publish` toolbar control as a placeholder only. It records a human-gated publish request in audit/activity data. It does not publish, persist, or mutate live exercise state.
+The current framework includes a `Publish` toolbar control that creates an in-memory Exercise Package and promotes the exercise into live Studio state after validation succeeds. It does not perform external distribution or durable persistence.
 
 ## Current Boundaries
 
@@ -292,13 +317,15 @@ The current Alpha implementation does not implement:
 
 - Durable persistence.
 - Drag and drop.
-- Real publishing.
 - Collaborative editing.
-- Version control for plans.
+- Persisted version control for plans.
 
 ## Project Sentinel Reference
 
 Project Sentinel is the validation baseline for Atlas Alpha. Future Atlas work should preserve the ability to design, validate, inspect, and demonstrate Mountain Exercise 3-27 using Sentinel objectives, controllers, injects, timeline events, products, observations, and AAR relationships.
+
+Future Atlas work should add:
+
 - Approval routing.
 - Conflict resolution.
 - Template import or export.

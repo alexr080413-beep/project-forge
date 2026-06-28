@@ -38,7 +38,7 @@ The walkthrough is intentionally scenario-based. Some actions are mock or future
 8. Validate the exercise.
    - Use [Validate Exercise](../task-guides/validate-exercise.md) to check objectives, controllers, timeline conflicts, missing relationships, and publish readiness.
 9. Publish to Mission Control.
-   - Use [Publish To Mission Control](../task-guides/publish-to-mission-control.md). Current behavior is a placeholder; publishing remains future explicit human action.
+   - Use [Publish To Mission Control](../task-guides/publish-to-mission-control.md). Publishing creates a versioned Exercise Package, populates live Studio workspaces, and opens Mission Control after validation succeeds.
 10. Execute the scenario.
     - Use Mission Control for the common operational picture.
 11. Use Timeline.
