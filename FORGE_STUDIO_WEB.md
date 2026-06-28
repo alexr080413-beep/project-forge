@@ -100,6 +100,7 @@ Navigation sections:
 - Latest activity feed
 - Exercise workspace metadata
 - Exercise Designer mock planning data
+- Exercise Designer relationship assets, graph links, and validation rules
 
 The local web server creates one `ExerciseStore` when it starts. Every page asks for the same exercise snapshot instead of constructing local mock objects. Organization and exercise switching are local in-memory commands that load a different exercise context from the same store.
 
@@ -243,6 +244,8 @@ The current framework includes:
 - Top toolbar.
 - Mock validation status.
 - Mock planning objects for Mountain Exercise 3-27.
+- Exercise Relationship Engine mock data for assets, relationship types, graph links, and relationship validation.
+- Relationship map for the Objective Alpha planning chain.
 
 The framework does not implement persistence, drag and drop, or real publishing. See [FORGE_STUDIO_EXERCISE_DESIGNER.md](FORGE_STUDIO_EXERCISE_DESIGNER.md).
 

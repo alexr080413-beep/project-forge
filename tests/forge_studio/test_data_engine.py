@@ -280,3 +280,87 @@ def test_exercise_designer_framework_payload_contains_mock_planning_data() -> No
         "Review requirements",
         "Publish readiness",
     ]
+
+
+def test_exercise_designer_relationship_engine_payload_models_assets_and_links() -> None:
+    store = create_mock_exercise_store()
+
+    designer = store.snapshot()["designer"]
+
+    assert designer["asset_types"] == [
+        "Objective",
+        "Inject",
+        "Timeline Event",
+        "Controller",
+        "Product",
+        "Intelligence Update",
+        "Weather Event",
+        "Media Event",
+        "Observer Checkpoint",
+        "Observation",
+        "AAR Finding",
+    ]
+    assert designer["relationship_types"] == [
+        "supports",
+        "triggers",
+        "depends_on",
+        "assigned_to",
+        "produces",
+        "reviews",
+        "observes",
+        "evaluates",
+        "follows",
+        "conflicts_with",
+        "related_to",
+    ]
+    assert {item["type"] for item in designer["exercise_assets"]} >= {
+        "Objective",
+        "Inject",
+        "Timeline Event",
+        "Controller",
+        "Product",
+        "Observation",
+        "AAR Finding",
+    }
+    assert {"source": "obj-alpha", "target": "intel-baseline", "type": "supports"} in (
+        designer["relationships"]
+    )
+    assert designer["relationship_map"]["chain"] == [
+        "Objective Alpha",
+        "Intelligence Baseline",
+        "Civilian Protest",
+        "Commander Decision Point",
+        "Observer Checkpoint",
+        "AAR Finding",
+    ]
+
+
+def test_exercise_designer_relationship_validation_and_item_relationships() -> None:
+    store = create_mock_exercise_store()
+
+    designer = store.snapshot()["designer"]
+    commander_decision = next(
+        item for item in designer["planning_objects"] if item["title"] == "Commander Decision Point"
+    )
+
+    assert commander_decision["linked_objectives"] == ["Objective Alpha"]
+    assert commander_decision["related_injects"] == [
+        "Civilian Protest",
+        "GPS Interference",
+    ]
+    assert commander_decision["produced_products"] == ["Commander Decision Record"]
+    assert commander_decision["follow_on_events"] == ["Observer Checkpoint"]
+    assert commander_decision["validation_warnings"] == [
+        "Human approval required before execution handoff."
+    ]
+    assert [item["label"] for item in designer["relationship_validation"]] == [
+        "Inject objective links",
+        "Controller assignments",
+        "Scheduled timeline events",
+        "Product source references",
+        "AAR traceability",
+    ]
+    assert {item["state"] for item in designer["relationship_validation"]} == {
+        "success",
+        "warning",
+    }

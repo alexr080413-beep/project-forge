@@ -115,6 +115,8 @@ The web shell contains a persistent global header, organization selector, exerci
 
 Project Atlas is the Forge Studio Exercise Designer framework. It adds an `Exercise Designer` workspace for planning exercises before future publishing into Mission Control. The framework is intentionally mock and local: it exposes object categories, planned timeline objects, exercise-level properties, selected item properties, toolbar controls, and validation status through the existing Exercise Data Engine snapshot.
 
+The first Exercise Relationship Engine models exercise assets, relationship types, mock graph links, relationship validation rules, and a visual planning chain inside Atlas. It connects objectives, injects, timeline events, controllers, products, observer checkpoints, observations, and AAR findings so future Mission Replay, after-action review, and assisted planning features can use traceable exercise context.
+
 Atlas does not implement persistence, drag and drop, or real publishing. Planned objects remain separate from live exercise objects until future explicit human approval, validation, and audit behavior is implemented.
 
 ## Future Sections

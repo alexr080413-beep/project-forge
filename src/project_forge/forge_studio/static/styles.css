@@ -1160,6 +1160,66 @@ h1 {
   grid-template-columns: 120px 1fr;
 }
 
+.atlas-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.muted-text {
+  color: var(--muted);
+}
+
+.atlas-relationship-map {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(8, 13, 20, 0.7);
+}
+
+.atlas-relationship-map h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.atlas-chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.atlas-chain-node {
+  padding: 7px 9px;
+  border: 1px solid rgba(246, 168, 110, 0.28);
+  border-radius: 6px;
+  background: rgba(246, 168, 110, 0.08);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.atlas-chain-arrow {
+  color: var(--orange);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-weight: 800;
+}
+
+.atlas-validation-rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.atlas-validation-rules small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 .validation-success {
   border-left: 3px solid var(--success);
 }

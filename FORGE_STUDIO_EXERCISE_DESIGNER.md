@@ -40,6 +40,153 @@ The first Atlas framework includes:
 - Top toolbar.
 - Mock validation status.
 - Mock planning objects.
+- Exercise Relationship Engine.
+- Relationship map.
+
+## Exercise Assets
+
+An Exercise Asset is any planning or execution object that can be connected to another object in the exercise graph.
+
+Atlas currently models these asset types:
+
+| Asset Type | Purpose |
+| --- | --- |
+| Objective | Training outcome, assessment anchor, and traceability root. |
+| Inject | Planned stimulus introduced by Exercise Control. |
+| Timeline Event | Scheduled or observed event on the exercise timeline. |
+| Controller | Human owner responsible for planning, release, or review. |
+| Product | Training product, intelligence product, media item, report, or export. |
+| Intelligence Update | Information product or scenario update for the training audience. |
+| Weather Event | Environmental condition that affects decisions or movement. |
+| Media Event | Public affairs, social media, or simulated press activity. |
+| Observer Checkpoint | Assessment marker used by observers or evaluators. |
+| Observation | Recorded assessment input from observers or controllers. |
+| AAR Finding | After-action review finding tied back to evidence and objectives. |
+
+## Relationship Engine
+
+The Exercise Relationship Engine connects exercise assets so Forge can understand how the plan is structured and why each object exists.
+
+Supported relationship types:
+
+| Relationship | Meaning |
+| --- | --- |
+| `supports` | One asset supports another asset, usually an objective. |
+| `triggers` | One asset initiates another event, inject, or decision point. |
+| `depends_on` | One asset requires another asset before it is valid or executable. |
+| `assigned_to` | An asset is owned by a controller or role. |
+| `produces` | An asset produces a product, record, or artifact. |
+| `reviews` | A controller or review item reviews another asset. |
+| `observes` | An observer checkpoint or observation records evidence from an asset. |
+| `evaluates` | An observation or finding evaluates an objective or exercise behavior. |
+| `follows` | One event follows another in the planned sequence. |
+| `conflicts_with` | Two assets have a timing, ownership, or scenario conflict. |
+| `related_to` | General relationship when a more specific edge is not yet defined. |
+
+The current implementation uses mock relationship data for Mountain Exercise 3-27. It does not persist graph edits and does not implement drag and drop.
+
+## Exercise Graph
+
+The exercise graph is the connected set of assets and relationships for one exercise.
+
+```mermaid
+flowchart LR
+    objective["Objective Alpha"]
+    intel["Intelligence Baseline"]
+    protest["Civilian Protest"]
+    decision["Commander Decision Point"]
+    checkpoint["Observer Checkpoint"]
+    finding["AAR Finding"]
+
+    objective -->|"supports"| intel
+    intel -->|"triggers"| protest
+    protest -->|"depends_on"| decision
+    decision -->|"follows"| checkpoint
+    checkpoint -->|"observes/evaluates"| finding
+    finding -->|"traces to"| objective
+```
+
+In the first UI version, Atlas displays this as a simple relationship chain:
+
+`Objective Alpha -> Intelligence Baseline -> Civilian Protest -> Commander Decision Point -> Observer Checkpoint -> AAR Finding`
+
+## Relationship-Aware Inspector
+
+When a planned item is selected, the Properties Inspector displays:
+
+- Linked Objectives.
+- Related Injects.
+- Assigned Controller.
+- Produced Products.
+- Follow-on Events.
+- Validation Warnings.
+
+This allows planners to see whether a planned object has the minimum context needed to become a live exercise object.
+
+## Relationship Validation
+
+The first validation rules are deliberately simple:
+
+| Rule | Purpose |
+| --- | --- |
+| Injects should link to at least one objective. | Keeps every inject tied to training value. |
+| Injects should have an assigned controller. | Keeps release authority human-owned. |
+| Timeline events should have a scheduled time. | Keeps the plan executable. |
+| Products should reference a source event or inject. | Keeps the Exercise Library traceable. |
+| AAR findings should trace back to an objective or observation. | Keeps assessment evidence-based. |
+
+The current validation status is mock data. Future versions should calculate these rules from the persisted exercise graph.
+
+## Why Relationships Matter
+
+Relationships give Forge traceability across the full exercise lifecycle.
+
+They help answer operational questions such as:
+
+- Which objective does this inject support?
+- Which controller owns this event?
+- Which products came from this inject?
+- Which observations support this AAR finding?
+- Which timeline conflicts must be resolved before publish?
+
+Without relationships, Forge can show lists of objects. With relationships, Forge can explain the exercise.
+
+## Mission Replay Support
+
+Mission Replay will need to reconstruct what happened, when it happened, who controlled it, and which products or observations resulted from it.
+
+The relationship graph gives Replay the structure to follow an exercise thread from objective to inject, product, decision, observation, and AAR finding.
+
+## AAR Support
+
+AARs should be evidence-based.
+
+The Relationship Engine helps connect findings back to:
+
+- Objectives.
+- Injects.
+- Timeline events.
+- Observer checkpoints.
+- Observations.
+- Products.
+- Controller decisions.
+
+This supports a defensible after-action record instead of a loose narrative.
+
+## Future AI-Assisted Planning Support
+
+AI-assisted planning is not part of this sprint.
+
+In later phases, the relationship graph can provide context for AI assistance by showing:
+
+- Missing objective links.
+- Unassigned injects.
+- Weak product traceability.
+- Timeline conflicts.
+- Gaps between objectives and observations.
+- Candidate follow-on events.
+
+Human judgment remains authoritative. AI may suggest, but planners decide.
 
 ## Design To Execute Lifecycle
 

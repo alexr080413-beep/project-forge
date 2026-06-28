@@ -219,9 +219,33 @@ function renderPropertyList(properties) {
     <dl class="detail-list atlas-properties">
       ${Object.entries(properties).map(([key, value]) => `
         <dt>${escapeHtml(key)}</dt>
-        <dd>${escapeHtml(value)}</dd>
+        <dd>${renderPropertyValue(value)}</dd>
       `).join("")}
     </dl>
+  `;
+}
+
+function renderPropertyValue(value) {
+  if (Array.isArray(value)) {
+    if (!value.length) {
+      return `<span class="muted-text">None</span>`;
+    }
+    return `<span class="atlas-chip-row">${value.map((item) => `<span class="tag">${escapeHtml(item)}</span>`).join("")}</span>`;
+  }
+  return escapeHtml(value);
+}
+
+function renderRelationshipMap(map) {
+  return `
+    <div class="atlas-relationship-map" aria-label="${escapeHtml(map.title)}">
+      <h3>${escapeHtml(map.title)}</h3>
+      <div class="atlas-chain">
+        ${map.chain.map((item, index) => `
+          <span class="atlas-chain-node">${escapeHtml(item)}</span>
+          ${index < map.chain.length - 1 ? `<span class="atlas-chain-arrow">&rarr;</span>` : ""}
+        `).join("")}
+      </div>
+    </div>
   `;
 }
 
@@ -265,6 +289,7 @@ function renderExerciseDesigner(data) {
             </button>
           `).join("")}
         </div>
+        ${renderRelationshipMap(designer.relationship_map)}
       </section>
       <aside class="atlas-panel atlas-inspector">
         <div class="panel-header">
@@ -283,6 +308,15 @@ function renderExerciseDesigner(data) {
             <div class="mini-metric validation-${escapeHtml(item.state)}">
               <span>${escapeHtml(item.label)}</span>
               <strong>${escapeHtml(item.status)}</strong>
+            </div>
+          `).join("")}
+        </div>
+        <div class="atlas-validation-rules">
+          ${designer.relationship_validation.map((item) => `
+            <div class="mini-metric validation-${escapeHtml(item.state)}">
+              <span>${escapeHtml(item.label)}</span>
+              <strong>${escapeHtml(item.status)}</strong>
+              <small>${escapeHtml(item.rule)}</small>
             </div>
           `).join("")}
         </div>
@@ -306,8 +340,12 @@ function bindDesignerSelection(defaultProperties) {
         Title: payload.title,
         Type: payload.type,
         Time: payload.time,
-        "Linked Objective": payload.linked_objective,
+        "Linked Objectives": payload.linked_objectives,
+        "Related Injects": payload.related_injects,
         "Assigned Controller": payload.assigned_controller,
+        "Produced Products": payload.produced_products,
+        "Follow-on Events": payload.follow_on_events,
+        "Validation Warnings": payload.validation_warnings,
         Status: payload.status,
         Notes: payload.notes
       });

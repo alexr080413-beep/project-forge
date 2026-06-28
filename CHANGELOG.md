@@ -37,6 +37,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Forge Studio Design System folder with reusable UI documentation, shared tokens, static `ForgeUI` component helpers, and consistent buttons, cards, badges, timeline, product, notification, and widget primitives.
 - Forge Studio workspace framework with Organization and Exercise selectors, persistent global header, collapsible workspace navigation, breadcrumbs, command palette framework, global search framework, and multi-exercise data switching.
 - Project Atlas Exercise Designer framework with Object Library, planning timeline canvas, Properties Inspector, toolbar, mock validation status, and planning documentation.
+- Project Atlas Exercise Relationship Engine with exercise asset types, relationship types, mock graph links, relationship-aware inspector fields, relationship map, validation rules, and documentation for Mission Replay and AAR traceability.
 
 ### Changed
 
