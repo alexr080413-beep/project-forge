@@ -20,6 +20,7 @@ flowchart TB
     exercise --> workspace["Workspace"]
     workspace --> mission["Mission Control"]
     workspace --> designer["Exercise Designer"]
+    workspace --> graph["Knowledge Graph"]
     workspace --> timeline["Timeline"]
     workspace --> intelligence["Intelligence"]
     workspace --> injects["Inject Library"]
@@ -56,6 +57,7 @@ The Exercise remains the single source of truth. The Exercise Data Engine owns t
 - Statistics
 - Activity feed
 - Workspace metadata
+- Operational Knowledge Graph snapshot
 
 Changing the active exercise reloads these data sets through the same `ExerciseStore` snapshot used by all workspaces.
 
@@ -77,6 +79,7 @@ Workspaces are views into the selected Exercise, not separate applications with 
 | --- | --- |
 | Mission Control | Real-time operational picture and exercise health. |
 | Exercise Designer | Project Atlas planning environment for designing and validating exercises before Mission Control execution. |
+| Knowledge Graph | Operational asset graph, relationship navigation, node inspector, filters, and graph exploration. |
 | Timeline | Chronological exercise events and controller updates. |
 | Intelligence | Intelligence picture, source traceability, and product recommendations. |
 | Inject Library | Human-reviewed inject creation, assignment, scheduling, and status. |
@@ -98,6 +101,7 @@ The command palette is opened with `Ctrl+K` or `Cmd+K`. The current MVP provides
 - Search Products
 - Search Controllers
 - Open Mission Control
+- Open Knowledge Graph
 - Settings
 
 Future implementation should route commands through permission-aware handlers and preserve audit records for state-changing actions.

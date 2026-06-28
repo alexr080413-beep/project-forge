@@ -73,6 +73,7 @@ Navigation sections:
 
 - Mission Control
 - Exercise Designer
+- Knowledge Graph
 - Timeline
 - Intelligence
 - Inject Library
@@ -101,6 +102,7 @@ Navigation sections:
 - Exercise workspace metadata
 - Exercise Designer mock planning data
 - Exercise Designer relationship assets, graph links, and validation rules
+- Operational Knowledge Graph nodes, edges, filters, and navigation metadata
 
 The local web server creates one `ExerciseStore` when it starts. Every page asks for the same exercise snapshot instead of constructing local mock objects. Organization and exercise switching are local in-memory commands that load a different exercise context from the same store.
 
@@ -108,6 +110,7 @@ The local web server creates one `ExerciseStore` when it starts. Every page asks
 flowchart LR
     store["ExerciseStore<br/>single source of truth"] --> dashboard["Dashboard"]
     store --> designer["Exercise Designer"]
+    store --> graph["Knowledge Graph"]
     store --> intelligence["Intelligence"]
     store --> timeline["Timeline"]
     store --> injects["Inject Library"]
@@ -248,6 +251,21 @@ The current framework includes:
 - Relationship map for the Objective Alpha planning chain.
 
 The framework does not implement persistence, drag and drop, or real publishing. See [FORGE_STUDIO_EXERCISE_DESIGNER.md](FORGE_STUDIO_EXERCISE_DESIGNER.md).
+
+## Knowledge Graph
+
+Knowledge Graph introduces the Forge Operational Knowledge Graph workspace. It displays operational assets as graph nodes and relationships as graph edges for the selected exercise.
+
+The current framework includes:
+
+- Mock graph data for Mountain Exercise 3-27.
+- Node types for exercise, objective, inject, timeline event, controller, organization, unit, product, intelligence update, weather event, media event, decision point, observation, AAR finding, and template.
+- Relationship types for supports, produces, triggers, depends on, assigned to, observes, evaluates, references, related to, precedes, follows, contains, and inherits.
+- Graph visualization with relationship highlighting.
+- Node Inspector with metadata and relationship counts.
+- Asset type filters, graph search, center graph, expand neighbors, and collapse neighbors.
+
+The framework does not implement AI, Mission Replay, graph persistence, or graph analytics. See [FORGE_OPERATIONAL_KNOWLEDGE_GRAPH.md](FORGE_OPERATIONAL_KNOWLEDGE_GRAPH.md).
 
 Mock organizations:
 

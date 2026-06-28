@@ -20,6 +20,7 @@ let currentPage = "mission-control";
 const pageLabels = {
   "mission-control": "Mission Control",
   "exercise-designer": "Exercise Designer",
+  "knowledge-graph": "Knowledge Graph",
   timeline: "Timeline",
   intelligence: "Intelligence",
   "inject-library": "Inject Library",
@@ -39,6 +40,7 @@ const commandPaletteItems = [
   "Search Products",
   "Search Controllers",
   "Open Mission Control",
+  "Open Knowledge Graph",
   "Settings"
 ];
 
@@ -358,6 +360,231 @@ function bindDesignerSelection(defaultProperties) {
       event.classList.remove("selected");
     }
   });
+}
+
+function renderGraphInspector(node, graph) {
+  const incoming = graph.edges.filter((edge) => edge.target === node.id);
+  const outgoing = graph.edges.filter((edge) => edge.source === node.id);
+  const nodeNames = Object.fromEntries(graph.nodes.map((item) => [item.id, item.name]));
+  return `
+    ${renderPropertyList({
+      Name: node.name,
+      Type: node.type,
+      Description: node.description,
+      Exercise: node.exercise,
+      Status: node.status,
+      "Connected Assets": node.connected_assets,
+      "Relationship Count": node.relationship_count,
+      Created: node.created,
+      Modified: node.modified
+    })}
+    <div class="kg-relationship-summary">
+      <h3>Incoming Relationships</h3>
+      ${incoming.length ? incoming.map((edge) => `
+        <span class="kg-edge-chip">${escapeHtml(edge.type)} from ${escapeHtml(nodeNames[edge.source] || edge.source)}</span>
+      `).join("") : `<span class="muted-text">None</span>`}
+      <h3>Outgoing Relationships</h3>
+      ${outgoing.length ? outgoing.map((edge) => `
+        <span class="kg-edge-chip">${escapeHtml(edge.type)} to ${escapeHtml(nodeNames[edge.target] || edge.target)}</span>
+      `).join("") : `<span class="muted-text">None</span>`}
+    </div>
+  `;
+}
+
+function renderKnowledgeGraph(data) {
+  const graph = data.knowledge_graph;
+  const defaultNode = graph.nodes.find((node) => node.id === graph.default_node_id) || graph.nodes[0];
+  contentRoot.innerHTML = `
+    <section class="kg-shell">
+      <section class="kg-toolbar">
+        <div>
+          <p class="eyebrow">Operational Knowledge Graph</p>
+          <h2>${escapeHtml(graph.name)}</h2>
+        </div>
+        <div class="kg-search">
+          <input id="kg-search-input" type="search" placeholder="Search graph" aria-label="Search graph">
+          <button class="fs-button fs-button--secondary" id="kg-center" type="button">Center Graph</button>
+          <button class="fs-button fs-button--secondary" id="kg-expand" type="button">Expand Neighbors</button>
+          <button class="fs-button fs-button--secondary" id="kg-collapse" type="button">Collapse Neighbors</button>
+        </div>
+      </section>
+      <aside class="kg-filters">
+        <div class="panel-header">
+          <h2>Filters</h2>
+          <span>Asset type</span>
+        </div>
+        <div class="kg-filter-list">
+          ${graph.filters.map((filter) => `
+            <button class="kg-filter" type="button" data-filter="${escapeHtml(filter)}">
+              ${escapeHtml(filter)}
+            </button>
+          `).join("")}
+        </div>
+      </aside>
+      <section class="kg-canvas-panel">
+        <div class="panel-header">
+          <h2>Graph Explorer</h2>
+          <span id="kg-selection-label">${escapeHtml(defaultNode.name)}</span>
+        </div>
+        <div class="kg-canvas" id="kg-canvas">
+          <svg class="kg-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            ${graph.edges.map((edge) => {
+              const source = graph.nodes.find((node) => node.id === edge.source);
+              const target = graph.nodes.find((node) => node.id === edge.target);
+              return source && target ? `
+                <line
+                  data-source="${escapeHtml(edge.source)}"
+                  data-target="${escapeHtml(edge.target)}"
+                  data-type="${escapeHtml(edge.type)}"
+                  x1="${source.x}" y1="${source.y}" x2="${target.x}" y2="${target.y}"
+                />
+              ` : "";
+            }).join("")}
+          </svg>
+          ${graph.nodes.map((node) => `
+            <button
+              class="kg-node ${node.id === defaultNode.id ? "selected" : ""}"
+              type="button"
+              data-node-id="${escapeHtml(node.id)}"
+              data-node-type="${escapeHtml(node.type)}"
+              style="left: ${node.x}%; top: ${node.y}%"
+            >
+              <span>${escapeHtml(node.type)}</span>
+              <strong>${escapeHtml(node.name)}</strong>
+            </button>
+          `).join("")}
+        </div>
+      </section>
+      <aside class="kg-inspector">
+        <div class="panel-header">
+          <h2>Node Inspector</h2>
+          <span id="kg-inspector-mode">${escapeHtml(defaultNode.type)}</span>
+        </div>
+        <div id="kg-inspector-root">${renderGraphInspector(defaultNode, graph)}</div>
+      </aside>
+    </section>
+  `;
+  bindKnowledgeGraph(graph, defaultNode.id);
+}
+
+function bindKnowledgeGraph(graph, defaultNodeId) {
+  let selectedNodeId = defaultNodeId;
+  let collapsed = false;
+  const activeFilters = new Set();
+  const searchInput = document.querySelector("#kg-search-input");
+  const inspector = document.querySelector("#kg-inspector-root");
+  const mode = document.querySelector("#kg-inspector-mode");
+  const selectionLabel = document.querySelector("#kg-selection-label");
+  const nodeById = Object.fromEntries(graph.nodes.map((node) => [node.id, node]));
+
+  function neighborIds(nodeId) {
+    const ids = new Set([nodeId]);
+    for (const edge of graph.edges) {
+      if (edge.source === nodeId) {
+        ids.add(edge.target);
+      }
+      if (edge.target === nodeId) {
+        ids.add(edge.source);
+      }
+    }
+    return ids;
+  }
+
+  function matchesFilter(node) {
+    if (!activeFilters.size) {
+      return true;
+    }
+    for (const filter of activeFilters) {
+      if ((graph.filter_map[filter] || []).includes(node.type)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function matchesSearch(node) {
+    const query = (searchInput.value || "").trim().toLowerCase();
+    if (!query) {
+      return true;
+    }
+    return `${node.name} ${node.type} ${node.description}`.toLowerCase().includes(query);
+  }
+
+  function updateGraph() {
+    const visibleNeighborIds = collapsed ? neighborIds(selectedNodeId) : null;
+    const selectedNeighbors = neighborIds(selectedNodeId);
+    const visibleNodeIds = new Set();
+    for (const nodeElement of document.querySelectorAll(".kg-node")) {
+      const node = nodeById[nodeElement.dataset.nodeId];
+      const visible = (
+        matchesFilter(node) &&
+        matchesSearch(node) &&
+        (!visibleNeighborIds || visibleNeighborIds.has(node.id))
+      );
+      nodeElement.classList.toggle("hidden", !visible);
+      nodeElement.classList.toggle("selected", node.id === selectedNodeId);
+      nodeElement.classList.toggle("related", selectedNeighbors.has(node.id));
+      if (visible) {
+        visibleNodeIds.add(node.id);
+      }
+    }
+    for (const edgeElement of document.querySelectorAll(".kg-edges line")) {
+      const connected = (
+        edgeElement.dataset.source === selectedNodeId ||
+        edgeElement.dataset.target === selectedNodeId
+      );
+      const visible = (
+        visibleNodeIds.has(edgeElement.dataset.source) &&
+        visibleNodeIds.has(edgeElement.dataset.target)
+      );
+      edgeElement.classList.toggle("hidden", !visible);
+      edgeElement.classList.toggle("active", connected);
+    }
+  }
+
+  function selectNode(nodeId) {
+    selectedNodeId = nodeId;
+    const node = nodeById[nodeId];
+    selectionLabel.textContent = node.name;
+    mode.textContent = node.type;
+    inspector.innerHTML = renderGraphInspector(node, graph);
+    updateGraph();
+  }
+
+  for (const nodeElement of document.querySelectorAll(".kg-node")) {
+    nodeElement.addEventListener("click", () => selectNode(nodeElement.dataset.nodeId));
+  }
+  for (const filterElement of document.querySelectorAll(".kg-filter")) {
+    filterElement.addEventListener("click", () => {
+      const filter = filterElement.dataset.filter;
+      if (activeFilters.has(filter)) {
+        activeFilters.delete(filter);
+      } else {
+        activeFilters.add(filter);
+      }
+      filterElement.classList.toggle("active", activeFilters.has(filter));
+      updateGraph();
+    });
+  }
+  searchInput.addEventListener("input", updateGraph);
+  document.querySelector("#kg-expand").addEventListener("click", () => {
+    collapsed = false;
+    updateGraph();
+  });
+  document.querySelector("#kg-collapse").addEventListener("click", () => {
+    collapsed = true;
+    updateGraph();
+  });
+  document.querySelector("#kg-center").addEventListener("click", () => {
+    collapsed = false;
+    activeFilters.clear();
+    searchInput.value = "";
+    for (const filterElement of document.querySelectorAll(".kg-filter")) {
+      filterElement.classList.remove("active");
+    }
+    selectNode(defaultNodeId);
+  });
+  selectNode(defaultNodeId);
 }
 
 function renderExercises(data) {
@@ -696,6 +923,7 @@ function renderPage(page) {
   }
   const renderers = {
     "exercise-designer": renderExerciseDesigner,
+    "knowledge-graph": renderKnowledgeGraph,
     timeline: renderTimeline,
     intelligence: renderIntelligence,
     "inject-library": renderInjectLibrary,

@@ -109,7 +109,7 @@ The static MVP loads `src/project_forge/forge_studio/static/design-system/compon
 
 Forge Studio now uses the permanent hierarchy `Forge -> Organization -> Exercise -> Workspace`. `ExerciseStore` exposes organizations, organization-scoped exercise lists, the active exercise, workspace definitions, breadcrumbs, global search seed results, and the selected exercise snapshot through the same local data engine response.
 
-The web shell contains a persistent global header, organization selector, exercise selector, exercise status indicator, global search entry point, notification/user placeholders, collapsible workspace sidebar, and breadcrumbs. Switching organization or exercise flows through `/api/action` commands so Mission Control, Timeline, Intelligence, Inject Library, Exercise Library, Controllers, Review Queue, Reports, Analytics, and Administration all reload from the selected Exercise Data Engine context.
+The web shell contains a persistent global header, organization selector, exercise selector, exercise status indicator, global search entry point, notification/user placeholders, collapsible workspace sidebar, and breadcrumbs. Switching organization or exercise flows through `/api/action` commands so Mission Control, Exercise Designer, Knowledge Graph, Timeline, Intelligence, Inject Library, Exercise Library, Controllers, Review Queue, Reports, Analytics, and Administration all reload from the selected Exercise Data Engine context.
 
 ## Forge Studio Exercise Designer
 
@@ -118,6 +118,12 @@ Project Atlas is the Forge Studio Exercise Designer framework. It adds an `Exerc
 The first Exercise Relationship Engine models exercise assets, relationship types, mock graph links, relationship validation rules, and a visual planning chain inside Atlas. It connects objectives, injects, timeline events, controllers, products, observer checkpoints, observations, and AAR findings so future Mission Replay, after-action review, and assisted planning features can use traceable exercise context.
 
 Atlas does not implement persistence, drag and drop, or real publishing. Planned objects remain separate from live exercise objects until future explicit human approval, validation, and audit behavior is implemented.
+
+## Forge Operational Knowledge Graph
+
+The Forge Operational Knowledge Graph models operational assets as graph nodes and relationships as graph edges. The first implementation exposes a `Knowledge Graph` workspace backed by the existing Exercise Data Engine snapshot. It provides mock nodes, edges, node metadata, asset type filters, search, neighbor expansion/collapse, center graph behavior, relationship highlighting, and a Node Inspector.
+
+The graph is intended to become the authoritative connected model of an Exercise. This sprint keeps it local and deterministic: no AI, Mission Replay, graph analytics, persistence, external sources, or automatic recommendations are implemented. The architecture prepares future AI, Replay, and operational analytics capabilities by preserving node and edge structure in one exercise-scoped graph payload.
 
 ## Future Sections
 

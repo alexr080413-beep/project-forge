@@ -370,6 +370,7 @@ The platform is ready for iterative capability growth while preserving controlle
 ├── FORGE_STUDIO_WEB.md    # Runnable local Forge Studio Web MVP
 ├── FORGE_STUDIO_WORKSPACE_FRAMEWORK.md # Organization, exercise, workspace navigation model
 ├── FORGE_STUDIO_EXERCISE_DESIGNER.md # Project Atlas Exercise Designer framework
+├── FORGE_OPERATIONAL_KNOWLEDGE_GRAPH.md # Operational Knowledge Graph model
 ├── FORGE_STUDIO_DESIGN_SYSTEM.md # Forge Studio design system
 ├── FORGE_STUDIO_MISSION_CONTROL.md # Mission Control dashboard specification
 ├── FORGE_STUDIO_INTELLIGENCE_WORKSPACE.md # Intelligence Controller workspace specification
@@ -400,6 +401,7 @@ The platform is ready for iterative capability growth while preserving controlle
 | [FORGE_STUDIO_WEB.md](FORGE_STUDIO_WEB.md) | Local runnable Forge Studio Web MVP, Exercise Workspace, Exercise Library, start command, dashboard behavior, structure, and boundaries. |
 | [FORGE_STUDIO_WORKSPACE_FRAMEWORK.md](FORGE_STUDIO_WORKSPACE_FRAMEWORK.md) | Permanent Forge Studio hierarchy, organization model, exercise workspace model, navigation philosophy, workspace philosophy, command palette vision, and global search direction. |
 | [FORGE_STUDIO_EXERCISE_DESIGNER.md](FORGE_STUDIO_EXERCISE_DESIGNER.md) | Project Atlas planning workspace, Exercise Designer purpose, relationship engine, exercise graph, design-validate-publish-execute lifecycle, planned-to-live object mapping, and human approval principle. |
+| [FORGE_OPERATIONAL_KNOWLEDGE_GRAPH.md](FORGE_OPERATIONAL_KNOWLEDGE_GRAPH.md) | Operational Knowledge Graph node model, relationship model, graph navigation, filters, future AI usage, Mission Replay integration, and operational analytics hooks. |
 | [FORGE_STUDIO_DESIGN_SYSTEM.md](FORGE_STUDIO_DESIGN_SYSTEM.md) | Brand identity, visual tokens, layout rules, component specifications, themes, and UI states for Forge Studio. |
 | [FORGE_STUDIO_MISSION_CONTROL.md](FORGE_STUDIO_MISSION_CONTROL.md) | Mission Control dashboard purpose, layout, widgets, interactions, refresh behavior, and operational rules. |
 | [FORGE_STUDIO_INTELLIGENCE_WORKSPACE.md](FORGE_STUDIO_INTELLIGENCE_WORKSPACE.md) | Intelligence Controller workspace workflow, panels, shortcuts, collaboration, search, and performance specification. |

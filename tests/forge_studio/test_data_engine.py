@@ -183,6 +183,7 @@ def test_platform_context_includes_organizations_exercises_and_workspaces() -> N
     assert [item["label"] for item in payload["platform"]["workspaces"]] == [
         "Mission Control",
         "Exercise Designer",
+        "Knowledge Graph",
         "Timeline",
         "Intelligence",
         "Inject Library",
@@ -364,3 +365,94 @@ def test_exercise_designer_relationship_validation_and_item_relationships() -> N
         "success",
         "warning",
     }
+
+
+def test_operational_knowledge_graph_payload_models_nodes_and_edges() -> None:
+    store = create_mock_exercise_store()
+
+    graph = store.snapshot()["knowledge_graph"]
+
+    assert graph["name"] == "Forge Operational Knowledge Graph"
+    assert graph["node_types"] == [
+        "Exercise",
+        "Objective",
+        "Inject",
+        "Timeline Event",
+        "Controller",
+        "Organization",
+        "Unit",
+        "Product",
+        "Intelligence Update",
+        "Weather Event",
+        "Media Event",
+        "Decision Point",
+        "Observation",
+        "AAR Finding",
+        "Template",
+    ]
+    assert graph["relationship_types"] == [
+        "supports",
+        "produces",
+        "triggers",
+        "depends_on",
+        "assigned_to",
+        "observes",
+        "evaluates",
+        "references",
+        "related_to",
+        "precedes",
+        "follows",
+        "contains",
+        "inherits",
+    ]
+    assert {node["type"] for node in graph["nodes"]} == set(graph["node_types"])
+    assert {"source": "kg-decision-point", "target": "kg-product-decision", "type": "produces"} in (
+        graph["edges"]
+    )
+    assert {"source": "kg-aar-finding", "target": "kg-objective-alpha", "type": "references"} in (
+        graph["edges"]
+    )
+
+
+def test_operational_knowledge_graph_includes_inspector_filters_and_navigation() -> None:
+    store = create_mock_exercise_store()
+
+    graph = store.snapshot()["knowledge_graph"]
+    decision_node = next(node for node in graph["nodes"] if node["id"] == "kg-decision-point")
+
+    assert graph["default_node_id"] == "kg-exercise"
+    assert graph["filters"] == [
+        "Objectives",
+        "Injects",
+        "Controllers",
+        "Products",
+        "Weather",
+        "Intelligence",
+        "Observations",
+        "Timeline Events",
+        "AAR Findings",
+    ]
+    assert graph["filter_map"]["Timeline Events"] == [
+        "Timeline Event",
+        "Decision Point",
+    ]
+    assert graph["navigation"] == [
+        "Click node",
+        "Expand neighbors",
+        "Collapse neighbors",
+        "Center graph",
+        "Filter by asset type",
+        "Search",
+        "Relationship highlighting",
+    ]
+    assert decision_node["connected_assets"] == [
+        "Civilian Protest",
+        "Route Control Observation",
+        "Commander Decision Record",
+        "0940 Decision Event",
+        "Weather Impact Inject",
+    ]
+    assert decision_node["relationship_count"] == 6
+    assert decision_node["exercise"] == "Mountain Exercise 3-27"
+    assert decision_node["created"] == "2027-03-01T08:00:00Z"
+    assert decision_node["modified"] == "2027-03-01T09:42:00Z"

@@ -1232,6 +1232,202 @@ h1 {
   border-left: 3px solid #d65a5a;
 }
 
+.kg-shell {
+  display: grid;
+  grid-template-columns: 230px minmax(420px, 1fr) 330px;
+  grid-template-areas:
+    "toolbar toolbar toolbar"
+    "filters graph inspector";
+  gap: 12px;
+}
+
+.kg-toolbar,
+.kg-filters,
+.kg-canvas-panel,
+.kg-inspector {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(17, 24, 33, 0.92);
+}
+
+.kg-toolbar {
+  grid-area: toolbar;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+}
+
+.kg-toolbar h2 {
+  margin: 0;
+}
+
+.kg-search {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.kg-search input {
+  min-width: 220px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0 10px;
+}
+
+.kg-filters {
+  grid-area: filters;
+  padding: 16px;
+}
+
+.kg-filter-list {
+  display: grid;
+  gap: 8px;
+}
+
+.kg-filter {
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  padding: 0 10px;
+}
+
+.kg-filter:hover,
+.kg-filter:focus-visible,
+.kg-filter.active {
+  border-color: rgba(246, 168, 110, 0.55);
+  outline: none;
+}
+
+.kg-filter.active {
+  background: rgba(246, 168, 110, 0.1);
+}
+
+.kg-canvas-panel {
+  grid-area: graph;
+  padding: 16px;
+}
+
+.kg-canvas {
+  position: relative;
+  min-height: 620px;
+  overflow: hidden;
+  border: 1px solid rgba(246, 168, 110, 0.16);
+  border-radius: 8px;
+  background:
+    linear-gradient(rgba(246, 168, 110, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(246, 168, 110, 0.06) 1px, transparent 1px),
+    rgba(8, 13, 20, 0.72);
+  background-size: 32px 32px;
+}
+
+.kg-edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.kg-edges line {
+  stroke: rgba(199, 205, 214, 0.22);
+  stroke-width: 0.35;
+  transition: opacity 0.18s ease, stroke 0.18s ease, stroke-width 0.18s ease;
+}
+
+.kg-edges line.active {
+  stroke: var(--orange);
+  stroke-width: 0.8;
+}
+
+.kg-node {
+  position: absolute;
+  width: 132px;
+  min-height: 58px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: rgba(30, 34, 41, 0.94);
+  color: var(--text);
+  cursor: pointer;
+  padding: 8px;
+  text-align: left;
+  transition: border-color 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+}
+
+.kg-node span,
+.kg-node strong {
+  display: block;
+}
+
+.kg-node span {
+  color: var(--orange);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.kg-node strong {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.kg-node:hover,
+.kg-node:focus-visible,
+.kg-node.selected {
+  border-color: rgba(246, 168, 110, 0.72);
+  outline: none;
+}
+
+.kg-node.selected {
+  background: rgba(246, 168, 110, 0.16);
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+.kg-node.related {
+  border-color: rgba(199, 205, 214, 0.45);
+}
+
+.kg-node.hidden,
+.kg-edges line.hidden {
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.kg-inspector {
+  grid-area: inspector;
+  padding: 16px;
+}
+
+.kg-relationship-summary {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.kg-relationship-summary h3 {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.kg-edge-chip {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 7px 8px;
+  font-size: 12px;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -1269,7 +1465,8 @@ h1 {
 
   .dashboard-grid,
   .work-grid,
-  .atlas-shell {
+  .atlas-shell,
+  .kg-shell {
     grid-template-columns: 1fr;
   }
 
@@ -1280,6 +1477,32 @@ h1 {
       "canvas"
       "inspector"
       "validation";
+  }
+
+  .kg-shell {
+    grid-template-areas:
+      "toolbar"
+      "filters"
+      "graph"
+      "inspector";
+  }
+
+  .kg-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .kg-search {
+    justify-content: stretch;
+  }
+
+  .kg-search input {
+    min-height: 38px;
+    width: 100%;
+  }
+
+  .kg-canvas {
+    min-height: 720px;
   }
 
   .summary-card.wide {
