@@ -2,21 +2,44 @@ const pageTitle = document.querySelector("#page-title");
 const dashboardPage = document.querySelector("#dashboard-page");
 const contentPage = document.querySelector("#content-page");
 const contentRoot = document.querySelector("#content-root");
+const navList = document.querySelector("#nav-list");
+const breadcrumbs = document.querySelector("#breadcrumbs");
+const organizationSelector = document.querySelector("#organization-selector");
+const exerciseSelector = document.querySelector("#exercise-selector");
+const exerciseStatusPill = document.querySelector("#exercise-status-pill");
+const appShell = document.querySelector("#app-shell");
+const modalBackdrop = document.querySelector("#modal-backdrop");
+const commandPalette = document.querySelector("#command-palette");
+const commandResults = document.querySelector("#command-results");
+const globalSearchModal = document.querySelector("#global-search-modal");
+const globalSearchResults = document.querySelector("#global-search-results");
 const UI = window.ForgeUI;
 let workspaceData = null;
-let currentPage = "dashboard";
+let currentPage = "mission-control";
 
 const pageLabels = {
-  dashboard: "Dashboard",
-  exercises: "Exercises",
+  "mission-control": "Mission Control",
   timeline: "Timeline",
+  intelligence: "Intelligence",
   "inject-library": "Inject Library",
+  "exercise-library": "Exercise Library",
   controllers: "Controllers",
   "review-queue": "Review Queue",
-  "exercise-library": "Exercise Library",
-  audit: "Audit",
-  settings: "Settings"
+  reports: "Reports",
+  analytics: "Analytics",
+  administration: "Administration"
 };
+
+const commandPaletteItems = [
+  "Create Exercise",
+  "Create Inject",
+  "Open Timeline",
+  "Approve Review",
+  "Search Products",
+  "Search Controllers",
+  "Open Mission Control",
+  "Settings"
+];
 
 function formatLabel(value) {
   return UI.formatLabel(value);
@@ -44,6 +67,10 @@ function formButton(label, action, formId) {
 
 function card(title, body, meta = "") {
   return UI.card({title, body, meta});
+}
+
+function escapeHtml(value) {
+  return UI.escapeHtml(value);
 }
 
 function controllerOptions(selected = "") {
@@ -76,6 +103,35 @@ async function postAction(action, payload = {}, page = currentPage) {
   }
   workspaceData = await response.json();
   showPage(page);
+}
+
+function renderGlobalContext(data) {
+  const platform = data.platform;
+  const workspaceLabel = pageLabels[currentPage] || platform.workspace;
+  pageTitle.textContent = workspaceLabel;
+  exerciseStatusPill.textContent = formatLabel(data.active_exercise.status);
+  const currentBreadcrumbs = [
+    platform.breadcrumbs[0],
+    platform.breadcrumbs[1],
+    platform.breadcrumbs[2],
+    {label: workspaceLabel, id: currentPage}
+  ];
+  breadcrumbs.innerHTML = currentBreadcrumbs
+    .map((item) => `<span>${escapeHtml(item.label)}</span>`)
+    .join("<span>/</span>");
+  organizationSelector.innerHTML = data.organizations
+    .map((organization) => `<option value="${organization.id}" ${organization.id === platform.organization.id ? "selected" : ""}>${escapeHtml(organization.name)}</option>`)
+    .join("");
+  exerciseSelector.innerHTML = data.organization_exercises
+    .map((exercise) => `<option value="${exercise.id}" ${exercise.id === data.active_exercise.id ? "selected" : ""}>${escapeHtml(exercise.name)} - ${formatLabel(exercise.status).toUpperCase()}</option>`)
+    .join("");
+  navList.innerHTML = platform.workspaces.map((workspace) => `
+    <button class="nav-item ${workspace.id === currentPage ? "active" : ""}" data-page="${workspace.id}" title="${escapeHtml(workspace.label)}">
+      <span class="nav-icon">${escapeHtml(workspace.icon)}</span>
+      <span class="nav-label">${escapeHtml(workspace.label)}</span>
+    </button>
+  `).join("");
+  bindNavigation();
 }
 
 function bindCommandActions() {
@@ -147,6 +203,10 @@ function renderDashboard(data) {
   `;
   renderActivity(data.activity);
   renderRecords("#timeline-list", data.timeline_events.slice(-5), "No timeline events yet.");
+}
+
+function renderMissionControl(data) {
+  renderDashboard(data);
 }
 
 function renderExercises(data) {
@@ -278,6 +338,37 @@ function renderControllers(data) {
   `;
 }
 
+function renderIntelligence(data) {
+  contentRoot.innerHTML = `
+    <section class="workspace-grid">
+      <article class="workspace-hero">
+        <p class="eyebrow">Intelligence Workspace</p>
+        <h2>${data.workspace.exercise.name}</h2>
+        <p>Scenario translation, source traceability, and product recommendations for the selected exercise.</p>
+      </article>
+      <article class="panel">
+        <h2>Current Intelligence Picture</h2>
+        <div class="record-list">
+          ${card("Priority Requirement", "Track route disruption, civilian activity, and weather effects against current objectives.", "intel")}
+          ${card("Knowledge Lookup", "Mountain terrain, local infrastructure, and notional actors are scoped to this exercise.", "knowledge")}
+        </div>
+      </article>
+      <article class="panel">
+        <h2>Recommended Products</h2>
+        <div class="record-list">
+          ${data.products.slice(0, 3).map((product) => card(product.title, `${product.product_type} | ${product.review_status}`, product.status)).join("")}
+        </div>
+      </article>
+      <article class="panel wide-panel">
+        <h2>Incoming Exercise Signals</h2>
+        <div class="timeline-column">
+          ${data.timeline_events.slice(0, 4).map((event) => UI.timelineCard({event, time: timeFromIso(event.timestamp)})).join("")}
+        </div>
+      </article>
+    </section>
+  `;
+}
+
 function renderReviewQueue(data) {
   contentRoot.innerHTML = `
     <section class="panel wide-panel">
@@ -341,6 +432,71 @@ function renderExerciseLibrary(data) {
   bindCommandActions();
 }
 
+function renderReports(data) {
+  contentRoot.innerHTML = `
+    <section class="panel wide-panel">
+      <div class="panel-header">
+        <h2>Reports</h2>
+        <span>Exercise reporting framework</span>
+      </div>
+      <div class="mini-metric-grid">
+        ${UI.statCard({label: "Products Generated", value: data.metrics.products_generated, icon: "PR"})}
+        ${UI.statCard({label: "Pending Reviews", value: data.metrics.pending_reviews, icon: "RV"})}
+        ${UI.statCard({label: "Timeline Events", value: data.metrics.timeline_events, icon: "TL"})}
+      </div>
+      <div class="record-list report-list">
+        ${card("Daily Controller Summary", "Draft reporting surface for EXCON daily update material.", "report")}
+        ${card("After Action Export", "Future package for objective coverage, review latency, and product history.", "future")}
+      </div>
+    </section>
+  `;
+}
+
+function renderAnalytics(data) {
+  contentRoot.innerHTML = `
+    <section class="workspace-grid">
+      <article class="workspace-hero">
+        <p class="eyebrow">Analytics</p>
+        <h2>Exercise Metrics</h2>
+        <p>Operational analytics for ${data.workspace.exercise.name}, calculated from the shared Exercise Data Engine.</p>
+      </article>
+      <article class="panel wide-panel">
+        <h2>Metrics Snapshot</h2>
+        <div class="mini-metric-grid">
+          ${Object.entries(data.statistics).map(([label, value]) => `<div class="mini-metric"><span>${formatLabel(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("")}
+        </div>
+      </article>
+      <article class="panel">
+        <h2>Review Pressure</h2>
+        ${UI.notification({type: data.metrics.pending_reviews ? "warning" : "success", title: `${data.metrics.pending_reviews} pending reviews`, body: "Human review remains the release gate."})}
+      </article>
+      <article class="panel">
+        <h2>Controller Health</h2>
+        ${UI.notification({type: "info", title: `${data.metrics.controller_count} controllers online`, body: "Controller status is scoped to the selected exercise."})}
+      </article>
+    </section>
+  `;
+}
+
+function renderAdministration(data) {
+  contentRoot.innerHTML = `
+    <section class="settings-grid">
+      <article class="settings-card">
+        <span class="card-icon">OR</span>
+        <h2>Organization</h2>
+        <p>${data.platform.organization.name}</p>
+      </article>
+      ${data.workspace.settings.map((item) => `
+        <article class="settings-card">
+          <span class="card-icon">${item.title.slice(0, 2).toUpperCase()}</span>
+          <h2>${item.title}</h2>
+          <p>${item.description}</p>
+        </article>
+      `).join("")}
+    </section>
+  `;
+}
+
 function renderAudit(data) {
   contentRoot.innerHTML = `
     <section class="panel wide-panel">
@@ -382,17 +538,22 @@ function renderPage(page) {
   if (!workspaceData) {
     return;
   }
-  if (page === "dashboard") {
-    renderDashboard(workspaceData);
+  renderGlobalContext(workspaceData);
+  if (page === "mission-control") {
+    renderMissionControl(workspaceData);
     return;
   }
   const renderers = {
-    exercises: renderExercises,
     timeline: renderTimeline,
+    intelligence: renderIntelligence,
     "inject-library": renderInjectLibrary,
+    "exercise-library": renderExerciseLibrary,
     controllers: renderControllers,
     "review-queue": renderReviewQueue,
-    "exercise-library": renderExerciseLibrary,
+    reports: renderReports,
+    analytics: renderAnalytics,
+    administration: renderAdministration,
+    exercises: renderExercises,
     audit: renderAudit,
     settings: renderSettings
   };
@@ -405,23 +566,101 @@ async function loadDashboard() {
     throw new Error("Dashboard request failed");
   }
   workspaceData = await response.json();
-  renderDashboard(workspaceData);
+  showPage(currentPage);
 }
 
 function showPage(page) {
   currentPage = page;
-  for (const item of document.querySelectorAll(".nav-item")) {
-    item.classList.toggle("active", item.dataset.page === page);
-  }
-  pageTitle.textContent = pageLabels[page] || "Dashboard";
-  dashboardPage.classList.toggle("active-page", page === "dashboard");
-  contentPage.classList.toggle("active-page", page !== "dashboard");
+  renderGlobalContext(workspaceData);
+  dashboardPage.classList.toggle("active-page", page === "mission-control");
+  contentPage.classList.toggle("active-page", page !== "mission-control");
   renderPage(page);
 }
 
-for (const item of document.querySelectorAll(".nav-item")) {
-  item.addEventListener("click", () => showPage(item.dataset.page));
+function bindNavigation() {
+  for (const item of document.querySelectorAll(".nav-item")) {
+    item.addEventListener("click", () => showPage(item.dataset.page));
+  }
 }
+
+function renderCommandPalette(filter = "") {
+  const normalized = filter.toLowerCase();
+  commandResults.innerHTML = commandPaletteItems
+    .filter((item) => item.toLowerCase().includes(normalized))
+    .map((item) => `<button class="modal-result" type="button">${escapeHtml(item)}</button>`)
+    .join("");
+}
+
+function renderGlobalSearch(filter = "") {
+  const normalized = filter.toLowerCase();
+  globalSearchResults.innerHTML = (workspaceData?.search_results || [])
+    .filter((item) => `${item.type} ${item.title} ${item.context}`.toLowerCase().includes(normalized))
+    .map((item) => `
+      <button class="modal-result" type="button">
+        <span>${escapeHtml(item.type)}</span>
+        <strong>${escapeHtml(item.title)}</strong>
+        <small>${escapeHtml(item.context)}</small>
+      </button>
+    `)
+    .join("");
+}
+
+function openModal(modal) {
+  modalBackdrop.hidden = false;
+  commandPalette.hidden = modal !== commandPalette;
+  globalSearchModal.hidden = modal !== globalSearchModal;
+  if (modal === commandPalette) {
+    renderCommandPalette();
+    document.querySelector("#command-input").focus();
+  } else {
+    renderGlobalSearch();
+    document.querySelector("#global-search-input").focus();
+  }
+}
+
+function closeModal() {
+  modalBackdrop.hidden = true;
+  commandPalette.hidden = true;
+  globalSearchModal.hidden = true;
+}
+
+organizationSelector.addEventListener("change", () => {
+  postAction("context.switch_organization", {organization_id: organizationSelector.value});
+});
+
+exerciseSelector.addEventListener("change", () => {
+  postAction("context.switch_exercise", {exercise_id: exerciseSelector.value});
+});
+
+document.querySelector("#sidebar-toggle").addEventListener("click", () => {
+  appShell.classList.toggle("sidebar-collapsed");
+});
+
+document.querySelector("#global-search-button").addEventListener("click", () => {
+  openModal(globalSearchModal);
+});
+
+document.querySelector("#command-input").addEventListener("input", (event) => {
+  renderCommandPalette(event.target.value);
+});
+
+document.querySelector("#global-search-input").addEventListener("input", (event) => {
+  renderGlobalSearch(event.target.value);
+});
+
+for (const item of document.querySelectorAll("[data-close-modal]")) {
+  item.addEventListener("click", closeModal);
+}
+
+document.addEventListener("keydown", (event) => {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+    event.preventDefault();
+    openModal(commandPalette);
+  }
+  if (event.key === "Escape" && !modalBackdrop.hidden) {
+    closeModal();
+  }
+});
 
 loadDashboard().catch((error) => {
   const dashboardGrid = document.querySelector("#dashboard-grid");

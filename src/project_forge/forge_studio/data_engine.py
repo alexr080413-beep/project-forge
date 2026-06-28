@@ -55,6 +55,34 @@ class ControllerAssignment:
     user_id: str = ""
 
 
+@dataclass(frozen=True, slots=True)
+class Organization:
+    """One Forge Studio organization that owns exercise workspaces."""
+
+    id: str
+    name: str
+    short_name: str
+
+
+@dataclass(slots=True)
+class ExerciseWorkspaceContext:
+    """Exercise-specific UI state owned by the Exercise Data Engine."""
+
+    products: list[ExerciseProduct]
+    controllers: list[ControllerAssignment]
+    library_folders: list[str]
+    settings: list[dict[str, str]]
+    objectives: list[str]
+    participating_units: list[str]
+    activity: list[dict[str, str]]
+    exercise_control: str
+    exercise_director_id: str
+    training_audience: str
+    timeline_status: str
+    exercise_health: str
+    operational_time: str
+
+
 @dataclass(slots=True)
 class ExerciseStore:
     """Single source of truth for the Forge Studio demo exercise.
@@ -79,6 +107,29 @@ class ExerciseStore:
     exercise_health: str = "Nominal"
     operational_time: str = "0942"
     active_exercise_id: str = ""
+    organizations: list[Organization] = field(default_factory=list)
+    active_organization_id: str = ""
+    exercise_organization_map: dict[str, str] = field(default_factory=dict)
+    exercise_workspaces: dict[str, ExerciseWorkspaceContext] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if not self.organizations:
+            self.organizations = _default_organizations()
+        if not self.active_organization_id:
+            self.active_organization_id = self.organizations[0].id
+        if not self.exercise_organization_map:
+            self.exercise_organization_map = {
+                exercise.id: self.active_organization_id
+                for exercise in self.registry.list_exercises()
+            }
+        if not self.active_exercise_id:
+            self.active_exercise_id = self._first_exercise_for_organization(
+                self.active_organization_id
+            )
+        if self.active_exercise_id:
+            if self.active_exercise_id not in self.exercise_workspaces:
+                self._store_active_workspace_context()
+            self._load_workspace_context(self.active_exercise_id)
 
     @property
     def exercise_id(self) -> str:
@@ -91,6 +142,7 @@ class ExerciseStore:
         """Return one JSON-ready exercise state for every application page."""
 
         exercise = self._required_active_exercise()
+        organization = self._required_active_organization()
         statistics = self.statistics()
         exercise_workspace = {
             "id": exercise.id,
@@ -127,6 +179,30 @@ class ExerciseStore:
         pending_statuses = {StudioReviewStatus.PENDING, StudioReviewStatus.IN_REVIEW}
 
         return {
+            "platform": {
+                "product": "Forge",
+                "application": "Forge Studio",
+                "hierarchy": ["Forge", "Organization", "Exercise", "Workspace"],
+                "organization": _to_jsonable(organization),
+                "exercise": {
+                    "id": exercise.id,
+                    "name": exercise.name,
+                    "status": exercise.status.value,
+                    "phase": exercise.phase.value,
+                },
+                "workspace": "Mission Control",
+                "breadcrumbs": [
+                    {"label": "Forge", "id": "forge"},
+                    {"label": organization.short_name, "id": organization.id},
+                    {"label": exercise.name, "id": exercise.id},
+                    {"label": "Mission Control", "id": "mission-control"},
+                ],
+                "workspaces": _workspace_definitions(),
+            },
+            "organizations": [_to_jsonable(item) for item in self.organizations],
+            "organization_exercises": [
+                _to_jsonable(item) for item in self._exercises_for_active_organization()
+            ],
             "active_exercise": _to_jsonable(exercise),
             "exercises": [_to_jsonable(item) for item in self.registry.list_exercises()],
             "workspace": {
@@ -168,6 +244,7 @@ class ExerciseStore:
             ],
             "audit_log": [self._audit_payload(log) for log in reversed(audit_logs)],
             "statistics": statistics,
+            "search_results": self._mock_search_results(),
         }
 
     def statistics(self) -> dict[str, Any]:
@@ -279,10 +356,35 @@ class ExerciseStore:
             "product.version_history": self.view_product_version_history,
             "product.archive": self.archive_product,
             "product.delete": self.delete_product,
+            "context.switch_organization": self.switch_organization,
+            "context.switch_exercise": self.switch_exercise,
         }
         if action not in actions:
             raise ValueError(f"unsupported action: {action}")
         return actions[action](payload)
+
+    def switch_organization(self, payload: dict[str, Any]) -> dict[str, Any]:
+        organization_id = _required(payload, "organization_id")
+        if not any(item.id == organization_id for item in self.organizations):
+            raise ValueError(f"organization not found: {organization_id}")
+        self._store_active_workspace_context()
+        self.active_organization_id = organization_id
+        self.active_exercise_id = self._first_exercise_for_organization(organization_id)
+        self._load_workspace_context(self.active_exercise_id)
+        return self.snapshot()
+
+    def switch_exercise(self, payload: dict[str, Any]) -> dict[str, Any]:
+        exercise_id = _required(payload, "exercise_id")
+        exercise = self.registry.get_exercise(exercise_id)
+        if exercise is None:
+            raise ValueError(f"exercise not found: {exercise_id}")
+        organization_id = self.exercise_organization_map.get(exercise_id)
+        if organization_id:
+            self.active_organization_id = organization_id
+        self._store_active_workspace_context()
+        self.active_exercise_id = exercise.id
+        self._load_workspace_context(exercise.id)
+        return self.snapshot()
 
     def create_exercise(self, payload: dict[str, Any]) -> dict[str, Any]:
         name = str(payload.get("name") or "New Exercise").strip()
@@ -296,7 +398,9 @@ class ExerciseStore:
             end_date=_parse_datetime(payload.get("end_date")),
         )
         self.registry.register_exercise(exercise)
+        self.exercise_organization_map[exercise.id] = self.active_organization_id
         self.active_exercise_id = exercise.id
+        self._load_workspace_context(exercise.id)
         self._record_operation(
             actor_id="user-exdir",
             action="exercise.created",
@@ -357,7 +461,9 @@ class ExerciseStore:
             end_date=source.end_date,
         )
         self.registry.register_exercise(duplicate)
+        self.exercise_organization_map[duplicate.id] = self.active_organization_id
         self.active_exercise_id = duplicate.id
+        self._load_workspace_context(duplicate.id)
         self._record_operation(
             actor_id="user-exdir",
             action="exercise.duplicated",
@@ -375,7 +481,12 @@ class ExerciseStore:
         self.registry.exercises = [
             item for item in self.registry.exercises if item.id != exercise.id
         ]
-        self.active_exercise_id = self.registry.exercises[0].id
+        self.exercise_organization_map.pop(exercise.id, None)
+        self.exercise_workspaces.pop(exercise.id, None)
+        self.active_exercise_id = self._first_exercise_for_organization(
+            self.active_organization_id
+        )
+        self._load_workspace_context(self.active_exercise_id)
         self._record_operation(
             actor_id="user-exdir",
             action="exercise.deleted",
@@ -875,76 +986,111 @@ class ExerciseStore:
                 item.record_decision(decision, "user-reviewer")
                 break
 
+    def _required_active_organization(self) -> Organization:
+        for organization in self.organizations:
+            if organization.id == self.active_organization_id:
+                return organization
+        raise ValueError(f"organization not found: {self.active_organization_id}")
+
+    def _exercises_for_active_organization(self) -> list[Exercise]:
+        return [
+            exercise
+            for exercise in self.registry.list_exercises()
+            if self.exercise_organization_map.get(exercise.id) == self.active_organization_id
+        ]
+
+    def _first_exercise_for_organization(self, organization_id: str) -> str:
+        exercises = [
+            exercise
+            for exercise in self.registry.list_exercises()
+            if self.exercise_organization_map.get(exercise.id) == organization_id
+        ]
+        preferred_statuses = (
+            ExerciseStatus.ACTIVE,
+            ExerciseStatus.PLANNING,
+            ExerciseStatus.PREPARING,
+            ExerciseStatus.ARCHIVED,
+        )
+        for status in preferred_statuses:
+            for exercise in exercises:
+                if exercise.status is status:
+                    return exercise.id
+        raise ValueError(f"organization has no exercises: {organization_id}")
+
+    def _store_active_workspace_context(self) -> None:
+        if not self.active_exercise_id:
+            return
+        self.exercise_workspaces[self.active_exercise_id] = ExerciseWorkspaceContext(
+            products=list(self.products),
+            controllers=list(self.controllers),
+            library_folders=list(self.library_folders),
+            settings=list(self.settings),
+            objectives=list(self.objectives),
+            participating_units=list(self.participating_units),
+            activity=list(self.activity),
+            exercise_control=self.exercise_control,
+            exercise_director_id=self.exercise_director_id,
+            training_audience=self.training_audience,
+            timeline_status=self.timeline_status,
+            exercise_health=self.exercise_health,
+            operational_time=self.operational_time,
+        )
+
+    def _load_workspace_context(self, exercise_id: str) -> None:
+        if exercise_id not in self.exercise_workspaces:
+            exercise = self.registry.get_exercise(exercise_id)
+            self.exercise_workspaces[exercise_id] = _workspace_context_for_exercise(
+                exercise or self._required_active_exercise()
+            )
+        context = self.exercise_workspaces[exercise_id]
+        self.products = list(context.products)
+        self.controllers = list(context.controllers)
+        self.library_folders = list(context.library_folders)
+        self.settings = list(context.settings)
+        self.objectives = list(context.objectives)
+        self.participating_units = list(context.participating_units)
+        self.activity = list(context.activity)
+        self.exercise_control = context.exercise_control
+        self.exercise_director_id = context.exercise_director_id
+        self.training_audience = context.training_audience
+        self.timeline_status = context.timeline_status
+        self.exercise_health = context.exercise_health
+        self.operational_time = context.operational_time
+
+    def _mock_search_results(self) -> list[dict[str, str]]:
+        exercise = self._required_active_exercise()
+        results = [
+            {
+                "type": "Exercise",
+                "title": exercise.name,
+                "context": self._required_active_organization().short_name,
+            }
+        ]
+        for inject in self.registry.list_injects(exercise.id)[:2]:
+            results.append({"type": "Inject", "title": inject.title, "context": inject.status.value})
+        for product in self.products[:2]:
+            results.append(
+                {"type": "Product", "title": product.title, "context": product.review_status}
+            )
+        for controller in self.controllers[:2]:
+            results.append({"type": "Controller", "title": controller.name, "context": controller.role})
+        for event in self.registry.list_timeline_events(exercise.id)[:2]:
+            results.append({"type": "Timeline", "title": event.title, "context": _time_label(event.timestamp)})
+        return results
+
 
 def create_mock_exercise_store(registry: ForgeStudioRegistry | None = None) -> ExerciseStore:
     """Create the shared Exercise Data Engine for Mountain Exercise 3-27."""
 
-    return ExerciseStore(
-        registry=registry or create_mock_registry(),
+    registry = registry or create_mock_registry()
+    _seed_platform_exercises(registry)
+    organizations = _default_organizations()
+    exercise_organization_map = _mock_exercise_organization_map()
+    mountain_context = ExerciseWorkspaceContext(
         products=_mock_products(),
         controllers=_mock_controllers(),
-        library_folders=[
-            "Intelligence",
-            "Injects",
-            "Media",
-            "Weather",
-            "Reports",
-            "Maps",
-            "Photos",
-            "Video",
-            "Documents",
-            "Exports",
-        ],
-        settings=[
-            {
-                "title": "Organization",
-                "description": "Bridgeport EXCON ownership, cells, and exercise command metadata.",
-            },
-            {
-                "title": "Exercise Defaults",
-                "description": (
-                    "Default phase labels, timeline start, review gates, and archive policy."
-                ),
-            },
-            {
-                "title": "Appearance",
-                "description": (
-                    "Dark command-center theme, Forge orange accents, and density controls."
-                ),
-            },
-            {
-                "title": "Notifications",
-                "description": (
-                    "Review alerts, timeline changes, controller handoff, and system health."
-                ),
-            },
-            {
-                "title": "Users",
-                "description": (
-                    "Controller roster, reviewer assignments, observers, and administrators."
-                ),
-            },
-            {
-                "title": "Integrations",
-                "description": (
-                    "Local-only dry-run integrations reserved for future approved connectors."
-                ),
-            },
-            {
-                "title": "AI Providers",
-                "description": "Offline stub configuration and future bounded provider controls.",
-            },
-            {
-                "title": "Plugins",
-                "description": "Product plugins, profile packages, and workflow module readiness.",
-            },
-            {
-                "title": "Audit",
-                "description": (
-                    "Complete audit trail, activity feed retention, and export controls."
-                ),
-            },
-        ],
+        library_folders=_library_folders(),
+        settings=_settings(),
         objectives=[
             "Exercise command and control in complex mountain terrain.",
             "Evaluate intelligence-to-operations handoff under time pressure.",
@@ -965,7 +1111,330 @@ def create_mock_exercise_store(registry: ForgeStudioRegistry | None = None) -> E
             {"time": "0926", "title": "Weather Updated"},
             {"time": "0920", "title": "Blue Force Report Received"},
         ],
+        exercise_control="Bridgeport EXCON",
+        exercise_director_id="user-exdir",
+        training_audience="2d Battalion, 8th Marines",
+        timeline_status="On Plan",
+        exercise_health="Nominal",
+        operational_time="0942",
     )
+    exercise_workspaces = {
+        "mountain-exercise-3-27": mountain_context,
+        "winter-mountain-leaders-course": _workspace_context_for_exercise(
+            registry._required_exercise("winter-mountain-leaders-course")
+        ),
+        "itx-2-27": _workspace_context_for_exercise(registry._required_exercise("itx-2-27")),
+        "mountain-exercise-2-27": _workspace_context_for_exercise(
+            registry._required_exercise("mountain-exercise-2-27")
+        ),
+        "advanced-naval-technology-experiment-27": _workspace_context_for_exercise(
+            registry._required_exercise("advanced-naval-technology-experiment-27")
+        ),
+        "tecom-staff-exercise-27": _workspace_context_for_exercise(
+            registry._required_exercise("tecom-staff-exercise-27")
+        ),
+        "joint-training-environment-27": _workspace_context_for_exercise(
+            registry._required_exercise("joint-training-environment-27")
+        ),
+    }
+    return ExerciseStore(
+        registry=registry,
+        organizations=organizations,
+        active_organization_id="mwtc",
+        active_exercise_id="mountain-exercise-3-27",
+        exercise_organization_map=exercise_organization_map,
+        exercise_workspaces=exercise_workspaces,
+    )
+
+
+def _default_organizations() -> list[Organization]:
+    return [
+        Organization(
+            id="mwtc",
+            name="Marine Corps Mountain Warfare Training Center",
+            short_name="MWTC",
+        ),
+        Organization(
+            id="eotg",
+            name="Expeditionary Operations Training Group",
+            short_name="EOTG",
+        ),
+        Organization(
+            id="mcwl",
+            name="Marine Corps Warfighting Laboratory",
+            short_name="MCWL",
+        ),
+        Organization(
+            id="tecom",
+            name="Training and Education Command",
+            short_name="TECOM",
+        ),
+        Organization(
+            id="jte",
+            name="Joint Training Environment",
+            short_name="JTE",
+        ),
+    ]
+
+
+def _workspace_definitions() -> list[dict[str, str]]:
+    return [
+        {"id": "mission-control", "label": "Mission Control", "icon": "MC"},
+        {"id": "timeline", "label": "Timeline", "icon": "TL"},
+        {"id": "intelligence", "label": "Intelligence", "icon": "IN"},
+        {"id": "inject-library", "label": "Inject Library", "icon": "IJ"},
+        {"id": "exercise-library", "label": "Exercise Library", "icon": "LB"},
+        {"id": "controllers", "label": "Controllers", "icon": "CT"},
+        {"id": "review-queue", "label": "Review Queue", "icon": "RV"},
+        {"id": "reports", "label": "Reports", "icon": "RP"},
+        {"id": "analytics", "label": "Analytics", "icon": "AN"},
+        {"id": "administration", "label": "Administration", "icon": "AD"},
+    ]
+
+
+def _mock_exercise_organization_map() -> dict[str, str]:
+    return {
+        "mountain-exercise-3-27": "mwtc",
+        "winter-mountain-leaders-course": "mwtc",
+        "mountain-exercise-2-27": "mwtc",
+        "itx-2-27": "eotg",
+        "advanced-naval-technology-experiment-27": "mcwl",
+        "tecom-staff-exercise-27": "tecom",
+        "joint-training-environment-27": "jte",
+    }
+
+
+def _seed_platform_exercises(registry: ForgeStudioRegistry) -> None:
+    exercises = [
+        Exercise(
+            id="winter-mountain-leaders-course",
+            name="Winter Mountain Leaders Course",
+            description="Cold-weather leader training and mountain movement planning lane.",
+            status=ExerciseStatus.PLANNING,
+            phase=ExercisePhase.PLANNING,
+            start_date=datetime(2027, 1, 12, 8, 0, tzinfo=timezone.utc),
+            end_date=datetime(2027, 1, 19, 16, 0, tzinfo=timezone.utc),
+        ),
+        Exercise(
+            id="itx-2-27",
+            name="ITX 2-27",
+            description="Integrated Training Exercise focused on combined arms control.",
+            status=ExerciseStatus.ACTIVE,
+            phase=ExercisePhase.EXECUTION,
+            start_date=datetime(2027, 2, 7, 7, 0, tzinfo=timezone.utc),
+            end_date=datetime(2027, 2, 21, 18, 0, tzinfo=timezone.utc),
+        ),
+        Exercise(
+            id="mountain-exercise-2-27",
+            name="Mountain Exercise 2-27",
+            description="Archived mountain warfare exercise package retained for comparison.",
+            status=ExerciseStatus.ARCHIVED,
+            phase=ExercisePhase.ASSESSMENT,
+            start_date=datetime(2027, 2, 10, 8, 0, tzinfo=timezone.utc),
+            end_date=datetime(2027, 2, 17, 18, 0, tzinfo=timezone.utc),
+        ),
+        Exercise(
+            id="advanced-naval-technology-experiment-27",
+            name="Advanced Naval Technology Experiment 27",
+            description="MCWL experimentation lane for emerging command-and-control workflows.",
+            status=ExerciseStatus.PLANNING,
+            phase=ExercisePhase.PREPARATION,
+            start_date=datetime(2027, 5, 4, 8, 0, tzinfo=timezone.utc),
+            end_date=datetime(2027, 5, 8, 17, 0, tzinfo=timezone.utc),
+        ),
+        Exercise(
+            id="tecom-staff-exercise-27",
+            name="TECOM Staff Exercise 27",
+            description="Training command staff exercise for review, reporting, and assessment.",
+            status=ExerciseStatus.PREPARING,
+            phase=ExercisePhase.PREPARATION,
+            start_date=datetime(2027, 6, 2, 8, 0, tzinfo=timezone.utc),
+            end_date=datetime(2027, 6, 6, 16, 0, tzinfo=timezone.utc),
+        ),
+        Exercise(
+            id="joint-training-environment-27",
+            name="Joint Training Environment 27",
+            description="Joint and coalition exercise control rehearsal environment.",
+            status=ExerciseStatus.PLANNING,
+            phase=ExercisePhase.PLANNING,
+            start_date=datetime(2027, 7, 14, 8, 0, tzinfo=timezone.utc),
+            end_date=datetime(2027, 7, 28, 18, 0, tzinfo=timezone.utc),
+        ),
+    ]
+    for exercise in exercises:
+        if registry.get_exercise(exercise.id) is None:
+            registry.register_exercise(exercise)
+            _seed_minimal_exercise_records(registry, exercise)
+
+
+def _seed_minimal_exercise_records(registry: ForgeStudioRegistry, exercise: Exercise) -> None:
+    prefix = exercise.id.split("-")[0]
+    controller_id = "user-controller"
+    reviewer_id = "user-reviewer"
+    inject = Inject(
+        id=f"{prefix}-inject-001",
+        exercise_id=exercise.id,
+        title=f"{exercise.name} Control Update",
+        description="Mock control inject for the selected exercise workspace.",
+        inject_type=InjectType.EXERCISE_CONTROL,
+        priority=InjectPriority.MEDIUM,
+        status=InjectStatus.PENDING_REVIEW if exercise.status is not ExerciseStatus.ARCHIVED else InjectStatus.COMPLETED,
+        assigned_controller=controller_id,
+        created_by=controller_id,
+        approved_by=reviewer_id if exercise.status is ExerciseStatus.ARCHIVED else "",
+    )
+    registry.register_inject(inject)
+    registry.register_timeline_event(
+        TimelineEvent(
+            id=f"{prefix}-timeline-001",
+            exercise_id=exercise.id,
+            event_type=TimelineEventType.EXERCISE_PHASE,
+            title=f"{exercise.name} Workspace Opened",
+            description="Exercise workspace seeded for Forge Studio platform context.",
+            timestamp=exercise.start_date or _operation_timestamp(),
+            source="forge_studio",
+        )
+    )
+    if exercise.status is not ExerciseStatus.ARCHIVED:
+        registry.register_review_item(
+            StudioReviewItem(
+                id=f"{prefix}-review-001",
+                exercise_id=exercise.id,
+                item_type=ReviewItemType.INJECT,
+                item_id=inject.id,
+                status=StudioReviewStatus.PENDING,
+                reviewer_id=reviewer_id,
+            )
+        )
+    registry.register_audit_log(
+        AuditLog(
+            id=f"{prefix}-audit-001",
+            exercise_id=exercise.id,
+            actor_id="user-exdir",
+            action="workspace.seeded",
+            target_type="exercise",
+            target_id=exercise.id,
+            timestamp=exercise.start_date or _operation_timestamp(),
+            metadata={"status": exercise.status.value},
+        )
+    )
+
+
+def _workspace_context_for_exercise(exercise: Exercise) -> ExerciseWorkspaceContext:
+    status_label = _status_label(exercise.status.value)
+    is_archived = exercise.status is ExerciseStatus.ARCHIVED
+    is_active = exercise.status is ExerciseStatus.ACTIVE
+    return ExerciseWorkspaceContext(
+        products=[
+            ExerciseProduct(
+                id=f"product-{exercise.id}-summary",
+                folder="Reports",
+                product_type="Report",
+                title=f"{exercise.name} Control Summary",
+                status="Archived" if is_archived else "Draft",
+                version="v1.0",
+                last_updated="0830",
+                author="Bridgeport EXCON" if "Mountain" in exercise.name else "Exercise Control",
+                review_status="Approved" if is_archived else "Pending Review",
+                metadata={"exercise": exercise.id},
+                version_history=["v0.9", "v1.0"],
+            ),
+            ExerciseProduct(
+                id=f"product-{exercise.id}-timeline",
+                folder="Exports",
+                product_type="Export",
+                title=f"{exercise.name} Timeline Export",
+                status=status_label,
+                version="v0.3",
+                last_updated="0815",
+                author="Forge Studio",
+                review_status="Logged" if is_archived else "In Review",
+                metadata={"exercise": exercise.id},
+                version_history=["v0.1", "v0.2", "v0.3"],
+            ),
+        ],
+        controllers=_mock_controllers(),
+        library_folders=_library_folders(),
+        settings=_settings(),
+        objectives=[
+            f"Maintain exercise control for {exercise.name}.",
+            "Preserve human review authority for all exercise products.",
+            "Track decisions, injects, products, and audit records in one workspace.",
+        ],
+        participating_units=[
+            "Exercise Control",
+            "Training Audience",
+            "White Cell",
+            "Review Cell",
+        ],
+        activity=[
+            {"time": "0830", "title": f"{exercise.name} Workspace Loaded"},
+            {"time": "0815", "title": f"{status_label} Exercise Snapshot Updated"},
+            {"time": "0800", "title": "Controller Roster Synced"},
+        ],
+        exercise_control="Bridgeport EXCON" if "Mountain" in exercise.name else "Exercise Control",
+        exercise_director_id="user-exdir",
+        training_audience="Training Audience",
+        timeline_status="Archived" if is_archived else "Building" if not is_active else "On Plan",
+        exercise_health="Archived" if is_archived else "Nominal",
+        operational_time="0830" if not is_active else "0942",
+    )
+
+
+def _library_folders() -> list[str]:
+    return [
+        "Intelligence",
+        "Injects",
+        "Media",
+        "Weather",
+        "Reports",
+        "Maps",
+        "Photos",
+        "Video",
+        "Documents",
+        "Exports",
+    ]
+
+
+def _settings() -> list[dict[str, str]]:
+    return [
+        {
+            "title": "Organization",
+            "description": "Organization ownership, cells, and exercise command metadata.",
+        },
+        {
+            "title": "Exercise Defaults",
+            "description": "Default phase labels, timeline start, review gates, and archive policy.",
+        },
+        {
+            "title": "Appearance",
+            "description": "Dark command-center theme, Forge orange accents, and density controls.",
+        },
+        {
+            "title": "Notifications",
+            "description": "Review alerts, timeline changes, controller handoff, and system health.",
+        },
+        {
+            "title": "Users",
+            "description": "Controller roster, reviewer assignments, observers, and administrators.",
+        },
+        {
+            "title": "Integrations",
+            "description": "Local-only dry-run integrations reserved for future approved connectors.",
+        },
+        {
+            "title": "AI Providers",
+            "description": "Offline stub configuration and future bounded provider controls.",
+        },
+        {
+            "title": "Plugins",
+            "description": "Product plugins, profile packages, and workflow module readiness.",
+        },
+        {
+            "title": "Audit",
+            "description": "Complete audit trail, activity feed retention, and export controls.",
+        },
+    ]
 
 
 def _mock_controllers() -> list[ControllerAssignment]:

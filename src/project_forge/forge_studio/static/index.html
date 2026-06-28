@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
-    <div class="app-shell">
+    <div class="app-shell" id="app-shell">
       <aside class="sidebar" aria-label="Forge Studio navigation">
         <div class="brand-block">
           <img src="/assets/forge-logo.png" alt="Forge logo" class="brand-logo">
@@ -16,26 +16,33 @@
             <div class="brand-kicker">Every Event. Every Inject. Every Exercise.</div>
           </div>
         </div>
-        <nav class="nav-list">
-          <button class="nav-item active" data-page="dashboard">Dashboard</button>
-          <button class="nav-item" data-page="exercises">Exercises</button>
-          <button class="nav-item" data-page="timeline">Timeline</button>
-          <button class="nav-item" data-page="inject-library">Inject Library</button>
-          <button class="nav-item" data-page="controllers">Controllers</button>
-          <button class="nav-item" data-page="review-queue">Review Queue</button>
-          <button class="nav-item" data-page="exercise-library">Exercise Library</button>
-          <button class="nav-item" data-page="audit">Audit</button>
-          <button class="nav-item" data-page="settings">Settings</button>
-        </nav>
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Collapse navigation">Collapse</button>
+        <nav id="nav-list" class="nav-list" aria-label="Workspace navigation"></nav>
       </aside>
 
       <main class="main-panel">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">Human Command. Machine Assistance.</p>
-            <h1 id="page-title">Dashboard</h1>
+        <header class="global-header">
+          <div class="global-title">
+            <p class="eyebrow">Forge Studio</p>
+            <h1 id="page-title">Mission Control</h1>
+            <nav id="breadcrumbs" class="breadcrumbs" aria-label="Breadcrumbs"></nav>
           </div>
-          <div class="status-pill">Local MVP</div>
+          <div class="context-selectors">
+            <label>
+              <span>Organization</span>
+              <select id="organization-selector" aria-label="Current organization"></select>
+            </label>
+            <label>
+              <span>Exercise</span>
+              <select id="exercise-selector" aria-label="Current exercise"></select>
+            </label>
+          </div>
+          <div class="header-actions">
+            <span id="exercise-status-pill" class="status-pill">Local MVP</span>
+            <button id="global-search-button" class="header-icon-button" type="button" aria-label="Global search">Search</button>
+            <button class="header-icon-button" type="button" aria-label="Notifications">Alerts</button>
+            <button class="header-icon-button" type="button" aria-label="User menu">User</button>
+          </div>
         </header>
 
         <section id="dashboard-page" class="page active-page">
@@ -63,6 +70,24 @@
           <div id="content-root"></div>
         </section>
       </main>
+    </div>
+    <div id="modal-backdrop" class="modal-backdrop" hidden>
+      <section id="command-palette" class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="command-palette-title" hidden>
+        <div class="modal-header">
+          <h2 id="command-palette-title">Command Palette</h2>
+          <button class="modal-close" type="button" data-close-modal>Close</button>
+        </div>
+        <input id="command-input" class="modal-search" placeholder="Type a command..." aria-label="Command search">
+        <div id="command-results" class="modal-results"></div>
+      </section>
+      <section id="global-search-modal" class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="global-search-title" hidden>
+        <div class="modal-header">
+          <h2 id="global-search-title">Global Search</h2>
+          <button class="modal-close" type="button" data-close-modal>Close</button>
+        </div>
+        <input id="global-search-input" class="modal-search" placeholder="Search exercises, injects, products..." aria-label="Global search">
+        <div id="global-search-results" class="modal-results"></div>
+      </section>
     </div>
     <script src="/design-system/components.js"></script>
     <script src="/app.js"></script>

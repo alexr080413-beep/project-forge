@@ -8,6 +8,14 @@ The current sprint introduces interactive CRUD workflows on top of the Forge Stu
 
 Forge Studio now uses the shared design system primitives in `src/project_forge/forge_studio/static/design-system/components.js`. These helpers keep buttons, cards, status chips, timeline cards, controller cards, product rows, notifications, empty states, and skeleton loaders consistent across the static MVP.
 
+The current shell also establishes the permanent Forge Studio hierarchy:
+
+```text
+Forge -> Organization -> Exercise -> Workspace
+```
+
+Every workspace is rendered in the context of the selected organization and exercise.
+
 ## Start Locally
 
 From the repository root:
@@ -63,20 +71,23 @@ The app displays:
 
 Navigation sections:
 
-- Dashboard
-- Exercises
+- Mission Control
 - Timeline
+- Intelligence
 - Inject Library
+- Exercise Library
 - Controllers
 - Review Queue
-- Exercise Library
-- Audit
-- Settings
+- Reports
+- Analytics
+- Administration
 
 ## Exercise Data Engine
 
 `project_forge.forge_studio.data_engine.ExerciseStore` is the shared application state service for the runnable MVP. It wraps the existing Forge Studio registry and owns the complete active exercise picture:
 
+- Organizations
+- Organization-scoped exercises
 - Exercise
 - Timeline events
 - Injects
@@ -88,17 +99,20 @@ Navigation sections:
 - Latest activity feed
 - Exercise workspace metadata
 
-The local web server creates one `ExerciseStore` when it starts. Every page asks for the same exercise snapshot instead of constructing local mock objects.
+The local web server creates one `ExerciseStore` when it starts. Every page asks for the same exercise snapshot instead of constructing local mock objects. Organization and exercise switching are local in-memory commands that load a different exercise context from the same store.
 
 ```mermaid
 flowchart LR
     store["ExerciseStore<br/>single source of truth"] --> dashboard["Dashboard"]
+    store --> intelligence["Intelligence"]
     store --> timeline["Timeline"]
     store --> injects["Inject Library"]
     store --> controllers["Controllers"]
     store --> review["Review Queue"]
     store --> library["Exercise Library"]
-    store --> audit["Audit"]
+    store --> reports["Reports"]
+    store --> analytics["Analytics"]
+    store --> admin["Administration"]
     review -->|"approve / reject"| store
     injects -->|"create / edit / assign / schedule"| store
     timeline -->|"create / edit / delete"| store
@@ -196,6 +210,31 @@ The static app loads `/design-system/components.js` before `/app.js` so applicat
 - Operational support components: timeline cards, activity rows, empty states, and skeleton loaders
 
 The full implementation guidance is documented in [design_system/README.md](design_system/README.md). The original long-form visual specification remains in [FORGE_STUDIO_DESIGN_SYSTEM.md](FORGE_STUDIO_DESIGN_SYSTEM.md).
+
+## Workspace Framework
+
+The full workspace framework is documented in [FORGE_STUDIO_WORKSPACE_FRAMEWORK.md](FORGE_STUDIO_WORKSPACE_FRAMEWORK.md).
+
+The shell provides:
+
+- Persistent global header
+- Organization selector
+- Exercise selector
+- Current workspace title
+- Exercise status indicator
+- Global search modal
+- Notification and user menu placeholders
+- Collapsible workspace sidebar
+- Breadcrumbs in the form `Forge / Organization / Exercise / Workspace`
+- `Ctrl+K` / `Cmd+K` command palette framework
+
+Mock organizations:
+
+- Marine Corps Mountain Warfare Training Center
+- Expeditionary Operations Training Group
+- Marine Corps Warfighting Laboratory
+- Training and Education Command
+- Joint Training Environment
 
 ## Exercise Workspace Concept
 

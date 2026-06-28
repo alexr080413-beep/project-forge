@@ -163,3 +163,74 @@ def test_review_revision_updates_queue_library_and_audit() -> None:
     assert product["review_status"] == "Revision Requested"
     assert payload["metrics"]["pending_reviews"] == 2
     assert payload["audit_log"][0]["action"] == "review.revision_requested"
+
+
+def test_platform_context_includes_organizations_exercises_and_workspaces() -> None:
+    store = create_mock_exercise_store()
+
+    payload = store.snapshot()
+
+    assert payload["platform"]["hierarchy"] == [
+        "Forge",
+        "Organization",
+        "Exercise",
+        "Workspace",
+    ]
+    assert payload["platform"]["organization"]["name"] == (
+        "Marine Corps Mountain Warfare Training Center"
+    )
+    assert payload["platform"]["exercise"]["name"] == "Mountain Exercise 3-27"
+    assert [item["label"] for item in payload["platform"]["workspaces"]] == [
+        "Mission Control",
+        "Timeline",
+        "Intelligence",
+        "Inject Library",
+        "Exercise Library",
+        "Controllers",
+        "Review Queue",
+        "Reports",
+        "Analytics",
+        "Administration",
+    ]
+    assert [item["name"] for item in payload["organizations"]] == [
+        "Marine Corps Mountain Warfare Training Center",
+        "Expeditionary Operations Training Group",
+        "Marine Corps Warfighting Laboratory",
+        "Training and Education Command",
+        "Joint Training Environment",
+    ]
+    assert {item["name"] for item in payload["organization_exercises"]} >= {
+        "Mountain Exercise 3-27",
+        "Winter Mountain Leaders Course",
+        "Mountain Exercise 2-27",
+    }
+
+
+def test_switching_exercise_updates_every_workspace_dataset() -> None:
+    store = create_mock_exercise_store()
+
+    switched = store.apply_action(
+        "context.switch_exercise",
+        {"exercise_id": "winter-mountain-leaders-course"},
+    )
+
+    assert switched["active_exercise"]["name"] == "Winter Mountain Leaders Course"
+    assert switched["platform"]["organization"]["short_name"] == "MWTC"
+    assert switched["workspace"]["exercise"]["name"] == "Winter Mountain Leaders Course"
+    assert switched["metrics"]["products_generated"] == 2
+    assert switched["metrics"]["timeline_events"] == 1
+    assert switched["injects"][0]["exercise_id"] == "winter-mountain-leaders-course"
+    assert switched["products"][0]["title"] == "Winter Mountain Leaders Course Control Summary"
+    assert switched["controllers"][0]["role"] == "Exercise Director"
+    assert switched["review_queue"][0]["exercise_id"] == "winter-mountain-leaders-course"
+
+
+def test_switching_organization_selects_that_organization_active_exercise() -> None:
+    store = create_mock_exercise_store()
+
+    switched = store.apply_action("context.switch_organization", {"organization_id": "eotg"})
+
+    assert switched["platform"]["organization"]["short_name"] == "EOTG"
+    assert switched["active_exercise"]["name"] == "ITX 2-27"
+    assert [item["name"] for item in switched["organization_exercises"]] == ["ITX 2-27"]
+    assert switched["workspace"]["exercise"]["name"] == "ITX 2-27"

@@ -35,6 +35,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Forge Studio Exercise Data Engine with shared exercise state, live dashboard statistics, Review Queue approval/rejection workflow, Audit page, controller/product/timeline data propagation, and architecture documentation.
 - Interactive Forge Studio CRUD workflows for exercises, injects, timeline events, controller assignment, review revision actions, product library operations, event-driven snapshot refresh, synchronized dashboard metrics, and audit records for every command.
 - Forge Studio Design System folder with reusable UI documentation, shared tokens, static `ForgeUI` component helpers, and consistent buttons, cards, badges, timeline, product, notification, and widget primitives.
+- Forge Studio workspace framework with Organization and Exercise selectors, persistent global header, collapsible workspace navigation, breadcrumbs, command palette framework, global search framework, and multi-exercise data switching.
 
 ### Changed
 

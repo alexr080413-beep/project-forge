@@ -105,6 +105,12 @@ The current CRUD workflows remain demo-safe. They are local mock actions only an
 
 The static MVP loads `src/project_forge/forge_studio/static/design-system/components.js` before the application script. The `window.ForgeUI` helpers provide shared buttons, cards, status badges, controller cards, timeline cards, product rows, notifications, empty states, skeleton loaders, and formatting utilities so current and future pages use one visual language.
 
+## Forge Studio Workspace Framework
+
+Forge Studio now uses the permanent hierarchy `Forge -> Organization -> Exercise -> Workspace`. `ExerciseStore` exposes organizations, organization-scoped exercise lists, the active exercise, workspace definitions, breadcrumbs, global search seed results, and the selected exercise snapshot through the same local data engine response.
+
+The web shell contains a persistent global header, organization selector, exercise selector, exercise status indicator, global search entry point, notification/user placeholders, collapsible workspace sidebar, and breadcrumbs. Switching organization or exercise flows through `/api/action` commands so Mission Control, Timeline, Intelligence, Inject Library, Exercise Library, Controllers, Review Queue, Reports, Analytics, and Administration all reload from the selected Exercise Data Engine context.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:
