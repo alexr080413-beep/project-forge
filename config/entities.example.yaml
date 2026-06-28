@@ -1,0 +1,112 @@
+{
+  "entities": [
+    {
+      "identifier": "org-excon",
+      "display_name": "Exercise Control",
+      "category": "organization",
+      "affiliation": "exercise_control",
+      "description": "Controller organization responsible for scenario management.",
+      "aliases": ["EXCON"],
+      "parent_organization": null,
+      "location": "Main Operations Center",
+      "status": "active",
+      "tags": ["control", "exercise"],
+      "metadata": {"classification": "notional"}
+    },
+    {
+      "identifier": "unit-jtf-hq",
+      "display_name": "Joint Task Force Headquarters",
+      "category": "unit",
+      "affiliation": "friendly",
+      "description": "Friendly headquarters coordinating notional operations.",
+      "aliases": ["JTF HQ"],
+      "parent_organization": "org-excon",
+      "location": "Capital Operations Center",
+      "status": "active",
+      "tags": ["headquarters", "friendly"],
+      "metadata": {"echelon": "joint"}
+    },
+    {
+      "identifier": "inst-capital-ops",
+      "display_name": "Capital Operations Center",
+      "category": "installation",
+      "affiliation": "friendly",
+      "description": "Primary notional coordination facility.",
+      "aliases": ["COC"],
+      "parent_organization": "unit-jtf-hq",
+      "location": "Capital District",
+      "status": "active",
+      "tags": ["facility"],
+      "metadata": {}
+    },
+    {
+      "identifier": "ind-senior-controller",
+      "display_name": "Senior Controller",
+      "category": "individual",
+      "affiliation": "exercise_control",
+      "description": "Role authorized to approve scenario escalation.",
+      "aliases": ["SC"],
+      "parent_organization": "org-excon",
+      "location": "Main Operations Center",
+      "status": "available",
+      "tags": ["controller"],
+      "metadata": {}
+    },
+    {
+      "identifier": "platform-watchtower",
+      "display_name": "Watchtower ISR Platform",
+      "category": "platform",
+      "affiliation": "friendly",
+      "description": "Notional platform supporting scenario awareness.",
+      "aliases": ["Watchtower"],
+      "parent_organization": "unit-jtf-hq",
+      "location": "Northern Border Region",
+      "status": "simulated",
+      "tags": ["isr", "platform"],
+      "metadata": {"role": "surveillance"}
+    },
+    {
+      "identifier": "cap-strategic-comms",
+      "display_name": "Strategic Communications Cell",
+      "category": "capability",
+      "affiliation": "friendly",
+      "description": "Capability used to coordinate public messaging in play.",
+      "aliases": ["STRATCOM"],
+      "parent_organization": "unit-jtf-hq",
+      "location": "Capital Operations Center",
+      "status": "active",
+      "tags": ["communications"],
+      "metadata": {}
+    }
+  ],
+  "relationships": [
+    {
+      "source_identifier": "org-excon",
+      "target_identifier": "unit-jtf-hq",
+      "relationship_type": "commands",
+      "description": "EXCON directs the notional headquarters during play.",
+      "metadata": {}
+    },
+    {
+      "source_identifier": "unit-jtf-hq",
+      "target_identifier": "cap-strategic-comms",
+      "relationship_type": "supports",
+      "description": "The headquarters uses strategic communications support.",
+      "metadata": {}
+    },
+    {
+      "source_identifier": "platform-watchtower",
+      "target_identifier": "inst-capital-ops",
+      "relationship_type": "communicates_with",
+      "description": "The platform reports into the operations center.",
+      "metadata": {}
+    },
+    {
+      "source_identifier": "unit-jtf-hq",
+      "target_identifier": "inst-capital-ops",
+      "relationship_type": "located_at",
+      "description": "The headquarters operates from the coordination facility.",
+      "metadata": {}
+    }
+  ]
+}
