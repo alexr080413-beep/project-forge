@@ -6,6 +6,8 @@ This is intentionally minimal. It does not implement authentication, persistence
 
 The current sprint introduces interactive CRUD workflows on top of the Forge Studio Exercise Data Engine. The active exercise is the single source of truth for dashboard metrics, timeline events, injects, products, controllers, review queue items, audit records, and exercise statistics.
 
+Forge Studio now uses the shared design system primitives in `src/project_forge/forge_studio/static/design-system/components.js`. These helpers keep buttons, cards, status chips, timeline cards, controller cards, product rows, notifications, empty states, and skeleton loaders consistent across the static MVP.
+
 ## Start Locally
 
 From the repository root:
@@ -182,6 +184,18 @@ The runnable MVP now supports local CRUD operations through existing application
 - Audit: displays every command recorded by the Exercise Data Engine.
 
 All operations are local mock actions. They do not publish injects, send email, call external APIs, scrape web content, or persist to a database.
+
+## Design System Runtime
+
+The static app loads `/design-system/components.js` before `/app.js` so application pages can render through shared `ForgeUI` primitives instead of page-specific HTML fragments. The current runtime supports:
+
+- Buttons: primary, secondary, danger, success, warning, ghost, and icon variants
+- Cards: information, controller, timeline, product row, statistics, and review-oriented layouts
+- Status badges: draft, pending review, approved, scheduled, active, completed, archived, rejected, and workflow variants
+- Notifications: success, warning, info, and error
+- Operational support components: timeline cards, activity rows, empty states, and skeleton loaders
+
+The full implementation guidance is documented in [design_system/README.md](design_system/README.md). The original long-form visual specification remains in [FORGE_STUDIO_DESIGN_SYSTEM.md](FORGE_STUDIO_DESIGN_SYSTEM.md).
 
 ## Exercise Workspace Concept
 

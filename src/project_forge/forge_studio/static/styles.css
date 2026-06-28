@@ -370,7 +370,8 @@ h1 {
   margin-top: 18px;
 }
 
-.action-button {
+.action-button,
+.fs-button {
   border: 1px solid rgba(246, 168, 110, 0.45);
   border-radius: 6px;
   background: rgba(246, 168, 110, 0.12);
@@ -381,14 +382,53 @@ h1 {
 }
 
 .action-button:hover,
-.action-button:focus-visible {
+.action-button:focus-visible,
+.fs-button:hover,
+.fs-button:focus-visible {
   background: rgba(246, 168, 110, 0.2);
   outline: none;
 }
 
-.action-button.danger {
+.fs-button--primary {
+  border-color: rgba(246, 168, 110, 0.65);
+  background: rgba(246, 168, 110, 0.18);
+}
+
+.fs-button--secondary {
+  border-color: var(--border-strong);
+  background: rgba(17, 24, 33, 0.88);
+}
+
+.action-button.danger,
+.fs-button--danger {
   border-color: rgba(220, 88, 88, 0.55);
   background: rgba(220, 88, 88, 0.1);
+}
+
+.fs-button--danger:hover,
+.fs-button--danger:focus-visible {
+  background: rgba(220, 88, 88, 0.18);
+}
+
+.fs-button--success {
+  border-color: rgba(84, 163, 106, 0.55);
+  background: rgba(84, 163, 106, 0.12);
+}
+
+.fs-button--warning {
+  border-color: rgba(217, 117, 43, 0.58);
+  background: rgba(217, 117, 43, 0.12);
+}
+
+.fs-button--ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.fs-button--icon {
+  min-width: 34px;
+  padding: 0 10px;
 }
 
 .crud-form {
@@ -541,17 +581,72 @@ h1 {
   border-left-color: var(--faint);
 }
 
+.status-pending,
 .status-pending-review {
   border-left-color: var(--ember);
 }
 
-.status-approved,
+.status-approved {
+  border-left-color: var(--success);
+}
+
 .status-scheduled {
   border-left-color: var(--orange);
 }
 
-.status-completed {
+.status-active {
+  border-left-color: #4ea1d3;
+}
+
+.status-completed,
+.status-closed {
   border-left-color: var(--success);
+}
+
+.status-archived {
+  border-left-color: var(--faint);
+}
+
+.status-rejected,
+.status-revision-requested {
+  border-left-color: #d65a5a;
+}
+
+.status-badge.status-draft,
+.status-badge.status-archived {
+  border-color: rgba(115, 130, 146, 0.55);
+  background: rgba(115, 130, 146, 0.1);
+  color: var(--muted);
+}
+
+.status-badge.status-pending,
+.status-badge.status-pending-review,
+.status-badge.status-in-review,
+.status-badge.status-revision-requested {
+  border-color: rgba(217, 117, 43, 0.6);
+  background: rgba(217, 117, 43, 0.12);
+  color: var(--orange);
+}
+
+.status-badge.status-approved,
+.status-badge.status-completed,
+.status-badge.status-closed {
+  border-color: rgba(84, 163, 106, 0.62);
+  background: rgba(84, 163, 106, 0.12);
+  color: #8fd39c;
+}
+
+.status-badge.status-scheduled,
+.status-badge.status-active {
+  border-color: rgba(78, 161, 211, 0.62);
+  background: rgba(78, 161, 211, 0.12);
+  color: #8ec8eb;
+}
+
+.status-badge.status-rejected {
+  border-color: rgba(214, 90, 90, 0.62);
+  background: rgba(214, 90, 90, 0.12);
+  color: #ef9b9b;
 }
 
 .controller-grid {
@@ -657,10 +752,51 @@ h1 {
   gap: 6px;
 }
 
-.review-actions .action-button {
+.review-actions .action-button,
+.review-actions .fs-button {
   min-height: 30px;
   padding: 0 9px;
   font-size: 12px;
+}
+
+.fs-notification,
+.fs-empty,
+.fs-skeleton {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 14px;
+}
+
+.fs-notification {
+  display: grid;
+  gap: 4px;
+}
+
+.fs-notification span,
+.fs-empty p {
+  color: var(--muted);
+}
+
+.fs-notification--success {
+  border-left: 3px solid var(--success);
+}
+
+.fs-notification--warning {
+  border-left: 3px solid var(--ember);
+}
+
+.fs-notification--error {
+  border-left: 3px solid #d65a5a;
+}
+
+.fs-notification--info {
+  border-left: 3px solid #4ea1d3;
+}
+
+.fs-skeleton {
+  min-height: 96px;
+  background: linear-gradient(90deg, var(--surface), var(--panel-2), var(--surface));
 }
 
 .settings-grid {

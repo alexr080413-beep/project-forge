@@ -43,3 +43,11 @@ def test_static_web_app_assets_exist() -> None:
     assert static_root.joinpath("index.html").is_file()
     assert static_root.joinpath("styles.css").is_file()
     assert static_root.joinpath("app.js").is_file()
+    assert static_root.joinpath("design-system", "components.js").is_file()
+
+
+def test_static_web_app_loads_design_system_before_application() -> None:
+    static_root = resources.files("project_forge.forge_studio").joinpath("static")
+    index_html = static_root.joinpath("index.html").read_text(encoding="utf-8")
+
+    assert index_html.index("/design-system/components.js") < index_html.index("/app.js")

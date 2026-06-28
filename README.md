@@ -355,6 +355,7 @@ The platform is ready for iterative capability growth while preserving controlle
 ├── assets/                # Logo and static project assets
 ├── brand/                 # Official Forge brand kit, messaging, visual system, and marketing guidance
 ├── config/                # Safe sample configuration, profiles, workflows, dictionaries, plugins
+├── design_system/         # Forge Studio reusable UI components, tokens, and usage guidance
 ├── knowledge_base/        # Durable exercise knowledge references
 ├── outputs/               # Local generated artifacts, ignored except placeholders
 ├── src/project_forge/     # Forge Python package and service foundations
@@ -385,6 +386,7 @@ The platform is ready for iterative capability growth while preserving controlle
 | Document | Purpose |
 | --- | --- |
 | [brand/README.md](brand/README.md) | Official Forge brand kit covering identity, messaging, voice, logo, colors, typography, icons, imagery, UI guidance, and presentations. |
+| [design_system/README.md](design_system/README.md) | Forge Studio reusable UI components, tokens, usage examples, accessibility rules, responsive guidance, and runtime implementation contract. |
 | [VISION.md](VISION.md) | Executive vision, problem statement, goals, non-goals, and EXCON benefits. |
 | [PLATFORM.md](PLATFORM.md) | Platform layers, architecture, data flow, and core concepts. |
 | [EXERCISE.md](EXERCISE.md) | Exercise lifecycle model, object model, hierarchy, workspace mapping, controller mapping, workflow mapping, product mapping, profile mapping, plugin mapping, and navigation implications. |

@@ -34,6 +34,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Runnable Forge Studio Web MVP with local stdlib server, Mountain Exercise 3-27 mock workspace, operational dashboard, interactive pages, Exercise Library, sidebar navigation, and documentation.
 - Forge Studio Exercise Data Engine with shared exercise state, live dashboard statistics, Review Queue approval/rejection workflow, Audit page, controller/product/timeline data propagation, and architecture documentation.
 - Interactive Forge Studio CRUD workflows for exercises, injects, timeline events, controller assignment, review revision actions, product library operations, event-driven snapshot refresh, synchronized dashboard metrics, and audit records for every command.
+- Forge Studio Design System folder with reusable UI documentation, shared tokens, static `ForgeUI` component helpers, and consistent buttons, cards, badges, timeline, product, notification, and widget primitives.
 
 ### Changed
 

@@ -2,7 +2,7 @@
 
 Forge Studio is the future command-center application for Project Forge. This design system defines the visual language, layout rules, interaction states, and reusable component specifications every future Forge Studio interface should follow.
 
-This is a documentation-only design specification. It does not implement a frontend, component library, CSS framework, route structure, or runtime behavior.
+The canonical implementation-oriented design system now lives in [design_system/README.md](design_system/README.md), with shared tokens in [design_system/tokens.json](design_system/tokens.json). The current static Forge Studio MVP uses dependency-free runtime helpers in `src/project_forge/forge_studio/static/design-system/components.js` exposed as `window.ForgeUI`.
 
 ## Design Intent
 

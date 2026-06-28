@@ -99,6 +99,12 @@ The MVP uses a synchronous command-and-snapshot pattern to model event-driven be
 
 The current CRUD workflows remain demo-safe. They are local mock actions only and do not publish products, distribute injects, send notifications, scrape content, call external services, or bypass the human review principle.
 
+## Forge Studio Design System
+
+`design_system/` is the implementation-facing Forge Studio design system. It documents typography, spacing, color usage, controls, cards, forms, tables, navigation, badges, alerts, notifications, dialogs, timeline components, dashboard widgets, icons, search, command palette, empty states, loading states, skeletons, charts, maps, accessibility, and responsive layout.
+
+The static MVP loads `src/project_forge/forge_studio/static/design-system/components.js` before the application script. The `window.ForgeUI` helpers provide shared buttons, cards, status badges, controller cards, timeline cards, product rows, notifications, empty states, skeleton loaders, and formatting utilities so current and future pages use one visual language.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:

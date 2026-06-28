@@ -2,6 +2,7 @@ const pageTitle = document.querySelector("#page-title");
 const dashboardPage = document.querySelector("#dashboard-page");
 const contentPage = document.querySelector("#content-page");
 const contentRoot = document.querySelector("#content-root");
+const UI = window.ForgeUI;
 let workspaceData = null;
 let currentPage = "dashboard";
 
@@ -18,14 +19,7 @@ const pageLabels = {
 };
 
 function formatLabel(value) {
-  return String(value || "--").replaceAll("_", " ");
-}
-
-function setText(id, value) {
-  const element = document.querySelector(id);
-  if (element) {
-    element.textContent = value;
-  }
+  return UI.formatLabel(value);
 }
 
 function timeFromIso(value) {
@@ -37,31 +31,19 @@ function timeFromIso(value) {
 }
 
 function statusClass(value) {
-  return `status-${String(value || "neutral").replaceAll("_", "-").toLowerCase()}`;
-}
-
-function payloadAttr(payload) {
-  return encodeURIComponent(JSON.stringify(payload));
+  return UI.statusClass(value);
 }
 
 function commandButton(label, action, payload = {}, variant = "") {
-  return `<button class="action-button command-action ${variant}" type="button" data-action="${action}" data-payload="${payloadAttr(payload)}">${label}</button>`;
+  return UI.commandButton(label, action, payload, variant || "secondary");
 }
 
 function formButton(label, action, formId) {
-  return `<button class="action-button form-action" type="button" data-action="${action}" data-form="${formId}">${label}</button>`;
+  return UI.formButton(label, action, formId, "primary");
 }
 
 function card(title, body, meta = "") {
-  return `
-    <article class="record">
-      <div class="record-title">
-        <strong>${title}</strong>
-        ${meta ? `<span class="badge">${meta}</span>` : ""}
-      </div>
-      <p>${body}</p>
-    </article>
-  `;
+  return UI.card({title, body, meta});
 }
 
 function controllerOptions(selected = "") {
@@ -139,28 +121,30 @@ function renderActivity(records) {
   const container = document.querySelector("#activity-list");
   container.innerHTML = "";
   for (const item of records) {
-    container.insertAdjacentHTML(
-      "beforeend",
-      `<div class="activity-item"><span>${item.time}</span><strong>${item.title}</strong></div>`
-    );
+    container.insertAdjacentHTML("beforeend", UI.activityItem(item));
   }
 }
 
 function renderDashboard(data) {
   const exercise = data.workspace.exercise;
-  setText("#active-exercise", exercise.name);
-  setText(
-    "#active-exercise-description",
-    `${exercise.exercise_control} | Director: ${exercise.exercise_director} | Start ${exercise.start}`
-  );
-  setText("#exercise-status", data.metrics.exercise_status);
-  setText("#exercise-phase", data.metrics.exercise_phase);
-  setText("#exercise-health", data.metrics.exercise_health);
-  setText("#controller-count", data.metrics.controller_count);
-  setText("#pending-reviews", data.metrics.pending_reviews);
-  setText("#open-injects", data.metrics.open_injects);
-  setText("#products-generated", data.metrics.products_generated);
-  setText("#current-time", data.metrics.current_operational_time);
+  const dashboardGrid = document.querySelector("#dashboard-grid");
+  dashboardGrid.innerHTML = `
+    ${UI.dashboardWidget({
+      label: "Active Exercise",
+      value: exercise.name,
+      icon: "FX",
+      body: `${exercise.exercise_control} | Director: ${exercise.exercise_director} | Start ${exercise.start}`,
+      wide: true
+    })}
+    ${UI.dashboardWidget({label: "Exercise Status", value: data.metrics.exercise_status, icon: "ST"})}
+    ${UI.dashboardWidget({label: "Exercise Phase", value: data.metrics.exercise_phase, icon: "PH"})}
+    ${UI.dashboardWidget({label: "Exercise Health", value: data.metrics.exercise_health, icon: "HL"})}
+    ${UI.dashboardWidget({label: "Controllers Online", value: data.metrics.controller_count, icon: "CT"})}
+    ${UI.dashboardWidget({label: "Pending Reviews", value: data.metrics.pending_reviews, icon: "RV"})}
+    ${UI.dashboardWidget({label: "Open Injects", value: data.metrics.open_injects, icon: "IN"})}
+    ${UI.dashboardWidget({label: "Products Generated", value: data.metrics.products_generated, icon: "PR"})}
+    ${UI.dashboardWidget({label: "Current Operational Time", value: data.metrics.current_operational_time, icon: "TM"})}
+  `;
   renderActivity(data.activity);
   renderRecords("#timeline-list", data.timeline_events.slice(-5), "No timeline events yet.");
 }
@@ -183,7 +167,7 @@ function renderExercises(data) {
           ${formButton("Create Exercise", "exercise.create", "exercise-form")}
           ${formButton("Edit Exercise", "exercise.edit", "exercise-form")}
           ${commandButton("Duplicate", "exercise.duplicate")}
-          ${commandButton("Archive", "exercise.archive")}
+          ${commandButton("Archive", "exercise.archive", {}, "warning")}
           ${commandButton("Delete", "exercise.delete", {}, "danger")}
         </div>
       </article>
@@ -228,20 +212,16 @@ function renderTimeline(data) {
         ${formButton("Add Timeline Event", "timeline.create", "timeline-form")}
       </form>
       <div class="timeline-column">
-        ${data.timeline_events.map((event) => `
-          <article class="timeline-card">
-            <time>${timeFromIso(event.timestamp)}</time>
-            <div>
-              <strong>${event.title}</strong>
-              <p>${event.description}</p>
-              <span class="badge">${formatLabel(event.event_type)}</span>
-              <div class="action-row compact-actions">
-                ${commandButton("Edit", "timeline.edit", {event_id: event.id, title: `${event.title} Updated`})}
-                ${commandButton("Delete", "timeline.delete", {event_id: event.id}, "danger")}
-              </div>
+        ${data.timeline_events.map((event) => UI.timelineCard({
+          event,
+          time: timeFromIso(event.timestamp),
+          actions: `
+            <div class="action-row compact-actions">
+              ${commandButton("Edit", "timeline.edit", {event_id: event.id, title: `${event.title} Updated`})}
+              ${commandButton("Delete", "timeline.delete", {event_id: event.id}, "danger")}
             </div>
-          </article>
-        `).join("")}
+          `
+        })).join("")}
       </div>
     </section>
   `;
@@ -266,7 +246,7 @@ function renderInjectLibrary(data) {
           <article class="inject-card ${statusClass(inject.status)}">
             <div class="record-title">
               <strong>${inject.title}</strong>
-              <span class="status-badge">${formatLabel(inject.status)}</span>
+              ${UI.statusBadge(inject.status)}
             </div>
             <dl class="detail-list compact-list">
               <dt>Category</dt><dd>${formatLabel(inject.inject_type)}</dd>
@@ -276,10 +256,10 @@ function renderInjectLibrary(data) {
             </dl>
             <div class="action-row compact-actions">
               ${commandButton("Edit", "inject.edit", {inject_id: inject.id, title: `${inject.title} Updated`})}
-              ${commandButton("Approve", "inject.approve", {inject_id: inject.id})}
-              ${commandButton("Reject", "inject.reject", {inject_id: inject.id})}
+              ${commandButton("Approve", "inject.approve", {inject_id: inject.id}, "success")}
+              ${commandButton("Reject", "inject.reject", {inject_id: inject.id}, "danger")}
               ${commandButton("Assign", "inject.assign", {inject_id: inject.id, assigned_controller: "user-intel-chief"})}
-              ${commandButton("Schedule", "inject.schedule", {inject_id: inject.id, scheduled_time: "2027-03-27T09:50:00+00:00"})}
+              ${commandButton("Schedule", "inject.schedule", {inject_id: inject.id, scheduled_time: "2027-03-27T09:50:00+00:00"}, "warning")}
               ${commandButton("Delete", "inject.delete", {inject_id: inject.id}, "danger")}
             </div>
           </article>
@@ -293,21 +273,7 @@ function renderInjectLibrary(data) {
 function renderControllers(data) {
   contentRoot.innerHTML = `
     <section class="controller-grid">
-      ${data.controllers.map((controller) => `
-        <article class="controller-card">
-          <div class="controller-avatar">${controller.role.slice(0, 2).toUpperCase()}</div>
-          <div>
-            <span class="card-label">${controller.role}</span>
-            <h2>${controller.name}</h2>
-          </div>
-          <dl class="detail-list compact-list">
-            <dt>Current Task</dt><dd>${controller.task}</dd>
-            <dt>Current Status</dt><dd>${controller.status}</dd>
-            <dt>Products Today</dt><dd>${controller.products_today}</dd>
-            <dt>Pending Reviews</dt><dd>${controller.pending_reviews}</dd>
-          </dl>
-        </article>
-      `).join("")}
+      ${data.controllers.map((controller) => UI.controllerCard(controller)).join("")}
     </section>
   `;
 }
@@ -326,12 +292,12 @@ function renderReviewQueue(data) {
           return `
             <div class="table-row">
               <span>${item.title}</span>
-              <span>${formatLabel(item.status)}</span>
-              <span>${formatLabel(item.decision || "Pending")}</span>
+              <span>${UI.statusBadge(item.status)}</span>
+              <span>${UI.statusBadge(item.decision || "Pending")}</span>
               <span>${item.reviewed_by || "Unassigned"}</span>
               <span>${timeFromIso(item.timestamp)}</span>
               <span class="review-actions">
-                ${canReview ? `${commandButton("Approve", "review.approve", {review_id: item.id})}${commandButton("Reject", "review.reject", {review_id: item.id})}${commandButton("Return for Revision", "review.revision", {review_id: item.id})}` : "Complete"}
+                ${canReview ? `${commandButton("Approve", "review.approve", {review_id: item.id}, "success")}${commandButton("Reject", "review.reject", {review_id: item.id}, "danger")}${commandButton("Return for Revision", "review.revision", {review_id: item.id}, "warning")}` : "Complete"}
               </span>
             </div>
           `;
@@ -358,24 +324,16 @@ function renderExerciseLibrary(data) {
         <h2>Generated Products</h2>
         <div class="data-table product-table">
           <div class="table-row table-head"><span>Product Type</span><span>Title</span><span>Status</span><span>Version</span><span>Last Updated</span><span>Author</span><span>Review Status</span><span>Action</span></div>
-          ${data.products.map((product) => `
-            <div class="table-row">
-              <span>${product.product_type}</span>
-              <span>${product.title}</span>
-              <span>${product.status}</span>
-              <span>${product.version}</span>
-              <span>${product.last_updated}</span>
-              <span>${product.author}</span>
-              <span>${product.review_status}</span>
-              <span class="review-actions">
-                ${commandButton("Open", "product.open", {product_id: product.id})}
-                ${commandButton("Metadata", "product.metadata", {product_id: product.id})}
-                ${commandButton("Versions", "product.version_history", {product_id: product.id})}
-                ${commandButton("Archive", "product.archive", {product_id: product.id})}
-                ${commandButton("Delete", "product.delete", {product_id: product.id}, "danger")}
-              </span>
-            </div>
-          `).join("")}
+          ${data.products.map((product) => UI.productRow(
+            product,
+            `
+              ${commandButton("Open", "product.open", {product_id: product.id}, "ghost")}
+              ${commandButton("Metadata", "product.metadata", {product_id: product.id}, "ghost")}
+              ${commandButton("Versions", "product.version_history", {product_id: product.id}, "ghost")}
+              ${commandButton("Archive", "product.archive", {product_id: product.id}, "warning")}
+              ${commandButton("Delete", "product.delete", {product_id: product.id}, "danger")}
+            `
+          )).join("")}
         </div>
       </article>
     </section>
@@ -466,6 +424,10 @@ for (const item of document.querySelectorAll(".nav-item")) {
 }
 
 loadDashboard().catch((error) => {
-  setText("#active-exercise", "Dashboard unavailable");
-  setText("#active-exercise-description", error.message);
+  const dashboardGrid = document.querySelector("#dashboard-grid");
+  dashboardGrid.innerHTML = UI.notification({
+    type: "error",
+    title: "Dashboard unavailable",
+    body: error.message
+  });
 });
