@@ -163,7 +163,11 @@ See [SETUP.md](SETUP.md) for the longer setup notes.
 
 ## Current Status
 
-Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, and a Pipeline Orchestrator that can run ordered in-process workflows.
+Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, a Profile Manager for exercise environments, and a Pipeline Orchestrator that can run ordered in-process workflows.
+
+### Profile Manager
+
+The `project_forge.profile_manager` package provides profile metadata, component definitions, registry lookup, YAML loading, and validation for exercise-specific Forge profiles. Profiles select enabled services, enabled plugins, knowledge base paths, template paths, translation dictionary paths, workflow paths, default scenarios, and metadata without modifying Forge Core.
 
 ### Pipeline Orchestrator
 

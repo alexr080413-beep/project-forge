@@ -1,0 +1,155 @@
+{
+  "profiles": [
+    {
+      "profile_id": "mwtc",
+      "display_name": "MWTC",
+      "description": "Mountain warfare exercise profile for controller-led training environments.",
+      "exercise_type": "mountain_warfare",
+      "version": "0.1.0",
+      "owner": "Project Forge",
+      "enabled_services": [
+        "knowledge_engine",
+        "scenario_engine",
+        "entity_engine",
+        "event_engine",
+        "exercise_state",
+        "context_engine",
+        "decision_engine",
+        "translation_engine",
+        "product_sdk",
+        "qa_service",
+        "workflow_engine",
+        "pipeline_orchestrator"
+      ],
+      "enabled_plugins": [
+        "intelligence-summary",
+        "spotrep",
+        "social-media"
+      ],
+      "knowledge_base_path": "knowledge_base",
+      "template_path": "config/product_plugins",
+      "translation_dictionary_path": "config/translation_dictionaries.example.yaml",
+      "workflow_path": "config/workflows.example.yaml",
+      "default_scenario": "scenario-forge-example",
+      "components": [
+        {
+          "identifier": "mwtc-translation",
+          "component_type": "translation_dictionary",
+          "display_name": "MWTC Translation Dictionary",
+          "path": "config/translation_dictionaries.example.yaml",
+          "enabled": true,
+          "metadata": {"notional": true}
+        }
+      ],
+      "metadata": {
+        "notional": true,
+        "environment": "training"
+      },
+      "profile_metadata": {
+        "terrain": "mountain",
+        "release_authority": "EXCON"
+      }
+    },
+    {
+      "profile_id": "itx",
+      "display_name": "ITX",
+      "description": "Integrated training exercise profile for combined arms controller workflows.",
+      "exercise_type": "integrated_training_exercise",
+      "version": "0.1.0",
+      "owner": "Project Forge",
+      "enabled_services": [
+        "knowledge_engine",
+        "scenario_engine",
+        "entity_engine",
+        "event_engine",
+        "exercise_state",
+        "context_engine",
+        "decision_engine",
+        "translation_engine",
+        "product_sdk",
+        "qa_service",
+        "workflow_engine",
+        "pipeline_orchestrator"
+      ],
+      "enabled_plugins": [
+        "intelligence-summary",
+        "iir",
+        "spotrep",
+        "news-article"
+      ],
+      "knowledge_base_path": "knowledge_base",
+      "template_path": "config/product_plugins",
+      "translation_dictionary_path": "config/translation_dictionaries.example.yaml",
+      "workflow_path": "config/workflows.example.yaml",
+      "default_scenario": "scenario-forge-example",
+      "components": [
+        {
+          "identifier": "itx-products",
+          "component_type": "product_templates",
+          "display_name": "ITX Product Templates",
+          "path": "config/product_plugins",
+          "enabled": true,
+          "metadata": {}
+        }
+      ],
+      "metadata": {
+        "notional": true,
+        "environment": "training"
+      },
+      "profile_metadata": {
+        "training_focus": "combined_arms"
+      }
+    },
+    {
+      "profile_id": "joint-exercise",
+      "display_name": "Joint Exercise",
+      "description": "Joint exercise profile for multi-service and partner coordination workflows.",
+      "exercise_type": "joint",
+      "version": "0.1.0",
+      "owner": "Project Forge",
+      "enabled_services": [
+        "knowledge_engine",
+        "scenario_engine",
+        "entity_engine",
+        "event_engine",
+        "exercise_state",
+        "context_engine",
+        "decision_engine",
+        "translation_engine",
+        "product_sdk",
+        "qa_service",
+        "workflow_engine",
+        "pipeline_orchestrator"
+      ],
+      "enabled_plugins": [
+        "intelligence-summary",
+        "iir",
+        "news-article",
+        "social-media",
+        "spotrep"
+      ],
+      "knowledge_base_path": "knowledge_base",
+      "template_path": "config/product_plugins",
+      "translation_dictionary_path": "config/translation_dictionaries.example.yaml",
+      "workflow_path": "config/workflows.example.yaml",
+      "default_scenario": "scenario-forge-example",
+      "components": [
+        {
+          "identifier": "joint-workflows",
+          "component_type": "workflow",
+          "display_name": "Joint Exercise Workflows",
+          "path": "config/workflows.example.yaml",
+          "enabled": true,
+          "metadata": {}
+        }
+      ],
+      "metadata": {
+        "notional": true,
+        "environment": "training"
+      },
+      "profile_metadata": {
+        "training_focus": "joint_coordination"
+      }
+    }
+  ]
+}

@@ -14,6 +14,7 @@ This document describes the current and planned service boundaries for Project F
 | Exercise State Engine | Represent current exercise phase, day, tempo, escalation, and situation | Implemented foundation |
 | Context Engine | Assemble deterministic context snapshots for downstream services | Implemented foundation |
 | Decision Engine | Evaluate deterministic rules for relevance, escalation, duplicates, and consistency | Implemented foundation |
+| Profile Manager | Load, validate, and register exercise environment profiles | Implemented foundation |
 | Translation Engine | Apply deterministic profile dictionaries and mappings | Implemented foundation |
 | AI Reasoning Engine | Build bounded prompts and provider interfaces without live API calls | Implemented foundation |
 | Product SDK | Load, validate, discover, register, and format product plugins | Implemented foundation |
@@ -246,6 +247,35 @@ This document describes the current and planned service boundaries for Project F
 - Profiles
 - Scenario Engine
 - Entity Engine
+
+## Profile Manager
+
+**Responsibilities**
+
+- Load exercise environment profiles from local YAML.
+- Validate required profile fields and path bindings.
+- Register profiles for lookup by profile ID.
+- Select enabled services, enabled plugins, dictionaries, workflows, templates, knowledge paths, and default scenarios without modifying Forge Core.
+
+**Inputs**
+
+- Profile configuration such as `config/profiles.example.yaml`
+- Local paths to knowledge base, templates, translation dictionaries, and workflows
+
+**Outputs**
+
+- `ForgeProfile`
+- `ProfileMetadata`
+- `ProfileComponent`
+- `ProfileRegistry`
+
+**Dependencies**
+
+- Local filesystem
+- Knowledge Engine paths
+- Product SDK plugin/template paths
+- Translation Engine dictionary paths
+- Workflow Engine configuration paths
 
 ## AI Reasoning Engine
 

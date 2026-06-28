@@ -15,6 +15,8 @@ Profiles answer questions such as:
 
 Profiles allow Project Forge to remain a reusable platform while adapting to local exercise needs.
 
+The `project_forge.profile_manager` package is the foundation for loading, validating, and registering these profiles. It keeps exercise-specific environment choices outside Forge Core.
+
 ## Profile Contents
 
 A mature profile should include:
@@ -32,6 +34,8 @@ A mature profile should include:
 - QA policy settings
 - Review and release rules
 - Metadata for audit and governance
+
+The current Profile Manager supports profile ID, display name, description, exercise type, enabled services, enabled plugins, knowledge base path, template path, translation dictionary path, workflow path, default scenario, profile components, and metadata.
 
 ## MWTC Profile
 
@@ -53,6 +57,8 @@ The MWTC profile should make it possible to transform a real-world signal into a
 
 Future profiles may include:
 
+- **ITX profile**: Focused on integrated training exercise controller workflows, combined arms events, and product families for tactical exercise support.
+- **Joint Exercise profile**: Focused on multi-service and partner coordination, shared context, and joint product conventions.
 - **Large-scale combat operations profile**: Focused on corps or division-level maneuver, joint fires, sustainment, information operations, and escalation control.
 - **Humanitarian assistance and disaster response profile**: Focused on civil authorities, relief agencies, infrastructure damage, population movement, and public information.
 - **Maritime security profile**: Focused on port operations, maritime interdiction, territorial waters, shipping, and partner nation coordination.

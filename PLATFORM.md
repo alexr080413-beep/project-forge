@@ -62,6 +62,7 @@ This layer maps real-world terminology into exercise terminology. It supports ex
 Primary services:
 
 - Translation Engine
+- Profile Manager
 - Profile definitions
 - Translation dictionaries
 - Country and actor mappings
