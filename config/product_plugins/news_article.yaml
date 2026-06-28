@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "identifier": "news-article",
+    "name": "News Article",
+    "version": "0.1.0",
+    "description": "Plugin definition for notional media article products.",
+    "owner": "Project Forge",
+    "tags": ["media", "article"],
+    "metadata": {"example": true}
+  },
+  "definition": {
+    "identifier": "news-article",
+    "product_type": "news_article",
+    "display_name": "News Article",
+    "template_identifier": "news-article-template",
+    "output_formats": ["markdown", "text"],
+    "required_context": ["event_context", "translation_result"],
+    "metadata": {}
+  },
+  "templates": [
+    {
+      "identifier": "news-article-template",
+      "version": "0.1.0",
+      "content": "# {headline}\n\nBy {byline}\n\n{body}\n",
+      "required_fields": ["headline", "byline", "body"],
+      "metadata": {}
+    }
+  ]
+}

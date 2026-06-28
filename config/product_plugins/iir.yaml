@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "identifier": "iir",
+    "name": "IIR",
+    "version": "0.1.0",
+    "description": "Plugin definition for intelligence information report products.",
+    "owner": "Project Forge",
+    "tags": ["intelligence", "iir"],
+    "metadata": {"example": true}
+  },
+  "definition": {
+    "identifier": "iir",
+    "product_type": "iir",
+    "display_name": "Intelligence Information Report",
+    "template_identifier": "iir-template",
+    "output_formats": ["markdown", "text"],
+    "required_context": ["event_context", "entities"],
+    "metadata": {}
+  },
+  "templates": [
+    {
+      "identifier": "iir-template",
+      "version": "0.1.0",
+      "content": "# {title}\n\nSource: {source}\n\nInformation: {information}\n",
+      "required_fields": ["title", "source", "information"],
+      "metadata": {}
+    }
+  ]
+}

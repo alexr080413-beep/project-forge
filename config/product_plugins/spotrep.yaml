@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "identifier": "spotrep",
+    "name": "SPOTREP",
+    "version": "0.1.0",
+    "description": "Plugin definition for spot report products.",
+    "owner": "Project Forge",
+    "tags": ["spotrep", "operations"],
+    "metadata": {"example": true}
+  },
+  "definition": {
+    "identifier": "spotrep",
+    "product_type": "spotrep",
+    "display_name": "Spot Report",
+    "template_identifier": "spotrep-template",
+    "output_formats": ["markdown", "text"],
+    "required_context": ["event_context", "exercise_state"],
+    "metadata": {}
+  },
+  "templates": [
+    {
+      "identifier": "spotrep-template",
+      "version": "0.1.0",
+      "content": "SPOTREP: {title}\nLocation: {location}\nDetails: {details}\n",
+      "required_fields": ["title", "location", "details"],
+      "metadata": {}
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "identifier": "social-media",
+    "name": "Social Media",
+    "version": "0.1.0",
+    "description": "Plugin definition for notional social media products.",
+    "owner": "Project Forge",
+    "tags": ["media", "social"],
+    "metadata": {"example": true}
+  },
+  "definition": {
+    "identifier": "social-media",
+    "product_type": "social_media",
+    "display_name": "Social Media Post",
+    "template_identifier": "social-media-template",
+    "output_formats": ["text"],
+    "required_context": ["event_context", "translation_result"],
+    "metadata": {}
+  },
+  "templates": [
+    {
+      "identifier": "social-media-template",
+      "version": "0.1.0",
+      "content": "{handle}: {post_text}",
+      "required_fields": ["handle", "post_text"],
+      "metadata": {}
+    }
+  ]
+}

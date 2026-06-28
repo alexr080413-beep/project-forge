@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "identifier": "intelligence-summary",
+    "name": "Intelligence Summary",
+    "version": "0.1.0",
+    "description": "Plugin definition for intelligence summary products.",
+    "owner": "Project Forge",
+    "tags": ["intelligence", "summary"],
+    "metadata": {"example": true}
+  },
+  "definition": {
+    "identifier": "intelligence-summary",
+    "product_type": "intelligence_summary",
+    "display_name": "Intelligence Summary",
+    "template_identifier": "intelligence-summary-template",
+    "output_formats": ["markdown", "text"],
+    "required_context": ["current_context", "decision_results"],
+    "metadata": {}
+  },
+  "templates": [
+    {
+      "identifier": "intelligence-summary-template",
+      "version": "0.1.0",
+      "content": "# {title}\n\n## Summary\n{summary}\n\n## Key Judgments\n{key_judgments}\n",
+      "required_fields": ["title", "summary", "key_judgments"],
+      "metadata": {}
+    }
+  ]
+}
