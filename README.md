@@ -310,6 +310,7 @@ The platform is ready for iterative capability growth while preserving controlle
 ├── WORKFLOWS.md           # Workflow philosophy and demo pipeline
 ├── FORGE_STUDIO_UX.md     # UX blueprint for the future Forge Studio application
 ├── FORGE_STUDIO_DESIGN_SYSTEM.md # Forge Studio design system
+├── FORGE_STUDIO_MISSION_CONTROL.md # Mission Control dashboard specification
 ├── PROFILES.md            # Profile model and governance
 ├── PLUGINS.md             # Product SDK and plugin model
 ├── DEVELOPMENT.md         # Coding, testing, milestone, and contribution standards
@@ -331,6 +332,7 @@ The platform is ready for iterative capability growth while preserving controlle
 | [WORKFLOWS.md](WORKFLOWS.md) | Workflow philosophy, demo pipeline, and future workflow direction. |
 | [FORGE_STUDIO_UX.md](FORGE_STUDIO_UX.md) | User personas, workspaces, navigation, workflows, wireframes, and accessibility guidance for Forge Studio. |
 | [FORGE_STUDIO_DESIGN_SYSTEM.md](FORGE_STUDIO_DESIGN_SYSTEM.md) | Brand identity, visual tokens, layout rules, component specifications, themes, and UI states for Forge Studio. |
+| [FORGE_STUDIO_MISSION_CONTROL.md](FORGE_STUDIO_MISSION_CONTROL.md) | Mission Control dashboard purpose, layout, widgets, interactions, refresh behavior, and operational rules. |
 | [PROFILES.md](PROFILES.md) | Profile concepts, MWTC direction, dictionaries, mappings, and governance. |
 | [PLUGINS.md](PLUGINS.md) | Product SDK, plugin architecture, report plugins, and future plugin types. |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Coding standards, test standards, ticket conventions, and review expectations. |
