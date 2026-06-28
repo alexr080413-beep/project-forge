@@ -1,7 +1,7 @@
 # Forge
 
 <p align="center">
-  <img src="assets/project-forge-logo-placeholder.svg" alt="Forge logo" width="190">
+  <img src="assets/forge-logo.png" alt="Forge metallic shield logo" width="230">
 </p>
 
 <p align="center">
@@ -9,16 +9,62 @@
 </p>
 
 <p align="center">
-  <a href="pyproject.toml"><img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-1f4e79"></a>
-  <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/badge/license-MIT-2f6f4e"></a>
-  <a href="tests"><img alt="Tests Pytest" src="https://img.shields.io/badge/tests-pytest-3d5875"></a>
-  <a href="WORKFLOWS.md"><img alt="Local deterministic foundation" src="https://img.shields.io/badge/runtime-local%20deterministic-4b5563"></a>
-  <a href="SECURITY.md"><img alt="No external calls by default" src="https://img.shields.io/badge/external%20calls-none%20by%20default-5b6770"></a>
+  <em>Human Command. Machine Assistance.</em>
 </p>
+
+<p align="center">
+  Digital operations platform for Exercise Control.
+</p>
+
+<p align="center">
+  <a href="pyproject.toml"><img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-202A33"></a>
+  <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/badge/license-MIT-6F7C86"></a>
+  <a href="tests"><img alt="Tests Pytest" src="https://img.shields.io/badge/tests-pytest-D6A84F"></a>
+  <a href="WORKFLOWS.md"><img alt="Local deterministic foundation" src="https://img.shields.io/badge/runtime-local%20deterministic-F97316"></a>
+  <a href="SECURITY.md"><img alt="No external calls by default" src="https://img.shields.io/badge/external%20calls-none%20by%20default-0B0F14"></a>
+</p>
+
+Forge is a digital operations platform for Exercise Control.
 
 Forge is a modular Exercise Intelligence and Control Platform designed to transform real-world information into scenario-consistent training products through deterministic services, AI-assisted reasoning, and human-controlled workflows.
 
 Forge gives Exercise Control teams a disciplined path from signal to scenario-safe product: source context, scenario grounding, translation, reasoning support, quality checks, human review, dry-run distribution, audit traceability, and operational metrics.
+
+## Brand Identity
+
+Forge uses a dark metallic command-center identity built around disciplined control, operational confidence, and machine-assisted production under human authority.
+
+| Element | Direction |
+| --- | --- |
+| Product name | Forge |
+| Description | Digital operations platform for Exercise Control. |
+| Logo concept | Metallic shield with an integrated anvil base and abstract forged `F` mark, lit by a restrained orange forge glow. |
+| Slogan | Every Event. Every Inject. Every Exercise. |
+| Tagline | Human Command. Machine Assistance. |
+| Visual posture | Military, enterprise, command-center, precise, durable, and audit-ready. |
+
+### Color Palette
+
+| Token | Hex | Use |
+| --- | --- | --- |
+| Command Black | `#0B0F14` | Primary background and dark surfaces. |
+| Gunmetal | `#202A33` | Logo depth, panels, structural UI, and secondary badges. |
+| Steel | `#6F7C86` | Metallic highlights, separators, and neutral interface states. |
+| Forge Orange | `#F97316` | Primary brand energy, active accents, and forge glow. |
+| Ember Amber | `#D6A84F` | Review, caution, warmth, and supporting highlights. |
+| Signal White | `#E6EDF3` | Primary text, logo edge highlights, and high-contrast foregrounds. |
+
+### Typography Direction
+
+Forge should use strong, readable enterprise typography: a modern sans-serif for interface and documentation surfaces, paired with a compact monospace for identifiers, audit records, timestamps, metrics, event IDs, and service names.
+
+### Design Principles
+
+- Lead with the mark, slogan, and tagline before technical detail.
+- Preserve a dark command-center appearance without turning the brand into decoration.
+- Use orange glow as a controlled signal of forge energy, not as a dominant background.
+- Keep language direct, operational, and human-authority centered.
+- Avoid consumer-app softness, playful illustration, uncontrolled gradients, and decorative clutter.
 
 ## Mission
 

@@ -27,7 +27,7 @@ The design language should be:
 | Parent platform | Forge |
 | Tagline alignment | Every Event. Every Inject. Every Exercise. |
 | Visual posture | Operational, controlled, precise, and quiet. |
-| Logo use | Use the existing Forge logo from `assets/project-forge-logo-placeholder.svg` until a final mark is approved. |
+| Logo use | Use the Forge metallic shield logo from `assets/forge-logo.png`. The legacy placeholder is retained only as a historical asset. |
 | Voice | Direct, professional, concise, controller-centered. |
 | Avoid | Consumer social styling, oversized hero layouts, playful illustrations, heavy gradients, glassmorphism, decorative blobs, and theatrical animations. |
 

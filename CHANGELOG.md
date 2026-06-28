@@ -28,10 +28,11 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Security Service foundation with users, service accounts, system actors, roles, permissions, policies, RBAC evaluation, default Forge roles, metadata, validation, and audit-ready allow/deny decision records.
 - End-to-end demo pipeline command that runs a local sample event through implemented Forge service foundations, dry-run handlers, offline AI stub reasoning, audit logging, and metrics snapshotting.
 - Exercise Lifecycle documentation defining Exercise as the central Forge Studio organizing model across lifecycle phases, object model, hierarchy, workspaces, controllers, workflows, products, profiles, plugins, navigation, and future expansion.
+- Forge metallic shield logo and dark command-center brand identity guidance.
 
 ### Changed
 
-- Nothing yet.
+- README branding now uses the Forge metallic shield logo, slogan, tagline, and Exercise Control platform description instead of placeholder branding.
 
 ### Deprecated
 
