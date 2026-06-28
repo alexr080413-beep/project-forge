@@ -29,6 +29,12 @@ Project Forge contains a typed local foundation for core domain models and deter
 
 The foundation intentionally avoids external APIs, AI provider calls, and report generation. It is designed to connect existing deterministic service foundations while preserving auditable status, failure handling, and human review boundaries.
 
+## Storage Service Foundation
+
+`project_forge.storage_service` provides a local artifact abstraction for reading metadata, writing in dry-run mode, listing configured folders, and archiving project artifacts. It uses registered providers and validated locations so future services can reference project storage without embedding filesystem assumptions throughout the platform.
+
+The foundation implements local filesystem behavior only. S3, Azure Blob, and SharePoint providers are placeholders and do not perform network or cloud calls.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:

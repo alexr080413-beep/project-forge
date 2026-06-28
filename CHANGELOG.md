@@ -20,6 +20,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Distribution Service foundation with channel registration, target validation, dry-run handling, status tracking, audit metadata, local file/archive handlers, and placeholder channels for email-ready, markdown, HTML, DOCX, PDF, PowerPoint, SharePoint, and Teams outputs.
 - Automation Service foundation with automation rules, cron schedules, manual triggers, event triggers, workflow triggers, conditional triggers, enable/disable controls, execution history, retry policy validation, and registry support.
 - Integration Service foundation with YAML-loaded source definitions, connector registration, source validation, dry-run collection, status tracking, metadata capture, error handling, and audit metadata for RSS, website, manual upload, local file, and placeholder external source types.
+- Storage Service foundation with provider registration, path validation, metadata reads, dry-run writes, local folder listing, archive operations, audit metadata, and placeholder S3, Azure Blob, and SharePoint providers.
 
 ### Changed
 

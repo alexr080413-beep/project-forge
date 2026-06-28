@@ -29,7 +29,7 @@ flowchart LR
     N --> H
 ```
 
-The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
+The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, integration source definitions, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, a storage service foundation, and a pipeline orchestrator. Production services, live external integrations, user interfaces, and real publishing integrations remain future work.
 
 ## Platform Layers
 
@@ -100,6 +100,7 @@ Primary services:
 - QA Service
 - Review Queue
 - Distribution Service
+- Storage Service
 - Future approval and release controls
 
 ### 7. Orchestration Layer
@@ -123,7 +124,7 @@ The platform data flow follows a controlled path:
 5. The Product SDK selects product definitions and templates.
 6. The QA Service validates required metadata, source references, confidence, and fiction boundaries.
 7. The Review Queue receives the prepared product for human controller action.
-8. Approved products can later be handled by the Distribution Service through local, dry-run, or placeholder channels.
+8. Approved products can later be handled by the Distribution Service through local, dry-run, or placeholder channels, while the Storage Service provides controlled local artifact access, listing, metadata, and archive behavior.
 
 ## Core Concepts
 
@@ -166,3 +167,7 @@ The review queue is the human control point where products are held for editoria
 ### Distribution
 
 Distribution handles approved product outputs after human review. The foundation supports local file/archive outputs, dry-run execution, audit metadata, and placeholders for future document and collaboration channels without calling external services.
+
+### Storage
+
+Storage provides a common abstraction over project artifact folders. The foundation supports local filesystem, output, archive, knowledge base, and template folders, plus placeholder cloud and collaboration providers, while preserving path validation and audit metadata.

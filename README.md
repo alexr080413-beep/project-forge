@@ -58,6 +58,7 @@ flowchart LR
 - **AI-assisted transformation engine**: Converts source material into scenario-consistent notional drafts.
 - **Human review controls**: Keeps EXCON staff in charge of approval, release, and correction.
 - **Distribution service**: Handles approved product outputs after human review through local and placeholder channels.
+- **Storage service**: Provides a common local abstraction for artifact metadata, listing, dry-run writes, and archiving.
 - **Automation service**: Records schedule, manual, event, workflow, and conditional triggers without external schedulers.
 - **Review queue**: Holds prepared products for human approval, rejection, or revision before release.
 - **Pipeline orchestrator**: Coordinates local Project Forge services into ordered, auditable workflows.
@@ -166,7 +167,7 @@ See [SETUP.md](SETUP.md) for the longer setup notes.
 
 ## Current Status
 
-Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, an Integration Service for source definitions and dry-run connectors, a Profile Manager for exercise environments, a Review Queue for human release control, a Distribution Service for approved outputs, an Automation Service for local trigger recording, and a Pipeline Orchestrator that can run ordered in-process workflows.
+Project Forge is a clean project skeleton with typed foundation modules for the primary domain entities and deterministic local service foundations. The README describes the intended system, and the implementation milestone now includes data models for sources, exercise context, scenario entities, report requests, generated reports, review quality checks, an Integration Service for source definitions and dry-run connectors, a Profile Manager for exercise environments, a Review Queue for human release control, a Distribution Service for approved outputs, a Storage Service for local artifact handling, an Automation Service for local trigger recording, and a Pipeline Orchestrator that can run ordered in-process workflows.
 
 ### Integration Service
 
@@ -183,6 +184,10 @@ The `project_forge.review_queue` package provides local review items, ordered re
 ### Distribution Service
 
 The `project_forge.distribution_service` package provides approved-output distribution items, channels, targets, requests, results, status tracking, validation, audit logs, dry-run mode, local file/archive handlers, and placeholder channels for future formats and collaboration tools. It does not send email, call SharePoint, call Teams, or use external APIs.
+
+### Storage Service
+
+The `project_forge.storage_service` package provides storage items, locations, providers, requests, results, status tracking, provider registration, path validation, metadata reads, dry-run writes, folder listing, archive operations, and audit logs. It supports local filesystem, archive folder, output folder, knowledge base folder, template folder, and placeholder S3, Azure Blob, and SharePoint providers without cloud, SharePoint, or network calls.
 
 ### Automation Service
 

@@ -22,6 +22,7 @@ This document describes the current and planned service boundaries for Project F
 | QA Service | Run deterministic product checks and aggregate QA status | Implemented foundation |
 | Review Queue | Hold products for human controller review before release | Implemented foundation |
 | Distribution Service | Handle approved product outputs after review through local and placeholder channels | Implemented foundation |
+| Storage Service | Read metadata, list, dry-run write, and archive project artifacts through local and placeholder providers | Implemented foundation |
 | Automation Service | Record schedule, manual, event, workflow, and conditional triggers for workflows | Implemented foundation |
 | Workflow Engine | Execute ordered local workflow steps | Implemented foundation |
 | Pipeline Orchestrator | Coordinate platform services into end-to-end pipelines | Implemented foundation |
@@ -466,6 +467,41 @@ The current foundation does not perform live API calls.
 **Current Boundary**
 
 The service does not send email, call SharePoint, call Teams, use external APIs, or automatically publish products. Placeholder channels record status and audit metadata only.
+
+## Storage Service
+
+**Responsibilities**
+
+- Register storage providers for local and placeholder artifact locations.
+- Validate configured paths and prevent relative path traversal.
+- Read local artifact metadata.
+- Support dry-run writes by default.
+- List items from configured local folders.
+- Archive local artifacts into configured archive folders.
+- Preserve storage operation metadata and audit logs.
+
+**Inputs**
+
+- `StorageLocation`
+- `StorageProvider`
+- `StorageRequest`
+- Local project folders such as `outputs/`, `knowledge_base/`, and `assets/`
+
+**Outputs**
+
+- `StorageItem`
+- `StorageResult`
+- `StorageStatus`
+- Audit metadata for storage operations
+
+**Dependencies**
+
+- Local filesystem for implemented providers
+- Python standard library only
+
+**Current Boundary**
+
+The service does not call S3, Azure Blob Storage, SharePoint, cloud APIs, or network services. Cloud and SharePoint providers are placeholders that record intent and audit metadata only.
 
 ## Automation Service
 

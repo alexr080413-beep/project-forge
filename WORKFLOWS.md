@@ -92,6 +92,12 @@ The Distribution Service handles approved product outputs after human review. It
 
 The current foundation supports local file export and archive folder handlers, plus safe placeholder channels for email-ready output, markdown, HTML, DOCX, PDF, PowerPoint, SharePoint, and Teams. Placeholder channels do not send messages, call collaboration platforms, or use external APIs.
 
+## Storage Execution
+
+The Storage Service provides a common artifact access boundary for project folders. It supports provider registration, path validation, metadata reads, dry-run writes, local folder listing, archive operations, and audit metadata.
+
+The current foundation supports local filesystem, archive folder, output folder, knowledge base folder, and template folder providers. S3, Azure Blob, and SharePoint providers are placeholders and do not make cloud, SharePoint, or network calls.
+
 ## Automation Execution
 
 The Automation Service records when a workflow would be triggered by a cron schedule, manual action, event payload, workflow event, or condition. It preserves execution history and retry policy metadata, but it does not invoke workflow handlers or depend on an external scheduler.
@@ -204,6 +210,7 @@ Future workflow work should add:
 - Review queue integration
 - Human approval events
 - Export workflow stages
+- Storage-backed artifact retention
 - Automation runtime integration
 - Runtime observability
 - Controller-facing workflow status
