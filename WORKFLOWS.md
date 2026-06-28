@@ -80,6 +80,12 @@ The Review Queue Service holds prepared products after QA and before any release
 
 The review queue is not an automatic publishing surface. It is the explicit human control point where EXCON decides whether a product can proceed, must be revised, or should be rejected.
 
+## Distribution Execution
+
+The Distribution Service handles approved product outputs after human review. It supports channel registration, target validation, dry-run mode, status tracking, and audit metadata.
+
+The current foundation supports local file export and archive folder handlers, plus safe placeholder channels for email-ready output, markdown, HTML, DOCX, PDF, PowerPoint, SharePoint, and Teams. Placeholder channels do not send messages, call collaboration platforms, or use external APIs.
+
 ## Example Workflow: Daily Intelligence Summary
 
 Purpose:
@@ -94,6 +100,7 @@ Typical steps:
 4. Route staged material to product preparation.
 5. Run QA.
 6. Send to review queue.
+7. Distribute approved output through dry-run or local channels.
 
 Expected controls:
 

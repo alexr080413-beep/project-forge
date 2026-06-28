@@ -20,9 +20,9 @@ This document describes the current and planned service boundaries for Project F
 | Product SDK | Load, validate, discover, register, and format product plugins | Implemented foundation |
 | QA Service | Run deterministic product checks and aggregate QA status | Implemented foundation |
 | Review Queue | Hold products for human controller review before release | Implemented foundation |
+| Distribution Service | Handle approved product outputs after review through local and placeholder channels | Implemented foundation |
 | Workflow Engine | Execute ordered local workflow steps | Implemented foundation |
 | Pipeline Orchestrator | Coordinate platform services into end-to-end pipelines | Implemented foundation |
-| Output Generation | Export approved products to final formats | Planned |
 
 ## Core Models
 
@@ -394,6 +394,45 @@ The current foundation does not perform live API calls.
 - QA Service
 - Human controller workflow
 
+## Distribution Service
+
+**Responsibilities**
+
+- Handle approved product outputs after human review.
+- Register distribution channels.
+- Validate targets and supported output formats.
+- Track distribution status.
+- Preserve distribution metadata and audit logs.
+- Support dry-run mode for safe operational rehearsal.
+- Provide local file and archive folder handlers.
+- Provide placeholder channels for email-ready output, markdown, HTML, DOCX, PDF, PowerPoint, SharePoint, and Teams.
+
+**Inputs**
+
+- Approved distribution items
+- Distribution requests
+- Distribution targets
+- Registered channels
+
+**Outputs**
+
+- `DistributionItem`
+- `DistributionChannel`
+- `DistributionTarget`
+- `DistributionRequest`
+- `DistributionResult`
+- `DistributionStatus`
+
+**Dependencies**
+
+- Review Queue approval boundary
+- Product SDK output metadata
+- Local filesystem for local file and archive folder handlers
+
+**Current Boundary**
+
+The service does not send email, call SharePoint, call Teams, use external APIs, or automatically publish products. Placeholder channels record status and audit metadata only.
+
 ## Workflow Engine
 
 **Responsibilities**
@@ -451,31 +490,4 @@ The current foundation does not perform live API calls.
 - Product SDK
 - QA Service
 - Review Queue
-
-## Output Generation
-
-**Responsibilities**
-
-- Export approved products into final formats.
-- Preserve metadata, markings, and traceability packets.
-- Store generated artifacts in controlled output locations.
-
-**Inputs**
-
-- Approved product content
-- Product templates
-- Export configuration
-
-**Outputs**
-
-- Reports, injects, summaries, briefings, or other approved artifacts
-
-**Dependencies**
-
-- Product SDK
-- Review Queue
-- Future export adapters
-
-**Current Boundary**
-
-Output generation is planned future work and is intentionally separate from pipeline orchestration.
+- Distribution Service

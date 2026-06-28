@@ -17,6 +17,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Executive and platform documentation covering vision, architecture, services, profiles, plugins, workflows, and development conventions.
 - Profile Manager foundation with YAML loading, profile validation, registry lookup, and example MWTC, ITX, and Joint Exercise profiles.
 - Review Queue Service foundation with ordered queues, reviewer assignment, approval, rejection, revision requests, audit history, notes, timestamps, registry support, manager operations, and sample review items.
+- Distribution Service foundation with channel registration, target validation, dry-run handling, status tracking, audit metadata, local file/archive handlers, and placeholder channels for email-ready, markdown, HTML, DOCX, PDF, PowerPoint, SharePoint, and Teams outputs.
 
 ### Changed
 

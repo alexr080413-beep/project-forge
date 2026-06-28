@@ -143,3 +143,7 @@ Recommended practices:
 Profiles select which plugins are appropriate for a given exercise context. For example, an MWTC profile may prefer mountain warfare intelligence summaries, weather impact updates, logistics injects, and safety-related controller products.
 
 Plugins define product capability. Profiles decide when and how that capability should be used.
+
+## Relationship To Distribution
+
+The Distribution Service consumes approved product outputs after review. Product plugins define product content and supported formats; distribution channels decide where an approved output can be safely staged, exported, or represented as a future integration placeholder.

@@ -13,7 +13,8 @@ flowchart LR
     E --> F["Product SDK"]
     F --> G["QA Service"]
     G --> H["Review Queue"]
-    H --> I["Notional Exercise Product"]
+    H --> I["Distribution Service"]
+    I --> O["Approved Output"]
 
     J["Knowledge Base"] --> C
     K["Scenario, Entity, and Exercise State"] --> C
@@ -28,7 +29,7 @@ flowchart LR
     N --> H
 ```
 
-The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, product plugin definitions, workflow foundations, a review queue foundation, and a pipeline orchestrator. Production services, external integrations, user interfaces, and report export surfaces remain future work.
+The current implementation is a local foundation. It contains importable Python packages, deterministic validators, loaders, registries, product plugin definitions, workflow foundations, a review queue foundation, a distribution service foundation, and a pipeline orchestrator. Production services, external integrations, user interfaces, and real publishing integrations remain future work.
 
 ## Platform Layers
 
@@ -97,6 +98,7 @@ Primary services:
 
 - QA Service
 - Review Queue
+- Distribution Service
 - Future approval and release controls
 
 ### 7. Orchestration Layer
@@ -119,7 +121,7 @@ The platform data flow follows a controlled path:
 5. The Product SDK selects product definitions and templates.
 6. The QA Service validates required metadata, source references, confidence, and fiction boundaries.
 7. The Review Queue receives the prepared product for human controller action.
-8. Approved products can later be exported or released through future output services.
+8. Approved products can later be handled by the Distribution Service through local, dry-run, or placeholder channels.
 
 ## Core Concepts
 
@@ -154,3 +156,7 @@ Pipelines coordinate platform services end to end. The current example pipeline 
 ### Review Queue
 
 The review queue is the human control point where products are held for editorial review, approval, rejection, or correction before release.
+
+### Distribution
+
+Distribution handles approved product outputs after human review. The foundation supports local file/archive outputs, dry-run execution, audit metadata, and placeholders for future document and collaboration channels without calling external services.
