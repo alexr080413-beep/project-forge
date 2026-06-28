@@ -29,6 +29,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - End-to-end demo pipeline command that runs a local sample event through implemented Forge service foundations, dry-run handlers, offline AI stub reasoning, audit logging, and metrics snapshotting.
 - Exercise Lifecycle documentation defining Exercise as the central Forge Studio organizing model across lifecycle phases, object model, hierarchy, workspaces, controllers, workflows, products, profiles, plugins, navigation, and future expansion.
 - Forge metallic shield logo and dark command-center brand identity guidance.
+- Official Forge brand kit covering identity, vision, messaging, voice, logo guidance, colors, typography, icons, imagery prompts, UI guidance, and presentation guidance.
 
 ### Changed
 
