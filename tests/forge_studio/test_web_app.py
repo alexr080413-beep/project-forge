@@ -1,13 +1,13 @@
 from importlib import resources
 
-from project_forge.forge_studio.mock_data import create_mock_registry
+from project_forge.forge_studio.data_engine import create_mock_exercise_store
 from project_forge.forge_studio.web_app import build_dashboard_payload
 
 
-def test_mock_dashboard_payload_uses_forge_studio_models() -> None:
-    registry = create_mock_registry()
+def test_mock_dashboard_payload_uses_exercise_data_engine() -> None:
+    store = create_mock_exercise_store()
 
-    payload = build_dashboard_payload(registry)
+    payload = build_dashboard_payload(store)
 
     assert payload["active_exercise"]["name"] == "Mountain Exercise 3-27"
     assert payload["workspace"]["exercise"]["exercise_director"] == "Col Smith"
@@ -19,8 +19,8 @@ def test_mock_dashboard_payload_uses_forge_studio_models() -> None:
     assert payload["metrics"]["open_injects"] == 7
     assert payload["metrics"]["products_generated"] == 12
     assert payload["metrics"]["timeline_events"] == 8
-    assert payload["metrics"]["controller_count"] == 7
-    assert [item["title"] for item in payload["timeline_summary"][:3]] == [
+    assert payload["metrics"]["controller_count"] == 6
+    assert [item["title"] for item in payload["timeline_events"][:3]] == [
         "Exercise Begins",
         "Intel Product Published",
         "Civilian Protest Inject",
@@ -31,7 +31,10 @@ def test_mock_dashboard_payload_uses_forge_studio_models() -> None:
         "review-003",
     ]
     assert "Photos" in payload["workspace"]["library_folders"]
-    assert payload["workspace"]["products"][0]["title"] == "Intelligence Update 001"
+    assert payload["products"][0]["title"] == "Intelligence Update 001"
+    assert payload["controllers"][0]["role"] == "Exercise Director"
+    assert payload["review_queue"][0]["reviewed_by"] == "Maj Warren"
+    assert payload["audit_log"][0]["action"] == "inject.review.submitted"
 
 
 def test_static_web_app_assets_exist() -> None:

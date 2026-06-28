@@ -4,6 +4,8 @@ Forge Studio Web MVP is the first runnable local application for Forge Studio. I
 
 This is intentionally minimal. It does not implement authentication, persistence, frontend build tooling, automatic publishing, external APIs, or every Forge Studio feature.
 
+The current sprint introduces the Forge Studio Exercise Data Engine. The active exercise is now the single source of truth for dashboard metrics, timeline events, injects, products, controllers, review queue items, audit records, and exercise statistics.
+
 ## Start Locally
 
 From the repository root:
@@ -51,7 +53,9 @@ The app displays:
 - Operational Timeline page
 - Inject Library page
 - Controller cards
+- Review Queue mock approval workflow
 - Exercise Library product repository
+- Audit history page
 - Settings cards
 
 Navigation sections:
@@ -61,8 +65,78 @@ Navigation sections:
 - Timeline
 - Inject Library
 - Controllers
+- Review Queue
 - Exercise Library
+- Audit
 - Settings
+
+## Exercise Data Engine
+
+`project_forge.forge_studio.data_engine.ExerciseStore` is the shared application state service for the runnable MVP. It wraps the existing Forge Studio registry and owns the complete active exercise picture:
+
+- Exercise
+- Timeline events
+- Injects
+- Products
+- Controllers
+- Review queue
+- Audit log
+- Statistics
+- Latest activity feed
+- Exercise workspace metadata
+
+The local web server creates one `ExerciseStore` when it starts. Every page asks for the same exercise snapshot instead of constructing local mock objects.
+
+```mermaid
+flowchart LR
+    store["ExerciseStore<br/>single source of truth"] --> dashboard["Dashboard"]
+    store --> timeline["Timeline"]
+    store --> injects["Inject Library"]
+    store --> controllers["Controllers"]
+    store --> review["Review Queue"]
+    store --> library["Exercise Library"]
+    store --> audit["Audit"]
+    review -->|"approve / reject"| store
+    store -->|"updated snapshot"| dashboard
+    store -->|"audit entry"| audit
+```
+
+### Single Source of Truth
+
+The active Exercise object anchors all page data. Inject status, review decisions, timeline totals, product counts, controller status, activity records, and audit entries are calculated or retrieved from `ExerciseStore`.
+
+### Application State
+
+The MVP remains in-memory and deterministic. There is no database, browser storage, background worker, or external API. State lasts for the life of the local server process.
+
+### Shared Data
+
+The server exposes the shared state through:
+
+```text
+GET /api/exercise
+GET /api/dashboard
+POST /api/review/approve
+POST /api/review/reject
+```
+
+`GET /api/dashboard` is retained as a compatibility alias for the same exercise snapshot.
+
+### Propagation
+
+Review actions mutate the shared store. After an approval or rejection, the returned snapshot updates:
+
+- Dashboard pending review count
+- Inject Library status and approver
+- Review Queue decision and timestamp
+- Latest Activity Feed
+- Audit History
+
+This gives the MVP one platform behavior model instead of independent page-level mock data.
+
+### Human Review Principle
+
+Forge continues to preserve human release authority. The Review Queue is a mock workflow, but it still requires an explicit approve or reject action. Approval updates the linked inject; rejection prevents it from being treated as releasable. No automatic publishing or distribution is implemented.
 
 ## Exercise Workspace Concept
 
@@ -72,7 +146,7 @@ The workspace is not a personal dashboard. It is the shared operational context 
 
 ## Dashboard Data
 
-The dashboard uses `project_forge.forge_studio.mock_data.create_mock_registry()` to create local mock objects from the existing Forge Studio MVP domain model.
+The dashboard uses `project_forge.forge_studio.data_engine.create_mock_exercise_store()` to create the shared active exercise state from Forge Studio MVP domain models and local demo data.
 
 Dashboard metrics:
 
@@ -86,6 +160,18 @@ Dashboard metrics:
 - Controller Count
 - Current Operational Time
 - Latest Activity Feed
+- Completed Injects
+- Exercise Duration
+
+## Review Queue
+
+The Review Queue page displays every review item in the active exercise. It shows pending, in-review, approved, and rejected states, along with decision, reviewer, timestamp, and mock approval buttons.
+
+Approving or rejecting an item records an audit entry and returns a refreshed exercise snapshot. For inject review items, the linked inject status is updated through the existing Forge Studio registry review methods.
+
+## Audit History
+
+The Audit page displays timestamp, actor, action, target, and result for exercise operations. Initial mock audit entries are loaded with the exercise, and every mock review operation appends a new audit record.
 
 ## Exercise Library Philosophy
 
@@ -122,6 +208,7 @@ src/project_forge/forge_studio/web_app.py
 
 ```text
 src/project_forge/forge_studio/
+├── data_engine.py
 ├── mock_data.py
 ├── web_app.py
 └── static/

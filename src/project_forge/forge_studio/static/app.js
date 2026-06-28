@@ -10,7 +10,9 @@ const pageLabels = {
   timeline: "Timeline",
   "inject-library": "Inject Library",
   controllers: "Controllers",
+  "review-queue": "Review Queue",
   "exercise-library": "Exercise Library",
+  audit: "Audit",
   settings: "Settings"
 };
 
@@ -51,6 +53,10 @@ function card(title, body, meta = "") {
 
 function actionButton(label) {
   return `<button class="action-button" type="button">${label}</button>`;
+}
+
+function reviewActionButton(reviewId, action, label) {
+  return `<button class="action-button review-action" type="button" data-review-id="${reviewId}" data-action="${action}">${label}</button>`;
 }
 
 function renderRecords(containerId, records, emptyText, statusKey = "event_type") {
@@ -94,7 +100,7 @@ function renderDashboard(data) {
   setText("#products-generated", data.metrics.products_generated);
   setText("#current-time", data.metrics.current_operational_time);
   renderActivity(data.activity);
-  renderRecords("#timeline-list", data.timeline_summary.slice(-5), "No timeline events yet.");
+  renderRecords("#timeline-list", data.timeline_events.slice(-5), "No timeline events yet.");
 }
 
 function renderExercises(data) {
@@ -146,7 +152,7 @@ function renderTimeline(data) {
         <span>${data.workspace.exercise.name}</span>
       </div>
       <div class="timeline-column">
-        ${data.timeline_summary.map((event) => `
+        ${data.timeline_events.map((event) => `
           <article class="timeline-card">
             <time>${timeFromIso(event.timestamp)}</time>
             <div>
@@ -178,7 +184,7 @@ function renderInjectLibrary(data) {
             <dl class="detail-list compact-list">
               <dt>Category</dt><dd>${formatLabel(inject.inject_type)}</dd>
               <dt>Scheduled Time</dt><dd>${timeFromIso(inject.scheduled_time)}</dd>
-              <dt>Controller</dt><dd>${inject.assigned_controller || "Unassigned"}</dd>
+              <dt>Controller</dt><dd>${inject.assigned_controller_name || inject.assigned_controller || "Unassigned"}</dd>
               <dt>Priority</dt><dd>${formatLabel(inject.priority)}</dd>
             </dl>
           </article>
@@ -191,7 +197,7 @@ function renderInjectLibrary(data) {
 function renderControllers(data) {
   contentRoot.innerHTML = `
     <section class="controller-grid">
-      ${data.workspace.controllers.map((controller) => `
+      ${data.controllers.map((controller) => `
         <article class="controller-card">
           <div class="controller-avatar">${controller.role.slice(0, 2).toUpperCase()}</div>
           <div>
@@ -210,6 +216,36 @@ function renderControllers(data) {
   `;
 }
 
+function renderReviewQueue(data) {
+  contentRoot.innerHTML = `
+    <section class="panel wide-panel">
+      <div class="panel-header">
+        <h2>Human Review Queue</h2>
+        <span>Approval is required before release</span>
+      </div>
+      <div class="data-table review-table">
+        <div class="table-row table-head"><span>Item</span><span>Status</span><span>Decision</span><span>Reviewed By</span><span>Timestamp</span><span>Action</span></div>
+        ${data.review_queue.map((item) => {
+          const canReview = item.status === "pending" || item.status === "in_review";
+          return `
+            <div class="table-row">
+              <span>${item.title}</span>
+              <span>${formatLabel(item.status)}</span>
+              <span>${formatLabel(item.decision || "Pending")}</span>
+              <span>${item.reviewed_by || "Unassigned"}</span>
+              <span>${timeFromIso(item.timestamp)}</span>
+              <span class="review-actions">
+                ${canReview ? `${reviewActionButton(item.id, "approve", "Approve")}${reviewActionButton(item.id, "reject", "Reject")}` : "Complete"}
+              </span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </section>
+  `;
+  bindReviewActions();
+}
+
 function renderExerciseLibrary(data) {
   contentRoot.innerHTML = `
     <section class="workspace-grid">
@@ -226,19 +262,42 @@ function renderExerciseLibrary(data) {
         <h2>Generated Products</h2>
         <div class="data-table">
           <div class="table-row table-head"><span>Product Type</span><span>Title</span><span>Status</span><span>Version</span><span>Last Updated</span><span>Author</span><span>Review Status</span></div>
-          ${data.workspace.products.map((product) => `
+          ${data.products.map((product) => `
             <div class="table-row">
-              <span>${product.type}</span>
+              <span>${product.product_type}</span>
               <span>${product.title}</span>
               <span>${product.status}</span>
               <span>${product.version}</span>
-              <span>${product.updated}</span>
+              <span>${product.last_updated}</span>
               <span>${product.author}</span>
-              <span>${product.review}</span>
+              <span>${product.review_status}</span>
             </div>
           `).join("")}
         </div>
       </article>
+    </section>
+  `;
+}
+
+function renderAudit(data) {
+  contentRoot.innerHTML = `
+    <section class="panel wide-panel">
+      <div class="panel-header">
+        <h2>Audit History</h2>
+        <span>Every mock operation records a trace</span>
+      </div>
+      <div class="data-table audit-table">
+        <div class="table-row table-head"><span>Timestamp</span><span>Actor</span><span>Action</span><span>Target</span><span>Result</span></div>
+        ${data.audit_log.map((item) => `
+          <div class="table-row">
+            <span>${timeFromIso(item.timestamp)}</span>
+            <span>${item.actor}</span>
+            <span>${item.action}</span>
+            <span>${item.target}</span>
+            <span>${formatLabel(item.result)}</span>
+          </div>
+        `).join("")}
+      </div>
     </section>
   `;
 }
@@ -270,19 +329,44 @@ function renderPage(page) {
     timeline: renderTimeline,
     "inject-library": renderInjectLibrary,
     controllers: renderControllers,
+    "review-queue": renderReviewQueue,
     "exercise-library": renderExerciseLibrary,
+    audit: renderAudit,
     settings: renderSettings
   };
-  renderers[page](workspaceData);
+  (renderers[page] || renderDashboard)(workspaceData);
 }
 
 async function loadDashboard() {
-  const response = await fetch("/api/dashboard");
+  const response = await fetch("/api/exercise");
   if (!response.ok) {
     throw new Error("Dashboard request failed");
   }
   workspaceData = await response.json();
   renderDashboard(workspaceData);
+}
+
+async function submitReviewDecision(reviewId, action) {
+  const response = await fetch(`/api/review/${action}`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({review_id: reviewId})
+  });
+  if (!response.ok) {
+    throw new Error("Review request failed");
+  }
+  workspaceData = await response.json();
+  showPage("review-queue");
+}
+
+function bindReviewActions() {
+  for (const button of document.querySelectorAll(".review-action")) {
+    button.addEventListener("click", () => {
+      submitReviewDecision(button.dataset.reviewId, button.dataset.action).catch((error) => {
+        button.textContent = error.message;
+      });
+    });
+  }
 }
 
 function showPage(page) {

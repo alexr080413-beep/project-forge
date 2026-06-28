@@ -32,6 +32,7 @@ This project can follow the principles of [Keep a Changelog](https://keepachange
 - Official Forge brand kit covering identity, vision, messaging, voice, logo guidance, colors, typography, icons, imagery prompts, UI guidance, and presentation guidance.
 - Forge Studio MVP foundation with exercise, user, inject, timeline, human review, audit models, in-memory registry, and framework-neutral API module scaffolding.
 - Runnable Forge Studio Web MVP with local stdlib server, Mountain Exercise 3-27 mock workspace, operational dashboard, interactive pages, Exercise Library, sidebar navigation, and documentation.
+- Forge Studio Exercise Data Engine with shared exercise state, live dashboard statistics, Review Queue approval/rejection workflow, Audit page, controller/product/timeline data propagation, and architecture documentation.
 
 ### Changed
 

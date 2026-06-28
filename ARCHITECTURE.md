@@ -83,6 +83,14 @@ The foundation intentionally avoids frontend implementation, web server dependen
 
 The web MVP is intentionally local and demonstrative. It does not add authentication, persistence, a frontend framework, external calls, automatic publishing, or real distribution behavior.
 
+## Forge Studio Exercise Data Engine
+
+`project_forge.forge_studio.data_engine` turns the runnable Forge Studio MVP into a unified data-driven application. `ExerciseStore` wraps the Forge Studio registry and owns the active exercise, timeline events, injects, generated products, controller assignments, review queue, audit log, activity feed, and calculated statistics.
+
+The data engine is the single source of truth for the local web app. Dashboard, Timeline, Inject Library, Controllers, Review Queue, Exercise Library, and Audit all consume one exercise snapshot. Mock review approval and rejection operations mutate the shared store, update linked inject state through the registry, append audit records, and return a refreshed snapshot.
+
+The data engine remains intentionally in-memory, local, deterministic, and human-review centered. It does not implement persistence, authentication, automatic release, distribution, database connections, or external network calls.
+
 ## Future Sections
 
 As functionality is implemented, expand this document with:

@@ -582,6 +582,16 @@ h1 {
   border-bottom: 1px solid var(--border);
 }
 
+.review-table .table-row {
+  grid-template-columns: minmax(220px, 1.3fr) 120px 120px 150px 110px 190px;
+  min-width: 920px;
+}
+
+.audit-table .table-row {
+  grid-template-columns: 110px 150px minmax(180px, 1fr) minmax(180px, 1fr) 120px;
+  min-width: 820px;
+}
+
 .table-row span {
   padding: 11px 10px;
   color: var(--muted);
@@ -596,6 +606,18 @@ h1 {
   color: var(--text);
   font-size: 12px;
   font-weight: 800;
+}
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.review-actions .action-button {
+  min-height: 30px;
+  padding: 0 9px;
+  font-size: 12px;
 }
 
 .settings-grid {
